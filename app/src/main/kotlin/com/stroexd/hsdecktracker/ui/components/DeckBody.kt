@@ -122,11 +122,11 @@ fun CraftSummaryCard(
                         analysis.missing.forEach { missing ->
                             CardTile(
                                 card = missing.card,
-                                name = missing.card?.name ?: "#${missing.dbfId}",
-                                cost = missing.card?.cost ?: 0,
+                                name = missing.card.name,
+                                cost = missing.card.cost,
                                 count = missing.missing,
                                 missing = missing.missing,
-                                onClick = missing.card?.let { card -> { onCardClick(card) } },
+                                onClick = { onCardClick(missing.card) },
                                 trailing = {
                                     Box(contentAlignment = Alignment.Center) {
                                         if (missing.craftable) {

@@ -143,6 +143,20 @@ class CollectionTest {
         assertEquals(1.0, analysis.ownedFraction)
     }
 
+    /** Meta deck lists carry cards that can't be collected; they are no reason to call a deck incomplete. */
+    @Test
+    fun cardsOutsideTheDatabaseAreNotMissing() {
+        val deck = mapOf(FIREBALL to 2, 999_999 to 2)
+        val collection = CardCollection(cards = mapOf(FIREBALL to OwnedCard(2)))
+        val analysis = CraftingCalculator.analyze(deck, emptyList(), collection, db)
+        assertTrue(analysis.missing.isEmpty())
+        assertEquals(0, analysis.dustCost)
+        assertEquals(0, analysis.uncraftableMissing)
+        assertEquals(4, analysis.totalCards)
+        assertEquals(4, analysis.ownedCards)
+        assertTrue(analysis.craftableWith(0))
+    }
+
     @Test
     fun setProgressAndExtraDust() {
         val collection = CardCollection(
