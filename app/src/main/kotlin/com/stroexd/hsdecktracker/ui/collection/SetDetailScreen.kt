@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -119,63 +120,67 @@ fun SetDetailScreen(navController: NavHostController, set: String) {
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                Text(
-                    stringResource(R.string.set_progress, progress.uniqueOwned, progress.uniqueTotal, formatPercent(progress.fraction, 0)),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                if (progress.dustToComplete > 0) DustLabel(progress.dustToComplete, prefix = stringResource(R.string.to_complete_prefix))
-                Text(
-                    stringResource(R.string.set_tap_hint),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            ChipRow(
-                options = Ownership.entries.toList(),
-                isSelected = { it == ownership },
-                label = { context.getString(it.labelRes()) },
-                onClick = { ownership = it },
-                modifier = Modifier.padding(vertical = 4.dp),
-            )
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 105.dp),
-                contentPadding = PaddingValues(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                items(visible, key = { it.dbfId }) { card ->
-                    val owned = CraftingCalculator.ownedCopies(card, collection, settings.collectionOptions)
-                    val editable = card.rarityType != Rarity.FREE && !(settings.coreSetOwned && card.set in CardSets.freeSets)
-                    Box(
-                        Modifier.combinedClickable(
-                            onClick = { if (editable) cycle(card) else detail = card },
-                            onLongClick = { detail = card },
-                        ),
-                    ) {
-                        CardImage(
-                            card,
-                            cardState.db.locale,
-                            Modifier.fillMaxWidth().aspectRatio(0.69f).alpha(if (owned == 0) 0.4f else 1f),
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 105.dp),
+            contentPadding = PaddingValues(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) {
+            // Scrolls with the cards; as a fixed header it would fill a landscape screen by itself
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column {
+                    Column(Modifier.padding(horizontal = 4.dp, vertical = 4.dp)) {
+                        Text(
+                            stringResource(R.string.set_progress, progress.uniqueOwned, progress.uniqueTotal, formatPercent(progress.fraction, 0)),
+                            style = MaterialTheme.typography.bodyMedium,
                         )
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = when {
-                                owned >= card.maxCopies -> HsColors.Win.copy(alpha = 0.85f)
-                                owned > 0 -> HsColors.Warning.copy(alpha = 0.85f)
-                                else -> MaterialTheme.colorScheme.surfaceContainerHighest
-                            },
-                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 2.dp),
-                        ) {
-                            Text(
-                                "${minOf(owned, card.maxCopies)}/${card.maxCopies}",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 1.dp),
-                            )
-                        }
+                        if (progress.dustToComplete > 0) DustLabel(progress.dustToComplete, prefix = stringResource(R.string.to_complete_prefix))
+                        Text(
+                            stringResource(R.string.set_tap_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    ChipRow(
+                        options = Ownership.entries.toList(),
+                        isSelected = { it == ownership },
+                        label = { context.getString(it.labelRes()) },
+                        onClick = { ownership = it },
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                    )
+                }
+            }
+            items(visible, key = { it.dbfId }) { card ->
+                val owned = CraftingCalculator.ownedCopies(card, collection, settings.collectionOptions)
+                val editable = card.rarityType != Rarity.FREE && !(settings.coreSetOwned && card.set in CardSets.freeSets)
+                Box(
+                    Modifier.combinedClickable(
+                        onClick = { if (editable) cycle(card) else detail = card },
+                        onLongClick = { detail = card },
+                    ),
+                ) {
+                    CardImage(
+                        card,
+                        cardState.db.locale,
+                        Modifier.fillMaxWidth().aspectRatio(0.69f).alpha(if (owned == 0) 0.4f else 1f),
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = when {
+                            owned >= card.maxCopies -> HsColors.Win.copy(alpha = 0.85f)
+                            owned > 0 -> HsColors.Warning.copy(alpha = 0.85f)
+                            else -> MaterialTheme.colorScheme.surfaceContainerHighest
+                        },
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 2.dp),
+                    ) {
+                        Text(
+                            "${minOf(owned, card.maxCopies)}/${card.maxCopies}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 1.dp),
+                        )
                     }
                 }
             }

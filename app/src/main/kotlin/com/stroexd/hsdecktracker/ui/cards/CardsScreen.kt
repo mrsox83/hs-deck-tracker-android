@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
@@ -119,54 +120,60 @@ fun CardsScreen(navController: NavHostController) {
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            SearchField(
-                value = filter.query,
-                onValueChange = { q -> vm.update { it.copy(query = q) } },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                placeholder = stringResource(R.string.card_search_full_placeholder),
-            )
-            ChipRow(
-                options = listOf(GameFormat.STANDARD, GameFormat.WILD, GameFormat.CLASSIC),
-                isSelected = { it == filter.format },
-                label = { context.getString(it.labelRes()) },
-                onClick = { f -> vm.update { it.copy(format = if (it.format == f) null else f) } },
-                modifier = Modifier.padding(top = 4.dp),
-            )
-            ChipRow(
-                options = HsClass.playable + HsClass.NEUTRAL,
-                isSelected = { it in filter.classes },
-                label = { context.getString(it.labelRes()) },
-                onClick = { cls -> vm.update { it.copy(classes = if (cls in it.classes) it.classes - cls else it.classes + cls) } },
-                modifier = Modifier.padding(top = 4.dp),
-            )
-            ChipRow(
-                options = (0..7).toList(),
-                isSelected = { it in filter.costs },
-                label = { if (it == 7) "7+" else "$it" },
-                onClick = { c -> vm.update { it.copy(costs = if (c in it.costs) it.costs - c else it.costs + c) } },
-                modifier = Modifier.padding(vertical = 4.dp),
-            )
-            Text(
-                pluralStringResource(R.plurals.card_count, results.size, results.size),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-            if (results.isEmpty() && !cardState.db.isEmpty) {
-                EmptyState(Icons.Filled.SearchOff, stringResource(R.string.no_results), stringResource(R.string.no_results_hint))
-            }
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 110.dp),
-                contentPadding = PaddingValues(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                items(results, key = { it.dbfId }) { card ->
-                    val owned = if (collection.isEmpty) null else CraftingCalculator.ownedCopies(card, collection, settings.collectionOptions)
-                    CardGridItem(card, cardState.db.locale, owned) { selected = card }
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 110.dp),
+            contentPadding = PaddingValues(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) {
+            // Scrolls with the cards; as a fixed header it would fill a landscape screen by itself
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column {
+                    SearchField(
+                        value = filter.query,
+                        onValueChange = { q -> vm.update { it.copy(query = q) } },
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                        placeholder = stringResource(R.string.card_search_full_placeholder),
+                    )
+                    ChipRow(
+                        options = listOf(GameFormat.STANDARD, GameFormat.WILD, GameFormat.CLASSIC),
+                        isSelected = { it == filter.format },
+                        label = { context.getString(it.labelRes()) },
+                        onClick = { f -> vm.update { it.copy(format = if (it.format == f) null else f) } },
+                        modifier = Modifier.padding(top = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                    )
+                    ChipRow(
+                        options = HsClass.playable + HsClass.NEUTRAL,
+                        isSelected = { it in filter.classes },
+                        label = { context.getString(it.labelRes()) },
+                        onClick = { cls -> vm.update { it.copy(classes = if (cls in it.classes) it.classes - cls else it.classes + cls) } },
+                        modifier = Modifier.padding(top = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                    )
+                    ChipRow(
+                        options = (0..7).toList(),
+                        isSelected = { it in filter.costs },
+                        label = { if (it == 7) "7+" else "$it" },
+                        onClick = { c -> vm.update { it.copy(costs = if (c in it.costs) it.costs - c else it.costs + c) } },
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                    )
+                    Text(
+                        pluralStringResource(R.plurals.card_count, results.size, results.size),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+                    if (results.isEmpty() && !cardState.db.isEmpty) {
+                        EmptyState(Icons.Filled.SearchOff, stringResource(R.string.no_results), stringResource(R.string.no_results_hint))
+                    }
                 }
+            }
+            items(results, key = { it.dbfId }) { card ->
+                val owned = if (collection.isEmpty) null else CraftingCalculator.ownedCopies(card, collection, settings.collectionOptions)
+                CardGridItem(card, cardState.db.locale, owned) { selected = card }
             }
         }
     }
