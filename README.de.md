@@ -16,6 +16,10 @@ Texterkennung auf dem Gerät – **ohne Root, ohne Shizuku, ohne PC und ohne Hil
 
 **[Installieren](#installation)** – als APK, aus dem eigenen F-Droid-Repository oder mit Obtainium.
 
+| Eigene Decks | Fehlende Karten | Meta-Decks | Sammlung | Statistik |
+|---|---|---|---|---|
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Deckliste mit Staubkosten und Siegrate" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Deck mit fehlenden Karten" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Meta-Decks von HSReplay" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Sammlungsfortschritt" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Siegrate und Matchups" width="150"> |
+
 ## Highlights
 
 - **Automatisches Tracking** – Spielstart, beide Klassen, Mulligan und gezogene Karten, dein Deck, die gespielten
