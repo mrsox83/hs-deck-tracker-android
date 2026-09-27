@@ -1,7 +1,13 @@
 # Reddit-Posts für HS Deck Tracker
 
-Zwei fertige Posts, geprüft gegen die Regeln der Subreddits (Stand 27.09.2026). Nichts davon ist bisher gepostet;
-geplant ist der 27.09.2026 um 21 Uhr.
+Zwei fertige Posts, geprüft gegen die Regeln der Subreddits (Stand 27.09.2026).
+
+## Gepostet
+
+- **27.09.2026, 21:00 Uhr** – r/hearthstone: https://www.reddit.com/r/hearthstone/comments/1wrsifu/i_made_a_free_opensource_deck_tracker_for_android/
+- **27.09.2026, 21:00 Uhr** – r/droidappshowcase: https://www.reddit.com/r/droidappshowcase/comments/1wrsiyw/hs_deck_tracker_free_android_overlay_no_root/
+  (Titel dort auf `HS Deck Tracker – free Android overlay, no root` gekürzt: das Subreddit erzwingt maximal 50 Zeichen
+  im Titel, der ursprüngliche Titel unten war zu lang.)
 
 ## Vor dem Posten
 
