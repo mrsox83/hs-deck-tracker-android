@@ -1,16 +1,16 @@
 # Reddit-Posts für HS Deck Tracker
 
-Zwei fertige Posts zum Selbst-Absenden, geprüft gegen die Regeln der Subreddits (Stand 27.09.2026). Nichts davon ist
-bisher gepostet.
+Zwei fertige Posts, geprüft gegen die Regeln der Subreddits (Stand 27.09.2026). Nichts davon ist bisher gepostet;
+geplant ist der 27.09.2026 um 21 Uhr.
 
 ## Vor dem Posten
 
-- **Neues Release:** Seit v1.3.0 sind Korrekturen dazugekommen (lesbare Kartennamen im Overlay, Meta-Decks ohne
-  falsche fehlende Karten, scrollbare Kartenlisten im Querformat). `versionName` in `app/build.gradle.kts` auf `1.3.1`
-  setzen und mergen, dann bekommen neue Nutzer gleich die aktuelle Version.
+- **Release:** v1.3.1 ist am 27.09.2026 veröffentlicht (lesbare Kartennamen im Overlay, Meta-Decks ohne falsche
+  fehlende Karten, scrollbare Kartenlisten im Querformat). Vor dem Posten prüfen, ob `releases/latest` sie zeigt.
 - **Konto u/stroexd:** angelegt am 26.09.2026, 1 Karma, E-Mail bestätigt. Ein Werbe-Post als erste Aktion eines neuen
   Kontos wird oft automatisch entfernt. Besser vorher ein paar normale Kommentare in r/hearthstone schreiben.
-- **Bilder:** Posts mit Screenshots kommen deutlich besser an. Passend sind `docs/overlay.png` (Overlay) und aus
+- **Bilder:** Posts mit Screenshots kommen deutlich besser an; der Reddit-Connector kann allerdings nur Text posten,
+  Bilder also von Hand nachreichen oder den Post manuell absetzen. Passend sind `docs/overlay.png` (Overlay) und aus
   `fastlane/metadata/android/en-US/images/phoneScreenshots/` die Bilder 2 (Decks mit Staubkosten), 3 (fehlende Karten)
   und 6 (Statistik). Auf reddit.com oder in der App lassen sie sich im Text-Post-Editor einfügen.
 - **Zeitpunkt:** abends deutscher Zeit, dann ist auch in Nordamerika Tag.
@@ -19,7 +19,7 @@ bisher gepostet.
 ## 1. r/hearthstone
 
 - Posten: https://www.reddit.com/r/hearthstone/submit
-- Flair: **Community**
+- Flair: **Community** (`f59a6864-09a2-11f0-bf40-b6211be7bb8b`)
 - Regeln: Eigenwerbung nur im Verhältnis 9:1 (auf einen eigenen Post etwa 9 normale Beiträge oder Kommentare), kein
   Stream-Link, nichts gegen Blizzards Nutzungsbedingungen. Ein Tracker, der nur den Bildschirm liest, ist unproblematisch.
 - Größte Hearthstone-Community (etwa 2 Mio. Mitglieder).
@@ -52,7 +52,7 @@ It's a free hobby project (GPL-3.0, no ads, no account). Recognition still has r
 ## 2. r/droidappshowcase
 
 - Posten: https://www.reddit.com/r/droidappshowcase/submit
-- Flair: **Showcase**
+- Flair: **Showcase** (`b24ccd3e-e7ac-11f0-ac7e-bea664a7dee8`)
 - Regeln: höchstens 1 App-Post pro Woche, Link von seriöser Quelle (GitHub passt), keine reinen Link-Posts. Konten unter
   24 Stunden oder mit weniger als 2 Karma werden erst von den Mods geprüft.
 - Das Schwester-Subreddit von r/AndroidApps, das selbst keine Eigenwerbung erlaubt.
