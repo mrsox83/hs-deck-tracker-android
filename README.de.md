@@ -157,6 +157,9 @@ Vollständige Richtlinie (Englisch): [PRIVACY.md](PRIVACY.md).
 ./gradlew :app:assembleDebug    # Debug-APK
 ```
 
+Das APK enthält nur ARM-Bibliotheken. Für einen x86_64-Emulator mit `-Pabis=x86_64` bauen; die Erkennung braucht
+Hearthstone und damit ein echtes Gerät.
+
 | Modul | Inhalt |
 |---|---|
 | `core/` | Reines Kotlin/JVM: Deck-Code-Codec, Kartendatenbank, Sammlungs-Import, Staubkosten, Meta-Parser, Gegner-Vorhersage, Statistik, Datenhaltung und die Zustandsmaschine der Bildschirmerkennung (`vision/`) |

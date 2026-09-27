@@ -153,6 +153,9 @@ Full policy: [PRIVACY.md](PRIVACY.md).
 ./gradlew :app:assembleDebug    # debug APK
 ```
 
+The APK holds ARM libraries only. For an x86_64 emulator build with `-Pabis=x86_64`; recognition needs Hearthstone and
+therefore a real device.
+
 | Module | Contents |
 |---|---|
 | `core/` | Pure Kotlin/JVM: deck code codec, card database, collection import, crafting, meta parsing, opponent prediction, statistics, persistence and the screen recognition state machine (`vision/`) |
