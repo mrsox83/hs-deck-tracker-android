@@ -16,6 +16,10 @@ recognition, so it needs **no root, no Shizuku, no PC and no helper app**.
 
 **[Install](#installation)** – as an APK, from its own F-Droid repository or with Obtainium.
 
+| Your decks | Missing cards | Meta decks | Collection | Stats |
+|---|---|---|---|---|
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Deck list with dust cost and win rate" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Deck with its missing cards" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Meta decks from HSReplay" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Collection completion" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Win rate and matchups" width="150"> |
+
 ## Highlights
 
 - **Automatic tracking** – game start, both classes, your mulligan and draws, your deck, the opponent's played
