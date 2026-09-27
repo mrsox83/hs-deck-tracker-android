@@ -171,7 +171,8 @@ internal fun OverlayContent(
                     predictions = remember(current.opponentClass, current.opponentCards, metaState) {
                         container.predictOpponent(current, metaState)
                     },
-                    showOdds = settings.overlayShowOdds,
+                    // The panel is only as wide as the margin beside the board; there the card name needs the room
+                    showOdds = settings.overlayShowOdds && panelSize.width >= ODDS_MIN_WIDTH,
                     compact = true,
                     showResultButtons = !settings.autoRecordMatches,
                     onUpdate = { container.tracker.update(it) },
@@ -271,6 +272,9 @@ private fun CollectionActivityCard(container: AppContainer) {
 }
 
 internal val BUBBLE_SIZE = 56.dp
+
+/** Below this the draw chance would take about as much width as the card name itself. */
+private val ODDS_MIN_WIDTH = 168.dp
 
 private val PACK_ORDER = listOf(ReceivedStatus.NEW, ReceivedStatus.DUPLICATE, ReceivedStatus.COPY)
 private const val MAX_ACTIVITY_LINES = 6
