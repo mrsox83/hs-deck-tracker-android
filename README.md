@@ -34,6 +34,9 @@ recognition, so it needs **no root, no Shizuku, no PC and no helper app**.
 ## Features
 
 ### Automatic tracker & overlay
+
+<img src="docs/overlay.png" alt="The overlay: what is left in the deck, and the opponent's played cards with the predicted deck" width="420">
+
 - **Runs in the background (Android 11+):** set it up once, then just open Hearthstone – the overlay appears, games
   are tracked and saved with their result, no button and no screen-sharing prompt. This uses the app's own
   accessibility service, which only notices which app is in front and takes screenshots while Hearthstone is.

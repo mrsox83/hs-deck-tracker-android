@@ -34,6 +34,9 @@ Texterkennung auf dem Gerät – **ohne Root, ohne Shizuku, ohne PC und ohne Hil
 ## Funktionen
 
 ### Automatischer Tracker & Overlay
+
+<img src="docs/overlay.png" alt="Das Overlay: was noch im Deck ist, und die gespielten Karten des Gegners mit dem vorhergesagten Deck" width="420">
+
 - **Läuft im Hintergrund (Android 11+):** einmal einrichten, dann einfach Hearthstone öffnen – das Overlay erscheint,
   Partien werden getrackt und samt Ergebnis gespeichert, ohne Knopf und ohne Bildschirmfreigabe-Abfrage. Dafür nutzt
   die App ihre eigene Bedienungshilfe, die nur erkennt, welche App vorne ist, und nur Screenshots macht, solange
