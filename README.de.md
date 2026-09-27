@@ -16,9 +16,13 @@ Texterkennung auf dem Gerät – **ohne Root, ohne Shizuku, ohne PC und ohne Hil
 
 **[Installieren](#installation)** – als APK, aus dem eigenen F-Droid-Repository oder mit Obtainium.
 
+<img src="docs/overlay.png" alt="Das Overlay: was noch im Deck ist, und die gespielten Karten des Gegners mit dem vorhergesagten Deck" width="440">
+
+Das Overlay während der Partie: was noch im Deck ist, und was der Gegner gespielt hat samt vermutetem Deck.
+
 | Eigene Decks | Fehlende Karten | Meta-Decks | Sammlung | Statistik |
 |---|---|---|---|---|
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Deckliste mit Staubkosten und Siegrate" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Deck mit fehlenden Karten" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Meta-Decks von HSReplay" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Sammlungsfortschritt" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Siegrate und Matchups" width="150"> |
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Deckliste mit Staubkosten und Siegrate" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Deck mit fehlenden Karten" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Meta-Decks von HSReplay" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Sammlungsfortschritt" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" alt="Siegrate und Matchups" width="150"> |
 
 ## Highlights
 
@@ -34,8 +38,6 @@ Texterkennung auf dem Gerät – **ohne Root, ohne Shizuku, ohne PC und ohne Hil
 ## Funktionen
 
 ### Automatischer Tracker & Overlay
-
-<img src="docs/overlay.png" alt="Das Overlay: was noch im Deck ist, und die gespielten Karten des Gegners mit dem vorhergesagten Deck" width="420">
 
 - **Läuft im Hintergrund (Android 11+):** einmal einrichten, dann einfach Hearthstone öffnen – das Overlay erscheint,
   Partien werden getrackt und samt Ergebnis gespeichert, ohne Knopf und ohne Bildschirmfreigabe-Abfrage. Dafür nutzt
