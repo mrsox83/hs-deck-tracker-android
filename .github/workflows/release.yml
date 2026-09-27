@@ -159,6 +159,7 @@ jobs:
           [Open in F-Droid](https://fdroid.link/#$url?fingerprint=$fingerprint)
 
           <img src="repo/index.png" alt="QR code" width="220">
+          <img src="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/docs/overlay.png" alt="The overlay during a game" width="300">
 
           Current version: **$VERSION**. This branch is rebuilt by the release workflow of
           [$GITHUB_REPOSITORY](https://github.com/$GITHUB_REPOSITORY); don't edit it.

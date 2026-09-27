@@ -11,8 +11,8 @@ bisher gepostet.
 - **Konto u/stroexd:** angelegt am 26.09.2026, 1 Karma, E-Mail bestätigt. Ein Werbe-Post als erste Aktion eines neuen
   Kontos wird oft automatisch entfernt. Besser vorher ein paar normale Kommentare in r/hearthstone schreiben.
 - **Bilder:** Posts mit Screenshots kommen deutlich besser an. Passend sind `docs/overlay.png` (Overlay) und aus
-  `fastlane/metadata/android/en-US/images/phoneScreenshots/` die Bilder 1 (Decks mit Staubkosten), 2 (fehlende Karten)
-  und 5 (Statistik). Auf reddit.com oder in der App lassen sie sich im Text-Post-Editor einfügen.
+  `fastlane/metadata/android/en-US/images/phoneScreenshots/` die Bilder 2 (Decks mit Staubkosten), 3 (fehlende Karten)
+  und 6 (Statistik). Auf reddit.com oder in der App lassen sie sich im Text-Post-Editor einfügen.
 - **Zeitpunkt:** abends deutscher Zeit, dann ist auch in Nordamerika Tag.
 - **Danach:** auf Kommentare antworten, nichts doppelt posten, Fehlerberichte auf GitHub-Issues verweisen.
 

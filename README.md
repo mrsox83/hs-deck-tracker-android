@@ -16,9 +16,13 @@ recognition, so it needs **no root, no Shizuku, no PC and no helper app**.
 
 **[Install](#installation)** – as an APK, from its own F-Droid repository or with Obtainium.
 
+<img src="docs/overlay.png" alt="The overlay: what is left in the deck, and the opponent's played cards with the predicted deck" width="440">
+
+The overlay during a game: what is left in your deck, and what the opponent has played plus their likely deck.
+
 | Your decks | Missing cards | Meta decks | Collection | Stats |
 |---|---|---|---|---|
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Deck list with dust cost and win rate" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Deck with its missing cards" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Meta decks from HSReplay" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Collection completion" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Win rate and matchups" width="150"> |
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Deck list with dust cost and win rate" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Deck with its missing cards" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Meta decks from HSReplay" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Collection completion" width="150"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" alt="Win rate and matchups" width="150"> |
 
 ## Highlights
 
@@ -34,8 +38,6 @@ recognition, so it needs **no root, no Shizuku, no PC and no helper app**.
 ## Features
 
 ### Automatic tracker & overlay
-
-<img src="docs/overlay.png" alt="The overlay: what is left in the deck, and the opponent's played cards with the predicted deck" width="420">
 
 - **Runs in the background (Android 11+):** set it up once, then just open Hearthstone – the overlay appears, games
   are tracked and saved with their result, no button and no screen-sharing prompt. This uses the app's own
