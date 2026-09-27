@@ -302,7 +302,7 @@ private fun MetaDeckItem(row: MetaRow, collectionEmpty: Boolean, dust: Int, onCl
                 }
                 if (!collectionEmpty && !row.analysis.isComplete) {
                     Text(
-                        stringResource(R.string.missing_prefix) + row.analysis.missing.take(4).joinToString { m -> "${m.missing}× ${m.card?.name ?: m.dbfId}" } +
+                        stringResource(R.string.missing_prefix) + row.analysis.missing.take(4).joinToString { m -> "${m.missing}× ${m.card.name}" } +
                             if (row.analysis.missing.size > 4) " …" else "",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

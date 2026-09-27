@@ -94,7 +94,7 @@ data class CollectionOptions(
 
 data class MissingCard(
     val dbfId: Int,
-    val card: Card?,
+    val card: Card,
     val missing: Int,
     val craftCostEach: Int,
     val craftable: Boolean,
@@ -144,7 +144,13 @@ object CraftingCalculator {
         for ((id, need) in required) {
             total += need
             val card = db.byDbfId(id)
-            val have = if (card != null) ownedCopies(card, collection, options) else collection.owned(id)
+            // Meta deck lists carry cards that can't be collected (HSReplay ships them for a third of the decks);
+            // they are nothing to own or craft, so they never count as missing
+            if (card == null) {
+                owned += need
+                continue
+            }
+            val have = ownedCopies(card, collection, options)
             val covered = minOf(have, need)
             owned += covered
             if (covered < need) {
@@ -152,12 +158,12 @@ object CraftingCalculator {
                     dbfId = id,
                     card = card,
                     missing = need - covered,
-                    craftCostEach = card?.craftCost ?: 0,
-                    craftable = card?.isCraftable ?: false,
+                    craftCostEach = card.craftCost,
+                    craftable = card.isCraftable,
                 )
             }
         }
-        missing.sortWith(compareByDescending<MissingCard> { it.totalCost }.thenBy { it.card?.name ?: "" })
+        missing.sortWith(compareByDescending<MissingCard> { it.totalCost }.thenBy { it.card.name })
         return CraftAnalysis(
             missing = missing,
             dustCost = missing.sumOf { it.totalCost },
