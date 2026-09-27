@@ -16,8 +16,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Release builds get both from the release workflow (see docs/RELEASING.md)
-        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 10300
-        versionName = providers.gradleProperty("versionName").orNull ?: "1.3.0"
+        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 10301
+        versionName = providers.gradleProperty("versionName").orNull ?: "1.3.1"
 
         ndk {
             // ML Kit ships native libraries; real devices are ARM only. The x86_64 emulator needs -Pabis=x86_64
