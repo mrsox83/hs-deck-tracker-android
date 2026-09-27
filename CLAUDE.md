@@ -21,6 +21,7 @@ Hearthstone deck tracker for Android that reads the game screen on the device. P
 - Every UI text in `app/src/main/res/values/strings.xml` and `values-de/strings.xml`; the app follows the language of the
   Hearthstone client.
 - No root, Shizuku or helper apps. Google Play was dropped on purpose.
+- Nothing about promotion goes into the repo (posts, community lists, drafts); hand it to the owner directly.
 - Recognition can't be tested on a device here: cover changes with core tests or a diagnostics replay and say so.
 
 ## Releases and distribution
