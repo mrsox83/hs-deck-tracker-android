@@ -16,8 +16,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Release builds get both from the release workflow (see docs/RELEASING.md)
-        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 10400
-        versionName = providers.gradleProperty("versionName").orNull ?: "1.4.0"
+        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 10500
+        versionName = providers.gradleProperty("versionName").orNull ?: "1.5.0"
 
         ndk {
             // ML Kit and ONNX Runtime ship native libraries; real devices are ARM only. The x86_64 emulator needs -Pabis=x86_64
@@ -65,6 +65,10 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        // Compressed native libraries keep the download small (ONNX Runtime alone is tens of MB unpacked)
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 

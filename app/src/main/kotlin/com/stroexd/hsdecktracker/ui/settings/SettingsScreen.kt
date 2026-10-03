@@ -2,6 +2,8 @@
 
 package com.stroexd.hsdecktracker.ui.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -59,6 +61,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.stroexd.hsdecktracker.BuildConfig
@@ -85,6 +89,7 @@ import com.stroexd.hsdecktracker.ui.readText
 import com.stroexd.hsdecktracker.ui.theme.HsColors
 import com.stroexd.hsdecktracker.ui.tracker.BackgroundSetupDialog
 import com.stroexd.hsdecktracker.ui.writeText
+import com.stroexd.hsdecktracker.update.AppUpdates
 import com.stroexd.hsdecktracker.vision.DiagnosticsRecorder
 import kotlinx.coroutines.launch
 
@@ -417,6 +422,16 @@ fun SettingsScreen(navController: NavHostController) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    AppUpdateSettings(
+                        enabled = settings.autoUpdates,
+                        onEnabledChange = { v ->
+                            scope.launch {
+                                container.settings.update { it.copy(autoUpdates = v) }
+                                AppUpdates.schedule(context)
+                            }
+                        },
+                        onMessage = { message -> scope.launch { snackbar.showSnackbar(message) } },
+                    )
                     val uriHandler = LocalUriHandler.current
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { uriHandler.openUri(Feedback.problemUrl()) }) {
@@ -432,6 +447,45 @@ fun SettingsScreen(navController: NavHostController) {
     }
     if (showBackgroundSetup) {
         BackgroundSetupDialog(onDismiss = { showBackgroundSetup = false }, onUseScreenSharing = startOverlay)
+    }
+}
+
+@Composable
+private fun AppUpdateSettings(enabled: Boolean, onEnabledChange: (Boolean) -> Unit, onMessage: (String) -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var canInstall by remember { mutableStateOf(AppUpdates.canInstallSilently(context)) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { canInstall = AppUpdates.canInstallSilently(context) }
+    var checking by remember { mutableStateOf(false) }
+    SwitchRow(
+        title = stringResource(R.string.auto_updates),
+        subtitle = stringResource(R.string.auto_updates_hint),
+        checked = enabled,
+        onChange = onEnabledChange,
+    )
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(
+            enabled = !checking,
+            onClick = {
+                checking = true
+                scope.launch {
+                    val message = when (AppUpdates.update(context, interactive = true)) {
+                        AppUpdates.Result.UP_TO_DATE -> R.string.app_up_to_date
+                        AppUpdates.Result.INSTALLING -> R.string.app_update_installing
+                        AppUpdates.Result.BUSY -> R.string.app_update_not_now
+                        AppUpdates.Result.FAILED -> R.string.app_update_failed
+                    }
+                    checking = false
+                    onMessage(context.getString(message))
+                }
+            },
+        ) { Text(stringResource(R.string.check_for_updates)) }
+        if (enabled && !canInstall) {
+            TextButton(onClick = {
+                val intent = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
+                runCatching { context.startActivity(intent) }
+            }) { Text(stringResource(R.string.allow_installing_updates)) }
+        }
     }
 }
 

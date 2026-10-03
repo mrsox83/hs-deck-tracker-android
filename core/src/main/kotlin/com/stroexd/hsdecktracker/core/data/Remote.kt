@@ -77,6 +77,19 @@ class HttpClient(private val client: OkHttpClient = defaultClient()) {
         }
     }
 
+    /** Saves the response to [target], which only appears once the download is complete. */
+    suspend fun download(url: String, target: File) = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(url).header("User-Agent", USER_AGENT).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw HttpException(response.code)
+            val body = response.body ?: throw IOException("Empty response")
+            target.parentFile?.mkdirs()
+            val partial = File(target.path + ".part")
+            body.byteStream().use { input -> partial.outputStream().use { input.copyTo(it) } }
+            if (!partial.renameTo(target)) throw IOException("Could not save $target")
+        }
+    }
+
     companion object {
         const val USER_AGENT = "HSDeckTracker-Android/1.0 (+https://github.com/stroexd/hs-deck-tracker-android)"
 

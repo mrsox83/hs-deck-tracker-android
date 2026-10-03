@@ -90,7 +90,7 @@ class AppContainer(context: Context) {
     private val cacheDir = File(context.filesDir, "cache")
 
     val okHttpClient: OkHttpClient = HttpClient.defaultClient()
-    private val http = HttpClient(okHttpClient)
+    val http = HttpClient(okHttpClient)
 
     val settings = SettingsRepository(dataDir)
     val decks = DeckRepository(dataDir)
