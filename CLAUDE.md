@@ -7,7 +7,8 @@ Hearthstone deck tracker for Android that reads the game screen on the device. P
 - `core/` – pure Kotlin/JVM: deck codes, cards, collection, meta, stats, persistence and the screen recognition state
   machine (`core/vision`). All logic that can be tested without a device goes here, with tests.
 - `app/` – Android app (Compose, Material 3): overlay, screen capture (screen sharing or the app's own accessibility
-  service), ML Kit text recognition.
+  service), text recognition: ML Kit for Latin script, PaddleOCR models on ONNX Runtime for Russian
+  (`core/vision/PaddleOcr.kt`; models in `app/src/main/assets/ocr`, rebuilt by `scripts/ocr-models.sh` in CI).
 - `./gradlew :core:test` – unit tests; `./gradlew :app:assembleDebug` – debug APK (needs the Android SDK).
 - Replay a recorded diagnostics session:
   `HS_DIAG_DIR=<session> HS_CARDS_DIR=<dir with cards.enUS.json/cards.deDE.json> ./gradlew :core:test --tests '*DiagnosticsReplay*'`

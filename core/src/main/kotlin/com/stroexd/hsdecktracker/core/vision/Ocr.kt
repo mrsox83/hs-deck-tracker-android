@@ -160,7 +160,7 @@ class CardNameIndex(names: List<Pair<Int, String>>) {
     }
 }
 
-/** Hearthstone UI texts per client language (normalized: lowercase, no accents or punctuation). */
+/** Hearthstone UI texts per client language (normalized: lowercase, no accents or punctuation, й → и). */
 private class UiLanguage(
     val locale: String,
     val confirm: List<String>,
@@ -315,6 +315,25 @@ object UiKeywords {
                 HsClass.ROGUE to "ladino", HsClass.SHAMAN to "xama", HsClass.WARLOCK to "bruxo", HsClass.WARRIOR to "guerreiro",
             ),
         ),
+        UiLanguage(
+            locale = "ruRU",
+            confirm = emptyList(),
+            mulligan = listOf("стартовая рука", "оставьте или замените карты"),
+            choice = listOf("выберите одно"),
+            ownTurn = listOf("закончить", "закончить ход"),
+            enemyTurn = listOf("чужои ход"),
+            yourTurn = listOf("ваш ход"),
+            victory = listOf("победа"),
+            defeat = listOf("поражение"),
+            tie = listOf("ничья"),
+            coin = listOf("монетка"),
+            extraCard = listOf("дополнительная карта"),
+            classes = mapOf(
+                HsClass.DEATHKNIGHT to "рыцарь смерти", HsClass.DEMONHUNTER to "охотник на демонов", HsClass.DRUID to "друид",
+                HsClass.HUNTER to "охотник", HsClass.MAGE to "маг", HsClass.PALADIN to "паладин", HsClass.PRIEST to "жрец",
+                HsClass.ROGUE to "разбойник", HsClass.SHAMAN to "шаман", HsClass.WARLOCK to "чернокнижник", HsClass.WARRIOR to "воин",
+            ),
+        ),
     ).map { it.normalized() }
 
     private fun UiLanguage.normalized() = UiLanguage(
@@ -337,8 +356,8 @@ object UiKeywords {
     private val yourTurn = set { it.yourTurn }.map { it.replace(" ", "") }
 
     /** Fragments that survive typical misreadings of the turn button (e.g. "EMY TURN"). */
-    private val enemyFragments = listOf("enemy", "nemyt", "emyturn", "gegner", "advers", "rival", "avversar", "enemig", "przeciwn", "oponent")
-    private val ownFragments = listOf("endturn", "zugbeend", "findutour", "findeturno", "fineturno", "koniectury", "encerrarturno")
+    private val enemyFragments = listOf("enemy", "nemyt", "emyturn", "gegner", "advers", "rival", "avversar", "enemig", "przeciwn", "oponent", "чужо")
+    private val ownFragments = listOf("endturn", "zugbeend", "findutour", "findeturno", "fineturno", "koniectury", "encerrarturno", "законч")
 
     private val classNames: Map<String, HsClass> =
         languages.flatMap { language -> language.classes.map { (cls, name) -> name to cls } }.toMap()

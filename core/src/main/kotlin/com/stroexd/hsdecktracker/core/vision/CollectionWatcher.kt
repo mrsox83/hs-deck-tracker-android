@@ -20,31 +20,33 @@ private object MenuTexts {
 
     val packHeader = set(
         "Open Packs", "Packungen öffnen", "Packungen", "Ouvrir des paquets", "Paquets", "Abrir sobres", "Abrir paquetes",
-        "Apri buste", "Buste", "Otwórz pakiety", "Pakiety", "Abrir pacotes",
+        "Apri buste", "Buste", "Otwórz pakiety", "Pakiety", "Abrir pacotes", "Открыть комплекты", "Комплекты",
     )
     /** The main menu has an "Open Packs" button too; these buttons tell it apart from the pack screen. */
     val mainMenu = set(
         "My Collection", "Meine Sammlung", "Sammlung", "Ma collection", "Mi colección", "Collezione", "Moja kolekcja",
-        "Kolekcja", "Minha coleção", "Modes", "Modi", "Modos", "Modalità", "Inne tryby",
+        "Kolekcja", "Minha coleção", "Modes", "Modi", "Modos", "Modalità", "Inne tryby", "Моя коллекция", "Коллекция", "Режимы",
     )
-    val done = set("Done", "Fertig", "Terminé", "Listo", "Fine", "Gotowe", "Pronto")
+    val done = set("Done", "Fertig", "Terminé", "Listo", "Fine", "Gotowe", "Pronto", "Готово")
     val massOpened = set(
         "Packs Opened", "Packungen geöffnet", "paquets ouverts", "sobres abiertos", "paquetes abiertos", "Buste aperte",
-        "Otwarte pakiety", "Pacotes abertos",
+        "Otwarte pakiety", "Pacotes abertos", "Открыто",
     )
-    val summary = set("Summary", "Zusammenfassung", "Résumé", "Resumen", "Sommario", "Podsumowanie", "Resumo")
-    val revealAll = set("Reveal All", "Alle enthüllen", "Tout découvrir", "Revelar todo", "Rivela tutto", "Odkryj wszystkie", "Revelar tudo")
-    val disenchant = set("Disenchant", "Entzaubern", "Désenchanter", "Desencantar", "Disincanta", "Odczaruj")
+    val summary = set("Summary", "Zusammenfassung", "Résumé", "Resumen", "Sommario", "Podsumowanie", "Resumo", "Итог")
+    val revealAll = set("Reveal All", "Alle enthüllen", "Tout découvrir", "Revelar todo", "Rivela tutto", "Odkryj wszystkie", "Revelar tudo", "Показать все")
+    val disenchant = set("Disenchant", "Entzaubern", "Désenchanter", "Desencantar", "Disincanta", "Odczaruj", "Распылить")
     val create = set(
         "Create", "Herstellen", "Créer", "Crear", "Crea", "Stwórz", "Criar",
         "Upgrade", "Aufwerten", "Améliorer", "Mejorar", "Potenzia", "Ulepsz", "Aprimorar",
         "Create Upgrade", "Herstellen Aufwerten", "Créer Améliorer", "Crear Mejorar", "Crea Potenzia", "Stwórz Ulepsz", "Criar Aprimorar",
+        "Создать", "Улучшить", "Создать Улучшить",
     )
-    val undo = set("Undo", "Rückgängig", "Annuler", "Deshacer", "Annulla", "Cofnij", "Desfazer")
+    val undo = set("Undo", "Rückgängig", "Annuler", "Deshacer", "Annulla", "Cofnij", "Desfazer", "Отменить")
     val massDisenchant = set(
         "Mass Disenchant", "Massenentzauberung", "Massen entzauberung", "Désenchantement de masse", "Desencantar en masa",
         "Desencantamiento en masa", "Disincantamento di massa", "Masowe odczarowanie", "Desencantar em massa",
         "You will destroy", "Ihr zerstört", "Vous allez détruire", "Destruirás", "Distruggerai", "Zniszczysz", "Você destruirá",
+        "Массовое распыление", "Вы уничтожите",
     )
 
     fun isMassOpening(normalized: String): Boolean =

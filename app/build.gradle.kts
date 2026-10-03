@@ -20,7 +20,7 @@ android {
         versionName = providers.gradleProperty("versionName").orNull ?: "1.3.1"
 
         ndk {
-            // ML Kit ships native libraries; real devices are ARM only. The x86_64 emulator needs -Pabis=x86_64
+            // ML Kit and ONNX Runtime ship native libraries; real devices are ARM only. The x86_64 emulator needs -Pabis=x86_64
             abiFilters += providers.gradleProperty("abis").orNull?.split(",") ?: listOf("arm64-v8a", "armeabi-v7a")
         }
     }
@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.onnxruntime.android)
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(platform(libs.compose.bom))

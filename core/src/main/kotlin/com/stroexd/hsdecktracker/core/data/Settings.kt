@@ -34,6 +34,9 @@ object GameLocales {
         "thTH" to "ไทย",
     )
 
+    /** Client languages ML Kit's Latin recognizer can't read; they go through PaddleOCR. */
+    fun isCyrillic(locale: String): Boolean = locale == "ruRU"
+
     fun fromLanguage(language: String): String = when (language.lowercase()) {
         "pt" -> "ptBR"
         "zh" -> "zhCN"

@@ -121,9 +121,78 @@ class VisionTest {
         assertEquals(HsClass.DEMONHUNTER, UiKeywords.heroClass("damonenjagerin"))
         assertNull(UiKeywords.heroClass("max"))
         assertEquals(MatchResult.LOSS, UiKeywords.result("defeat"))
+        assertEquals(false, UiKeywords.turnButton(CardNameIndex.normalize("ЧУЖОЙ ХОД")))
+        assertEquals(false, UiKeywords.turnButton("чужои хд"))
+        assertEquals(true, UiKeywords.turnButton(CardNameIndex.normalize("ЗАКОНЧИТЬ")))
+        assertTrue(UiKeywords.isYourTurnBanner(CardNameIndex.normalize("Ваш ход")))
+        assertEquals(HsClass.MAGE, UiKeywords.heroClass("маг"))
+        assertEquals(HsClass.DEMONHUNTER, UiKeywords.heroClass(CardNameIndex.normalize("ОХОТНИК НА ДЕМОНОВ")))
+        assertEquals(MatchResult.DRAW, UiKeywords.result(CardNameIndex.normalize("Ничья!")))
+        assertEquals("ruRU", UiKeywords.localeOf(CardNameIndex.normalize("Стартовая рука")))
         assertEquals(0.5f, ScreenRegions.boardX(0.5f, 16f / 9f))
         assertTrue(ScreenRegions.boardX(0.2f, 16f / 9f) > 0.2f)
         assertEquals(0.2f, ScreenRegions.boardX(0.2f, 0f))
+    }
+
+    @Test
+    fun russianClient() {
+        val russian = CardNameIndex(
+            listOf(101 to "Шпионка", 102 to "Подготовка", 103 to "Матиас Шоу", 104 to "Удар в спину", 105 to "Потрошение"),
+        )
+        val tracker = VisionGameTracker(russian)
+        val events = mutableListOf<GameEvent>()
+        fun feed(lines: List<OcrLine>) = tracker.onFrame(frame(lines)).also { events += it }
+
+        feed(
+            listOf(
+                line("Броксигар", 0.315f, 0.675f, w = 0.07f),
+                line("ОХОТНИК НА ДЕМОНОВ", 0.315f, 0.71f, h = 0.02f),
+                line("Майев", 0.695f, 0.675f),
+                line("РАЗБОЙНИК", 0.69f, 0.71f, h = 0.02f, w = 0.06f),
+            ),
+        )
+        assertEquals(
+            listOf(
+                GameEvent.GameStarted,
+                GameEvent.ClassDetected(friendly = false, hsClass = HsClass.DEMONHUNTER),
+                GameEvent.ClassDetected(friendly = true, hsClass = HsClass.ROGUE),
+            ),
+            events,
+        )
+
+        val row = rowCard("Шпионка", 0.41f) + rowCard("Удар в спину", 0.58f) + rowCard("Матиас Шоу", 0.75f)
+        repeat(3) { feed(listOf(line("Стартовая рука", 0.495f, 0.125f), line("Оставьте или замените карты", 0.495f, 0.2f)) + row) }
+        assertEquals("ruRU", tracker.gameLocale)
+        val kept = rowCard("Шпионка", 0.41f) + rowCard("Матиас Шоу", 0.75f)
+        feed(kept)
+        feed(kept + line("Подготовка", 0.905f, 0.69f, h = 0.02f, w = 0.05f))
+        feed(kept)
+        repeat(2) { feed(listOf(line("Шпи", 0.7f, 0.96f, h = 0.02f, w = 0.02f))) }
+        assertEquals(VisionGameTracker.Phase.PLAYING, tracker.phase)
+        assertEquals(listOf(GameEvent.FriendlyCardMulliganed(listOf(104))), events.filterIsInstance<GameEvent.FriendlyCardMulliganed>())
+
+        events.clear()
+        val endTurn = line("ЗАКОНЧИТЬ", 0.8f, 0.49f, h = 0.02f, w = 0.06f)
+        feed(listOf(line("Ваш ход", 0.49f, 0.5f, h = 0.06f, w = 0.14f)))
+        feed(listOf(drawn("Потрошение")))
+        feed(listOf(drawn("Потрошение"), endTurn))
+        time += 20
+        repeat(2) { feed(listOf(endTurn)) }
+        val enemyTurn = line("ЧУЖОЙ ХОД", 0.8f, 0.49f, h = 0.02f, w = 0.06f)
+        repeat(2) { feed(listOf(enemyTurn)) }
+        assertEquals(
+            listOf(
+                GameEvent.TurnOrderDetected(friendlyWentFirst = true),
+                GameEvent.TurnChanged(1),
+                GameEvent.FriendlyCardSeen(listOf(105)),
+                GameEvent.TurnChanged(2),
+            ),
+            events,
+        )
+
+        events.clear()
+        repeat(2) { feed(listOf(resultText("Победа!"))) }
+        assertEquals(listOf<GameEvent>(GameEvent.GameEnded(MatchResult.WIN)), events)
     }
 
     @Test
