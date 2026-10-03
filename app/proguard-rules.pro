@@ -14,3 +14,6 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+# ONNX Runtime calls into its Java classes from native code
+-keep class ai.onnxruntime.** { *; }

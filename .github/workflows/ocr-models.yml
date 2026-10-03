@@ -1,0 +1,31 @@
+name: OCR models
+
+on:
+  push:
+    branches-ignore: [ main, fdroid ]
+    paths: [ scripts/ocr-models.sh ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download and convert
+        run: scripts/ocr-models.sh app/src/main/assets/ocr
+
+      - name: Commit the models
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/assets/ocr
+          git diff --cached --quiet || { git commit -m 'Update the OCR models'; git push; }

@@ -52,6 +52,22 @@ class CollectionWatcherTest {
     }
 
     @Test
+    fun russianPackScreen() {
+        val russian = CardNameIndex(
+            listOf(TestCards.FIREBALL to "Огненный шар", TestCards.LEEROY to "Лирой Дженкинс", TestCards.RARE_NEUTRAL to "Редкий прислужник"),
+        )
+        val watcher = CollectionWatcher(russian)
+        val header = line("Открыть комплекты", 0.15f, 0.05f)
+        watcher.show(header)
+        watcher.show(
+            line("Огненный шар", 0.3f, 0.3f), line("Огненный шар", 0.7f, 0.3f), line("Лирой Дженкинс", 0.2f, 0.65f),
+            line("Редкий прислужник", 0.5f, 0.65f), line("Огненный шар", 0.8f, 0.65f), line("Готово", 0.5f, 0.92f, w = 0.08f),
+        )
+        val expected = mapOf(listOf(TestCards.FIREBALL) to 3, listOf(TestCards.LEEROY) to 1, listOf(TestCards.RARE_NEUTRAL) to 1)
+        assertEquals(listOf<CollectionEvent>(CollectionEvent.CardsReceived(expected)), watcher.show(header))
+    }
+
+    @Test
     fun aMissedDoneDoesNotAddThePackTwice() {
         val watcher = CollectionWatcher(index)
         watcher.show(packHeader)

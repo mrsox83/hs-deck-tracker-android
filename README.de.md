@@ -44,7 +44,7 @@ Das Overlay während der Partie: was noch im Deck ist, und was der Gegner gespie
   die App ihre eigene Bedienungshilfe, die nur erkennt, welche App vorne ist, und nur Screenshots macht, solange
   Hearthstone vorne ist.
 - Ohne sie: **Spielen & tracken** antippen und die Bildschirmfreigabe einmal pro Sitzung erlauben.
-- Die Erkennung nutzt ML Kit **auf dem Gerät** – kein Bildschirmfoto verlässt das Handy.
+- Die Texterkennung läuft **auf dem Gerät** (ML Kit, für Russisch PaddleOCR) – kein Bildschirmfoto verlässt das Handy.
   - Spielstart am Versus-Bildschirm bzw. beim Mulligan – der Tracker startet von selbst.
   - **Beide Klassen** werden von den Namensschildern gelesen.
   - **Starthand** inkl. ausgetauschter Karten, danach jede gezogene Karte.
@@ -109,11 +109,12 @@ auch fest wählen.
 | | Oberfläche | Kartendaten | Automatische Erkennung |
 |---|:-:|:-:|:-:|
 | Deutsch, Englisch | ✓ | ✓ | ✓ |
-| Französisch, Spanisch, Italienisch, Polnisch, Portugiesisch | Englisch | ✓ | ✓ |
-| Russisch, Koreanisch, Japanisch, Chinesisch, Thai | Englisch | ✓ | – |
+| Französisch, Spanisch, Italienisch, Polnisch, Portugiesisch, Russisch | Englisch | ✓ | ✓ |
+| Koreanisch, Japanisch, Chinesisch, Thai | Englisch | ✓ | – |
 
-Die automatische Erkennung nutzt derzeit die Texterkennung für lateinische Schrift. Übersetzungen der Oberfläche sind
-willkommen – alle Texte liegen in `app/src/main/res/values*/strings.xml`.
+Lateinische Schrift liest ML Kit, Russisch die Modelle von PaddleOCR. Einen russischen Client erkennt die Texterkennung
+nicht von selbst: Ist das Handy nicht auf Russisch eingestellt, Russisch einmal in den Einstellungen wählen.
+Übersetzungen der Oberfläche sind willkommen – alle Texte liegen in `app/src/main/res/values*/strings.xml`.
 
 ## Installation
 
@@ -171,8 +172,8 @@ Hearthstone und damit ein echtes Gerät.
 
 | Modul | Inhalt |
 |---|---|
-| `core/` | Reines Kotlin/JVM: Deck-Code-Codec, Kartendatenbank, Sammlungs-Import, Staubkosten, Meta-Parser, Gegner-Vorhersage, Statistik, Datenhaltung und die Zustandsmaschine der Bildschirmerkennung (`vision/`) |
-| `app/` | Android-App: Jetpack Compose + Material 3, Overlay, Bildschirmaufnahme (Bildschirmfreigabe oder Screenshots der Bedienungshilfe) und ML-Kit-Texterkennung |
+| `core/` | Reines Kotlin/JVM: Deck-Code-Codec, Kartendatenbank, Sammlungs-Import, Staubkosten, Meta-Parser, Gegner-Vorhersage, Statistik, Datenhaltung, die Zustandsmaschine der Bildschirmerkennung und die PaddleOCR-Pipeline (`vision/`) |
+| `app/` | Android-App: Jetpack Compose + Material 3, Overlay, Bildschirmaufnahme (Bildschirmfreigabe oder Screenshots der Bedienungshilfe) und Texterkennung (ML Kit, ONNX Runtime) |
 
 Die Erkennungslogik liegt in `core` und wird ohne Gerät getestet. Mit aktivierter Diagnose zeichnet die App eine
 Sitzung auf (erkannter Text je Bild); diese lässt sich am Rechner erneut abspielen:
@@ -192,6 +193,8 @@ Releases baut GitHub Actions, siehe [docs/RELEASING.md](docs/RELEASING.md).
 Kartendaten und -bilder: [HearthstoneJSON](https://hearthstonejson.com) von HearthSim; Set-Namen und Menütexte:
 [HearthSim/hsdata](https://github.com/HearthSim/hsdata).
 Meta-Statistiken: [HSReplay.net](https://hsreplay.net) (inoffizielle Nutzung der öffentlichen Website-Schnittstelle).
+Russische Texterkennung: PP-OCRv5-Modelle von [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) (Apache-2.0),
+umgewandelt von `scripts/ocr-models.sh`, ausgeführt mit [ONNX Runtime](https://onnxruntime.ai) (MIT).
 
 Inoffizielles Fan-Projekt, nicht mit Blizzard Entertainment, HSReplay.net, HearthSim oder HearthPwn verbunden oder
 von ihnen unterstützt. Hearthstone® ist eine eingetragene Marke von Blizzard Entertainment, Inc.

@@ -43,7 +43,7 @@ The overlay during a game: what is left in your deck, and what the opponent has 
   are tracked and saved with their result, no button and no screen-sharing prompt. This uses the app's own
   accessibility service, which only notices which app is in front and takes screenshots while Hearthstone is.
 - Without it: tap **Play & track** and allow screen sharing once per session.
-- Recognition uses ML Kit text recognition **on the device** – no screenshot ever leaves the phone.
+- Text recognition runs **on the device** (ML Kit, for Russian PaddleOCR) – no screenshot ever leaves the phone.
   - The game start is detected on the versus screen or at the mulligan; the tracker starts by itself.
   - **Both classes** are read from the name plates.
   - **Opening hand** including mulliganed cards, then every drawn card.
@@ -106,11 +106,12 @@ pick a language manually in the settings.
 | | Interface | Card data | Automatic recognition |
 |---|:-:|:-:|:-:|
 | English, German | ✓ | ✓ | ✓ |
-| French, Spanish, Italian, Polish, Portuguese | English | ✓ | ✓ |
-| Russian, Korean, Japanese, Chinese, Thai | English | ✓ | – |
+| French, Spanish, Italian, Polish, Portuguese, Russian | English | ✓ | ✓ |
+| Korean, Japanese, Chinese, Thai | English | ✓ | – |
 
-Automatic recognition currently uses the Latin script text recognizer. Translations of the interface are welcome –
-all texts live in `app/src/main/res/values*/strings.xml`.
+Latin script is read with ML Kit, Russian with PaddleOCR's models. The text recognizer can't tell a Russian client by
+itself: if your phone isn't set to Russian, pick Russian in the settings once. Translations of the interface are
+welcome – all texts live in `app/src/main/res/values*/strings.xml`.
 
 ## Installation
 
@@ -167,8 +168,8 @@ therefore a real device.
 
 | Module | Contents |
 |---|---|
-| `core/` | Pure Kotlin/JVM: deck code codec, card database, collection import, crafting, meta parsing, opponent prediction, statistics, persistence and the screen recognition state machine (`vision/`) |
-| `app/` | Android app: Jetpack Compose + Material 3 UI, overlay, screen capture (screen sharing or accessibility screenshots) and ML Kit text recognition |
+| `core/` | Pure Kotlin/JVM: deck code codec, card database, collection import, crafting, meta parsing, opponent prediction, statistics, persistence, the screen recognition state machine and the PaddleOCR pipeline (`vision/`) |
+| `app/` | Android app: Jetpack Compose + Material 3 UI, overlay, screen capture (screen sharing or accessibility screenshots) and text recognition (ML Kit, ONNX Runtime) |
 
 The recognition logic lives in `core` and is tested without a device. With diagnostics enabled the app records a
 session (recognized text per frame); such a session can be replayed on the desktop:
@@ -188,6 +189,8 @@ Releases are built by GitHub Actions, see [docs/RELEASING.md](docs/RELEASING.md)
 Card data and images: [HearthstoneJSON](https://hearthstonejson.com) by HearthSim; set names and menu texts:
 [HearthSim/hsdata](https://github.com/HearthSim/hsdata).
 Meta statistics: [HSReplay.net](https://hsreplay.net) (unofficial use of the public website API).
+Russian text recognition: [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)'s PP-OCRv5 models (Apache-2.0),
+converted by `scripts/ocr-models.sh` and run with [ONNX Runtime](https://onnxruntime.ai) (MIT).
 
 This is an unofficial fan project and is not affiliated with or endorsed by Blizzard Entertainment, HSReplay.net,
 HearthSim or HearthPwn. Hearthstone® is a registered trademark of Blizzard Entertainment, Inc.

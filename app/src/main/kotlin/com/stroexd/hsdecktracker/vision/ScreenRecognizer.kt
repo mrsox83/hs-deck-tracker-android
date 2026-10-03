@@ -13,8 +13,11 @@ import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.stroexd.hsdecktracker.appContainer
+import com.stroexd.hsdecktracker.core.data.GameLocales
+import com.stroexd.hsdecktracker.core.vision.ArgbImage
 import com.stroexd.hsdecktracker.core.vision.OcrFrame
 import com.stroexd.hsdecktracker.core.vision.OcrLine
+import com.stroexd.hsdecktracker.core.vision.PaddleOcr
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -37,6 +40,7 @@ fun Context.startScreenRecognition(
         source = source,
         isActive = isActive,
         maskProvider = maskProvider,
+        cyrillic = { GameLocales.isCyrillic(container.gameLocale.value) },
         pacing = { container.capturePacing() },
         onFrame = { frame, bitmap, reused ->
             // Follows the setting live, so recording can also be switched on in the middle of a game
@@ -61,15 +65,16 @@ fun Context.startScreenRecognition(
 }
 
 /**
- * Takes screenshots at a pace that depends on the game phase and reads them with on-device text recognition.
- * Unchanged screens reuse the last result, and nothing is captured while [isActive] is false, the screen is off
- * or the device is upright (Hearthstone only runs in landscape).
+ * Takes screenshots at a pace that depends on the game phase and reads them with on-device text recognition:
+ * ML Kit for Latin script, PaddleOCR for [cyrillic] clients. Unchanged screens reuse the last result, and nothing is
+ * captured while [isActive] is false, the screen is off or the device is upright (Hearthstone only runs in landscape).
  */
 class ScreenRecognizer(
     private val context: Context,
     private val source: FrameSource,
     private val isActive: () -> Boolean,
     private val maskProvider: () -> Rect?,
+    private val cyrillic: () -> Boolean,
     private val pacing: () -> CapturePacing,
     private val onFrame: (frame: OcrFrame, bitmap: Bitmap, reused: Boolean) -> Unit,
     private val onStopped: () -> Unit,
@@ -80,6 +85,9 @@ class ScreenRecognizer(
 
     private val listenerExecutor = Executor { command -> runCatching { worker.execute(command) } }
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private var paddle: PaddleOcr? = null
+    @Volatile private var paddleFailed = false
+    private var pixels = IntArray(0)
     private val powerManager = context.getSystemService(PowerManager::class.java)
     private val stopped = AtomicBoolean(false)
 
@@ -102,7 +110,10 @@ class ScreenRecognizer(
         handler.post {
             handler.removeCallbacks(captureTask)
             runCatching { source.stop() }
-            worker.execute { runCatching { recognizer.close() } }
+            worker.execute {
+                runCatching { recognizer.close() }
+                runCatching { paddle?.close() }
+            }
             worker.shutdown()
             thread.quitSafely()
             onStopped()
@@ -161,6 +172,21 @@ class ScreenRecognizer(
             }
             return
         }
+        if (cyrillic() && !paddleFailed) {
+            listenerExecutor.execute {
+                val frame = paddle()?.let { reader -> runCatching { readCyrillic(reader, capture, aspect, mask) }.getOrNull() }
+                if (frame != null) runCatching { onFrame(frame, bitmap, false) }
+                handler.post {
+                    if (frame != null) {
+                        lastLines = frame.lines
+                        lastPrint = print
+                        lastOcrAt = now
+                    }
+                    scheduleNext()
+                }
+            }
+            return
+        }
         recognizer.process(InputImage.fromBitmap(bitmap, 0))
             .addOnSuccessListener(listenerExecutor) { text ->
                 val frame = toFrame(text, width, height, aspect, mask)
@@ -175,6 +201,30 @@ class ScreenRecognizer(
             .addOnFailureListener(listenerExecutor) {
                 handler.post { scheduleNext() }
             }
+    }
+
+    /** Loaded on first use on the worker thread; ML Kit takes over if the models can't be loaded. */
+    private fun paddle(): PaddleOcr? {
+        if (paddle == null && !paddleFailed) {
+            paddle = runCatching {
+                val assets = context.assets
+                fun bytes(name: String) = assets.open("ocr/$name").use { it.readBytes() }
+                val characters = assets.open("ocr/eslav_dict.txt").bufferedReader().use { it.readLines() }
+                PaddleOcr(bytes("det.onnx"), bytes("rec_eslav.onnx"), characters, threads = min(4, Runtime.getRuntime().availableProcessors()))
+            }.onFailure { paddleFailed = true }.getOrNull()
+        }
+        return paddle
+    }
+
+    private fun readCyrillic(reader: PaddleOcr, capture: Capture, aspect: Float, mask: Rect?): OcrFrame {
+        val width = capture.width
+        val height = capture.height
+        if (pixels.size < width * height) pixels = IntArray(width * height)
+        capture.bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        val lines = reader.read(ArgbImage(pixels, width, height)) { box ->
+            mask != null && mask.intersects(box.left.toInt(), box.top.toInt(), box.right.toInt(), box.bottom.toInt())
+        }
+        return OcrFrame(System.currentTimeMillis(), lines, aspect = aspect)
     }
 
     /** Brightness of a coarse grid, the overlay left out: enough to notice whether anything changed. */
