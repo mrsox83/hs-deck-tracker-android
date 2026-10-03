@@ -552,4 +552,15 @@
     <string name="overlay_side">Overlay-Seite</string>
     <string name="side_left">Links</string>
     <string name="side_right">Rechts</string>
+    <string name="auto_updates">Automatische Updates</string>
+    <string name="auto_updates_hint">Neue Versionen von GitHub im WLAN, nie während einer Partie</string>
+    <string name="allow_installing_updates">Installieren von Updates erlauben</string>
+    <string name="check_for_updates">Nach Updates suchen</string>
+    <string name="app_up_to_date">Bereits aktuell</string>
+    <string name="app_update_installing">Update wird installiert …</string>
+    <string name="app_update_not_now">Nicht während einer Partie</string>
+    <string name="app_update_failed">Update fehlgeschlagen</string>
+    <string name="updates_channel">Updates</string>
+    <string name="update_ready">Update bereit</string>
+    <string name="update_ready_text">Tippen, um Version %1$s zu installieren.</string>
 </resources>

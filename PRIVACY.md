@@ -20,7 +20,8 @@ and no tracking.
 The app downloads public data only; no personal data is sent:
 - card data and images from HearthstoneJSON (api.hearthstonejson.com, art.hearthstonejson.com),
 - set names from HearthSim's copy of the game texts (raw.githubusercontent.com),
-- meta statistics from HSReplay.net, or from a deck list URL you enter yourself.
+- meta statistics from HSReplay.net, or from a deck list URL you enter yourself,
+- new versions of the app from its GitHub releases (github.com), unless automatic updates are switched off.
 
 These services see the usual technical data of any web request (such as your IP address) under their own privacy
 policies.

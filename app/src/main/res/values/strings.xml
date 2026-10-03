@@ -553,4 +553,15 @@
     <string name="overlay_side">Overlay side</string>
     <string name="side_left">Left</string>
     <string name="side_right">Right</string>
+    <string name="auto_updates">Automatic updates</string>
+    <string name="auto_updates_hint">New versions from GitHub on Wi-Fi, never during a game</string>
+    <string name="allow_installing_updates">Allow installing updates</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="app_up_to_date">Up to date</string>
+    <string name="app_update_installing">Installing the update…</string>
+    <string name="app_update_not_now">Not during a game</string>
+    <string name="app_update_failed">Update failed</string>
+    <string name="updates_channel">Updates</string>
+    <string name="update_ready">Update ready</string>
+    <string name="update_ready_text">Tap to install version %1$s.</string>
 </resources>

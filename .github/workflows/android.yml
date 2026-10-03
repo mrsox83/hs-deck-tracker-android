@@ -26,6 +26,11 @@ jobs:
       - name: Build APK
         run: ./gradlew --no-daemon :app:assembleRelease
 
+      - name: APK size
+        run: |
+          ls -l app/build/outputs/apk/release/app-release.apk
+          unzip -lv app/build/outputs/apk/release/app-release.apk | sort -k3 -nr | head -n 12
+
       - name: Check 16 KB page alignment
         run: python3 scripts/check_16kb_alignment.py app/build/outputs/apk/release/app-release.apk
 

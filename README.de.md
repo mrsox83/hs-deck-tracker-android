@@ -128,7 +128,7 @@ Dieselbe signierte APK gibt es auf drei Wegen – einen aussuchen:
 
 | | So geht's | Updates |
 |---|---|---|
-| **GitHub** | [APK herunterladen](https://github.com/stroexd/hs-deck-tracker-android/releases/latest/download/hs-deck-tracker.apk) auf dem Handy und öffnen (dem Browser das Installieren von Apps erlauben) | neue Version herunterladen, sie installiert sich über die alte |
+| **GitHub** | [APK herunterladen](https://github.com/stroexd/hs-deck-tracker-android/releases/latest/download/hs-deck-tracker.apk) auf dem Handy und öffnen (dem Browser das Installieren von Apps erlauben) | die App aktualisiert sich selbst (Einstellungen → Über) |
 | **F-Droid-Repository** | In F-Droid, Droid-ify oder Neo Store: Einstellungen → Paketquellen → + und `https://raw.githubusercontent.com/stroexd/hs-deck-tracker-android/fdroid/repo` hinzufügen – oder den QR-Code unten scannen | über den App-Store |
 | **Obtainium** | [Zu Obtainium hinzufügen](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.stroexd.hsdecktracker%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fstroexd%2Fhs-deck-tracker-android%22%2C%22author%22%3A%22stroexd%22%2C%22name%22%3A%22HS%20Deck%20Tracker%22%7D) – installiert direkt aus den GitHub-Releases | über Obtainium |
 
@@ -140,6 +140,10 @@ Benötigt Android 8.0 oder neuer (Hintergrund-Tracking: Android 11). Fürs Hinte
 **Einrichten** tippen und unter Bedienungshilfen „HS Deck Tracker“ einschalten. Ist der Eintrag ausgegraut
 („eingeschränkte Einstellung“, meist nach der Installation über den Browser): App-Info → ⋮ → **Eingeschränkte
 Einstellungen zulassen**, dann erneut versuchen.
+
+Updates: Die App schaut zweimal am Tag im WLAN nach neuen GitHub-Releases und installiert sie selbst, nie während einer
+Partie. Ab Android 12 ohne Rückfrage, sobald sie Updates installieren darf (Einstellungen → Über); auf älteren
+Versionen fragt eine Benachrichtigung. Über F-Droid oder Obtainium installiert? Dann lässt sich das abschalten.
 
 ## Feedback
 
@@ -157,8 +161,8 @@ Vollständige Richtlinie (Englisch): [PRIVACY.md](PRIVACY.md).
 - Bildschirminhalte werden **nur auf dem Gerät** verarbeitet und nicht gespeichert – außer im Diagnose-Modus, der
   erkannte Texte und einige verkleinerte Bildschirmfotos lokal ablegt, bis du sie teilst oder löschst.
 - Netzwerkzugriffe gibt es nur für Kartendaten und -bilder (HearthstoneJSON), Set-Namen (HearthSims Kopie der
-  Spieltexte) und Meta-Statistiken (HSReplay.net oder eine selbst eingetragene URL). Kein Konto, keine Analyse, kein
-  Tracking.
+  Spieltexte), Meta-Statistiken (HSReplay.net oder eine selbst eingetragene URL) und App-Updates (GitHub-Releases).
+  Kein Konto, keine Analyse, kein Tracking.
 
 ## Entwicklung
 

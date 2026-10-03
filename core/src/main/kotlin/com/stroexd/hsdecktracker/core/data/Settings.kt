@@ -67,6 +67,7 @@ data class AppSettings(
     val trackCollectionChanges: Boolean = true,
     val showRecognitionDebug: Boolean = false,
     val recordDiagnostics: Boolean = false,
+    val autoUpdates: Boolean = true,
 ) {
     val formatRules: FormatRules get() = FormatRules(standardSetOverrides, detectedStandardSets, detectedWildSets)
     val collectionOptions: CollectionOptions get() = CollectionOptions(coreSetOwned = coreSetOwned)

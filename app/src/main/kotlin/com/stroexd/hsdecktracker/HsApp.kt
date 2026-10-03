@@ -6,6 +6,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
+import com.stroexd.hsdecktracker.update.AppUpdates
 
 class HsApp : Application(), SingletonImageLoader.Factory {
 
@@ -15,6 +16,7 @@ class HsApp : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        AppUpdates.schedule(this)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =

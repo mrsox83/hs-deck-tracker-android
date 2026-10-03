@@ -125,7 +125,7 @@ The same signed APK comes three ways – pick one:
 
 | | How | Updates |
 |---|---|---|
-| **GitHub** | [Download the APK](https://github.com/stroexd/hs-deck-tracker-android/releases/latest/download/hs-deck-tracker.apk) on the phone and open it (allow your browser to install apps) | download the new version, it installs over the old one |
+| **GitHub** | [Download the APK](https://github.com/stroexd/hs-deck-tracker-android/releases/latest/download/hs-deck-tracker.apk) on the phone and open it (allow your browser to install apps) | the app updates itself (Settings → About) |
 | **F-Droid repository** | In F-Droid, Droid-ify or Neo Store: Settings → Repositories → + and add `https://raw.githubusercontent.com/stroexd/hs-deck-tracker-android/fdroid/repo` – or scan the QR code below | through the app store |
 | **Obtainium** | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.stroexd.hsdecktracker%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fstroexd%2Fhs-deck-tracker-android%22%2C%22author%22%3A%22stroexd%22%2C%22name%22%3A%22HS%20Deck%20Tracker%22%7D) – it installs straight from the GitHub releases | through Obtainium |
 
@@ -136,6 +136,10 @@ F-Droid repository fingerprint (SHA-256): `0213F88492126999BD836A7E112387F59921B
 Requires Android 8.0 or newer (background tracking: Android 11). For background tracking tap **Set up** in the app
 and turn on "HS Deck Tracker" under Accessibility. If Android shows it greyed out ("restricted setting", mostly after
 installing from the browser): App info → ⋮ → **Allow restricted settings**, then try again.
+
+Updates: the app checks its GitHub releases twice a day on Wi-Fi and installs new versions by itself, never during a
+game. On Android 12+ this needs no confirmation once you allow it to install updates (Settings → About); on older
+versions a notification asks. Installed through F-Droid or Obtainium? Then you can turn this off and let them update.
 
 ## Feedback
 
@@ -153,8 +157,8 @@ Full policy: [PRIVACY.md](PRIVACY.md).
 - Screen content is processed **only on the device** and never stored – unless you turn on the diagnostics mode,
   which keeps recognized texts and a few downscaled screenshots locally until you share or delete them.
 - Network access is limited to downloading card data and images (HearthstoneJSON), set names (HearthSim's copy of the
-  game texts) and meta statistics (HSReplay.net, or a URL you configure). There is no account, no analytics and no
-  tracking.
+  game texts), meta statistics (HSReplay.net, or a URL you configure) and app updates (GitHub releases). There is no
+  account, no analytics and no tracking.
 
 ## Development
 
