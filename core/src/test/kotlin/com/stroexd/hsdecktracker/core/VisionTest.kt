@@ -279,7 +279,10 @@ class VisionTest {
         events.clear()
         repeat(6) { feed(*zoomRow("Spymistress", "Mathias Shaw", "Eviscerate", "Loot Hoarder").toTypedArray(), endTurn()) }
         feed(drawn("Preparation"), endTurn())
-        assertEquals(listOf<GameEvent>(GameEvent.FriendlyCardSeen(listOf(102))), events)
+        assertEquals(
+            listOf(GameEvent.FriendlyCardPlayed(listOf(102)), GameEvent.FriendlyCardSeen(listOf(102))),
+            events,
+        )
 
         events.clear()
         feed(resultText("Victory!"), endTurn())
@@ -342,6 +345,7 @@ class VisionTest {
             GameEvent.ClassDetected(friendly = true, hsClass = HsClass.ROGUE),
             GameEvent.FriendlyCardSeen(listOf(101)),
             GameEvent.FriendlyCardSeen(listOf(9104, 104)),
+            GameEvent.FriendlyCardPlayed(listOf(101)),
             GameEvent.FriendlyCardSeen(listOf(103)),
             GameEvent.FriendlyCardMulliganed(listOf(9104, 104)),
             GameEvent.FriendlyCardSeen(listOf(102)),
@@ -374,6 +378,7 @@ class VisionTest {
         assertEquals(MatchSource.AUTO, record.source)
         assertEquals(4, record.timeline.count { it.type == TimelineType.DRAW })
         assertEquals(1, record.timeline.count { it.type == TimelineType.RETURN })
+        assertEquals(listOf(101), record.timeline.filter { it.type == TimelineType.PLAYER_PLAY }.mapNotNull { it.dbfId })
     }
 
     @Test

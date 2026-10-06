@@ -74,6 +74,9 @@ data class TrackerState(
     fun addExtraDraw(cardId: String): TrackerState =
         copy(extraDraws = extraDraws + cardId, timeline = timeline + event(TimelineType.EXTRA_DRAW, cardId = cardId))
 
+    fun addFriendlyCardPlayed(dbfId: Int): TrackerState =
+        copy(timeline = timeline + event(TimelineType.PLAYER_PLAY, dbfId))
+
     fun removeLastExtraDraw(cardIds: Collection<String>): TrackerState {
         val index = extraDraws.indexOfLast { it in cardIds }
         if (index < 0) return this

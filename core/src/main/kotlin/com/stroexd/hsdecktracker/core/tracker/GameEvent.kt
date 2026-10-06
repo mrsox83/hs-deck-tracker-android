@@ -11,6 +11,7 @@ sealed interface GameEvent {
     /** [fromDeck] is false for cards that surely didn't come from the deck (e.g. picked from a Discover). */
     data class FriendlyCardSeen(val dbfIds: List<Int>, val fromDeck: Boolean = true) : GameEvent
     data class FriendlyCardMulliganed(val dbfIds: List<Int>) : GameEvent
+    data class FriendlyCardPlayed(val dbfIds: List<Int>) : GameEvent
     data class OpponentCardSeen(val dbfIds: List<Int>) : GameEvent
 
     /** Counts the turns of both players. */

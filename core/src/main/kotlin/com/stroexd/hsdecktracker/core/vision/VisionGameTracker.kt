@@ -458,7 +458,7 @@ class VisionGameTracker(
             }
             game.handMisses.remove(key)
         }
-        detectPlayedCards(hand, handCounts, now)
+        detectPlayedCards(hand, handCounts, now, events)
         if (game.turnState == false || f.choice) return
         for (card in f.cards) {
             if (!ScreenRegions.isDrawPopup(card.line)) continue
@@ -472,7 +472,7 @@ class VisionGameTracker(
     }
 
     /** Conservative on purpose: wrongly "played" cards would be counted twice later. */
-    private fun detectPlayedCards(hand: List<CardLine>, handCounts: Map<String, Int>, now: Long) {
+    private fun detectPlayedCards(hand: List<CardLine>, handCounts: Map<String, Int>, now: Long, events: MutableList<GameEvent>) {
         val rowSize = hand.count { ScreenRegions.isHandZoomRow(it.line) }
         val expected = game.drawn.keys.sumOf { inHand(it) }
         if (rowSize < 3 || rowSize < expected - 1) return
@@ -483,7 +483,9 @@ class VisionGameTracker(
             val (misses, since) = game.handMisses[key] ?: (0 to now)
             if (misses + 1 >= HAND_MISSES_FOR_PLAYED && now - since >= PLAYED_MIN_MILLIS) {
                 log { "Played: $key (missing from hand row)" }
-                game.played[key] = (game.played[key] ?: 0) + known - count
+                val played = known - count
+                ids[key]?.let { candidates -> repeat(played) { events += GameEvent.FriendlyCardPlayed(candidates) } }
+                game.played[key] = (game.played[key] ?: 0) + played
                 game.handMisses.remove(key)
             } else {
                 game.handMisses[key] = misses + 1 to since

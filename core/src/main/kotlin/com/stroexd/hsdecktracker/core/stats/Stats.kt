@@ -24,6 +24,8 @@ enum class TimelineType {
 
     EXTRA_DRAW,
 
+    PLAYER_PLAY,
+
     OPPONENT_PLAY,
 }
 

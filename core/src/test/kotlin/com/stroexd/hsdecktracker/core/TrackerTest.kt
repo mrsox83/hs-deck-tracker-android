@@ -8,6 +8,7 @@ import com.stroexd.hsdecktracker.core.cards.HsClass
 import com.stroexd.hsdecktracker.core.deck.Deck
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.MatchSource
+import com.stroexd.hsdecktracker.core.stats.TimelineType
 import com.stroexd.hsdecktracker.core.tracker.GameEvent
 import com.stroexd.hsdecktracker.core.tracker.TrackerController
 import com.stroexd.hsdecktracker.core.tracker.TrackerState
@@ -34,6 +35,7 @@ class TrackerTest {
             GameEvent.FriendlyCardSeen(listOf(FIREBALL)),
             GameEvent.FriendlyCardSeen(listOf(LEEROY)),
             GameEvent.FriendlyCardMulliganed(listOf(LEEROY)),
+            GameEvent.FriendlyCardPlayed(listOf(FIREBALL)),
             GameEvent.TurnOrderDetected(friendlyWentFirst = true),
             GameEvent.TurnChanged(1),
             GameEvent.TurnChanged(2),
@@ -54,6 +56,10 @@ class TrackerTest {
         assertEquals(HsClass.WARRIOR, record.opponentClass)
         assertEquals("deck-1", record.deckId)
         assertEquals(MatchSource.AUTO, record.source)
+        assertEquals(
+            listOf(FIREBALL),
+            record.timeline.filter { it.type == TimelineType.PLAYER_PLAY }.mapNotNull { it.dbfId },
+        )
         assertEquals(5, controller.state.value?.remainingCount)
     }
 

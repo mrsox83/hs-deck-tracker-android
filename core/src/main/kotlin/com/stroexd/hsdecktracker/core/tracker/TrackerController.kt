@@ -63,6 +63,7 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
             is GameEvent.ClassDetected -> onClassDetected(event)
             is GameEvent.FriendlyCardSeen -> onFriendlyCardSeen(event.dbfIds, event.fromDeck, db)
             is GameEvent.FriendlyCardMulliganed -> onFriendlyCardMulliganed(event.dbfIds, db)
+            is GameEvent.FriendlyCardPlayed -> onFriendlyCardPlayed(event.dbfIds)
             is GameEvent.OpponentCardSeen -> onOpponentCardSeen(event.dbfIds, db)
             is GameEvent.TurnChanged -> update { it.copy(turn = ((event.turn + 1) / 2).coerceAtLeast(1)) }
             is GameEvent.TurnOrderDetected -> update { it.withWentFirst(event.friendlyWentFirst) }
@@ -139,6 +140,14 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
         update { state -> returnSeen(state, candidates, db) }
     }
 
+    private fun onFriendlyCardPlayed(candidates: List<Int>) {
+        if (candidates.isEmpty()) return
+        update { state ->
+            val id = candidates.firstOrNull { it in state.drawHistory } ?: candidates.first()
+            state.addFriendlyCardPlayed(id)
+        }
+    }
+
     /** Recognizes the deck while none is known or the chosen one obviously doesn't match. */
     private fun identifyDeck(current: TrackerState, db: CardDatabase): Boolean {
         val seen = seenCards.map { it.candidates }
@@ -182,7 +191,7 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
             opponentCards = current.opponentCards,
             wentFirst = current.wentFirst,
             extraDraws = current.extraDraws.filter { it !in seenIds },
-            timeline = current.timeline.filter { it.type == TimelineType.OPPONENT_PLAY },
+            timeline = current.timeline.filter { it.type == TimelineType.OPPONENT_PLAY || it.type == TimelineType.PLAYER_PLAY },
         )
         for (seen in seenCards) {
             state = state.copy(turn = seen.turn)
