@@ -563,4 +563,8 @@
     <string name="updates_channel">Updates</string>
     <string name="update_ready">Update bereit</string>
     <string name="update_ready_text">Tippen, um Version %1$s zu installieren.</string>
+    <string name="auto_export_matches">Abgeschlossene Spiele automatisch exportieren</string>
+    <string name="choose_match_export_folder">Exportordner für Spiele wählen</string>
+    <string name="match_export_folder_help">Downloads/HSDeckTracker/Matches wählen (zuerst erstellen). Neue abgeschlossene Spiele werden als JSON mit vollständigem Verlauf gespeichert.</string>
+    <string name="match_export_failed">Spiel gespeichert, aber JSON-Export fehlgeschlagen. Exportordner in den Einstellungen prüfen.</string>
 </resources>

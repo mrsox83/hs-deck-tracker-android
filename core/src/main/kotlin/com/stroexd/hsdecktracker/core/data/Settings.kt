@@ -62,6 +62,8 @@ data class AppSettings(
     val overlayShowOdds: Boolean = true,
     val overlaySide: OverlaySide = OverlaySide.RIGHT,
     val autoRecordMatches: Boolean = true,
+    val autoExportMatches: Boolean = false,
+    val matchExportFolder: String? = null,
     val backgroundTracking: Boolean = true,
     val showOverlay: Boolean = true,
     val trackCollectionChanges: Boolean = true,

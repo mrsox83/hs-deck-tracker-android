@@ -117,6 +117,20 @@ fun SettingsScreen(navController: NavHostController) {
         scope.launch { container.settings.update(transform) }
     }
 
+    val chooseMatchFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                try {
+                    context.contentResolver.takePersistableUriPermission(uri,
+                        android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    container.settings.update { it.copy(matchExportFolder = uri.toString(), autoExportMatches = true) }
+                } catch (e: SecurityException) {
+                    snackbar.showSnackbar(context.getString(R.string.match_export_failed))
+                }
+            }
+        }
+    }
+
     val exportBackup = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         val content = pendingBackup
         if (uri != null && content != null) {
@@ -364,6 +378,18 @@ fun SettingsScreen(navController: NavHostController) {
                         checked = settings.autoRecordMatches,
                         onChange = { v -> update { it.copy(autoRecordMatches = v) } },
                     )
+                    SwitchRow(
+                        title = stringResource(R.string.auto_export_matches),
+                        checked = settings.autoExportMatches,
+                        onChange = { v ->
+                            if (v && settings.matchExportFolder == null) chooseMatchFolder.launch(null)
+                            else update { it.copy(autoExportMatches = v) }
+                        },
+                    )
+                    TextButton(onClick = { chooseMatchFolder.launch(null) }) {
+                        Text(stringResource(R.string.choose_match_export_folder))
+                    }
+                    Text(stringResource(R.string.match_export_folder_help), style = MaterialTheme.typography.bodySmall)
                     SwitchRow(
                         title = stringResource(R.string.track_collection),
                         checked = settings.trackCollectionChanges,

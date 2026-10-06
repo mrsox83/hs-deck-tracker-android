@@ -269,7 +269,7 @@ fun StatsScreen(navController: NavHostController) {
             onDismiss = { showAdd = false },
             onSave = { record ->
                 showAdd = false
-                scope.launch { container.matches.add(record) }
+                container.saveCompletedMatch(record)
             },
         )
     }
