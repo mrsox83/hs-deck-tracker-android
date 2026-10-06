@@ -564,4 +564,8 @@
     <string name="updates_channel">Updates</string>
     <string name="update_ready">Update ready</string>
     <string name="update_ready_text">Tap to install version %1$s.</string>
+    <string name="auto_export_matches">Auto-export completed matches</string>
+    <string name="choose_match_export_folder">Choose match export folder</string>
+    <string name="match_export_folder_help">Select Downloads/HSDeckTracker/Matches (create it first). New completed matches are saved as JSON with their full timeline.</string>
+    <string name="match_export_failed">Match saved, but JSON export failed. Check the export folder in Settings.</string>
 </resources>
