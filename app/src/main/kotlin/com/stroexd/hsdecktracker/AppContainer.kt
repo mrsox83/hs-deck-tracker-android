@@ -25,6 +25,7 @@ import com.stroexd.hsdecktracker.core.meta.MetaDeck
 import com.stroexd.hsdecktracker.core.meta.MetaSnapshot
 import com.stroexd.hsdecktracker.core.meta.OpponentPredictor
 import com.stroexd.hsdecktracker.core.stats.MatchResult
+import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.tracker.GameEvent
 import com.stroexd.hsdecktracker.core.tracker.TrackerController
 import com.stroexd.hsdecktracker.core.tracker.TrackerState
@@ -96,6 +97,8 @@ class AppContainer(context: Context) {
     val decks = DeckRepository(dataDir)
     val collection = CollectionRepository(dataDir)
     val matches = MatchRepository(dataDir)
+    private val matchExporter = CompletedMatchExporter(context)
+    private val appContext = context.applicationContext
     val cards = CardRepository(cacheDir, http)
     val meta = MetaRepository(cacheDir, http)
     val tracker = TrackerController()
@@ -186,7 +189,27 @@ class AppContainer(context: Context) {
             ?.deck
             ?.archetypeName
         val record = tracker.finishGame(result, archetype) ?: return
-        appScope.launch { matches.add(record) }
+        saveCompletedMatch(record)
+    }
+
+    fun saveCompletedMatch(record: MatchRecord) {
+        appScope.launch {
+            matches.add(record)
+            val exportSettings = settings.value
+            val folder = exportSettings.matchExportFolder
+            if (exportSettings.autoExportMatches && folder != null) {
+                try {
+                    matchExporter.export(record, folder)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    android.util.Log.w("MatchExport", "Completed match export failed", e)
+                    withContext(Dispatchers.Main) {
+                        android.widget.Toast.makeText(appContext, R.string.match_export_failed, android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
     }
 
     fun onGameEvent(event: GameEvent) {
