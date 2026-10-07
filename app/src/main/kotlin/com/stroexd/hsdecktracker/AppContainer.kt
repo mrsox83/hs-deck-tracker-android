@@ -72,6 +72,12 @@ data class ScanProgress(
     val lastPage: List<String> = emptyList(),
 )
 
+data class MatchExportSummary(
+    val written: Int,
+    val alreadyPresent: Int,
+    val failed: Int,
+)
+
 /** The latest change the app made to the collection on its own, shown in the overlay. */
 data class CollectionActivity(
     val id: Long,
@@ -210,6 +216,33 @@ class AppContainer(context: Context) {
                 }
             }
         }
+    }
+
+    suspend fun exportSavedMatch(record: MatchRecord): CompletedMatchExporter.Result {
+        val folder = settings.value.matchExportFolder ?: error(appContext.getString(R.string.match_export_folder_missing))
+        return matchExporter.export(record, folder)
+    }
+
+    suspend fun exportMissingMatches(records: List<MatchRecord> = matches.matches.value): MatchExportSummary {
+        val folder = settings.value.matchExportFolder ?: error(appContext.getString(R.string.match_export_folder_missing))
+        var written = 0
+        var alreadyPresent = 0
+        var failed = 0
+        records.forEach { record ->
+            runCatching { matchExporter.export(record, folder) }
+                .onSuccess { result ->
+                    when (result) {
+                        CompletedMatchExporter.Result.WRITTEN -> written++
+                        CompletedMatchExporter.Result.ALREADY_PRESENT -> alreadyPresent++
+                    }
+                }
+                .onFailure { error ->
+                    if (error is kotlinx.coroutines.CancellationException) throw error
+                    android.util.Log.w("MatchExport", "Saved match export failed", error)
+                    failed++
+                }
+        }
+        return MatchExportSummary(written, alreadyPresent, failed)
     }
 
     fun onGameEvent(event: GameEvent) {

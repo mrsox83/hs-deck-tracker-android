@@ -354,6 +354,12 @@
         <item quantity="other">"%1$d Partien · %2$s · "</item>
     </plurals>
     <string name="export_csv_action">Als CSV exportieren</string>
+    <string name="export_missing_matches">Fehlende Partie-JSON-Dateien exportieren</string>
+    <string name="export_match_json">Diese Partie als JSON exportieren</string>
+    <string name="match_export_success">Partie exportiert</string>
+    <string name="match_export_already_present">Partie wurde bereits exportiert</string>
+    <string name="match_export_folder_missing">Zuerst in den Einstellungen einen Exportordner wählen</string>
+    <string name="match_export_all_result">Exportiert %1$d · bereits vorhanden %2$d · fehlgeschlagen %3$d</string>
     <string name="csv_file_name">hs-partien.csv</string>
     <string name="match_vs">%1$s vs. %2$s</string>
     <string name="matches">Partien</string>

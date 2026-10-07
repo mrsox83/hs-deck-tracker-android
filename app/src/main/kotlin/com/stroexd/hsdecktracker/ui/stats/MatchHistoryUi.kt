@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.stroexd.hsdecktracker.R
+import com.stroexd.hsdecktracker.CompletedMatchExporter
 import com.stroexd.hsdecktracker.core.cards.Card
 import com.stroexd.hsdecktracker.core.cards.CardDatabase
 import com.stroexd.hsdecktracker.core.cards.GameFormat
@@ -366,6 +367,18 @@ fun MatchHistoryContent(
                     },
                     enabled = filtered.isNotEmpty(),
                 ) { Icon(Icons.Filled.FileDownload, contentDescription = stringResource(R.string.export_csv_action)) }
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            runCatching { container.exportMissingMatches() }
+                                .onSuccess { summary ->
+                                    onMessage(context.getString(R.string.match_export_all_result, summary.written, summary.alreadyPresent, summary.failed))
+                                }
+                                .onFailure { onMessage(context.getString(R.string.export_failed, it.message.orEmpty())) }
+                        }
+                    },
+                    enabled = matches.isNotEmpty(),
+                ) { Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.export_missing_matches)) }
             }
         }
         if (filtered.isEmpty()) {
@@ -483,6 +496,29 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                 },
                 actions = {
                     if (match != null) {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    runCatching { container.exportSavedMatch(match) }
+                                        .onSuccess { result ->
+                                            val message = when (result) {
+                                                CompletedMatchExporter.Result.WRITTEN -> R.string.match_export_success
+                                                CompletedMatchExporter.Result.ALREADY_PRESENT -> R.string.match_export_already_present
+                                            }
+                                            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
+                                        }
+                                        .onFailure {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                context.getString(R.string.export_failed, it.message.orEmpty()),
+                                                android.widget.Toast.LENGTH_LONG,
+                                            ).show()
+                                        }
+                                }
+                            },
+                        ) {
+                            Icon(Icons.Filled.FileDownload, contentDescription = stringResource(R.string.export_match_json))
+                        }
                         IconButton(onClick = { context.shareText(context.getString(R.string.hearthstone_game), matchSummary(context, match, db)) }) {
                             Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.share))
                         }

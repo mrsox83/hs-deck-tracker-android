@@ -355,6 +355,12 @@
         <item quantity="other">"%1$d games · %2$s · "</item>
     </plurals>
     <string name="export_csv_action">Export as CSV</string>
+    <string name="export_missing_matches">Export missing match JSON files</string>
+    <string name="export_match_json">Export this match as JSON</string>
+    <string name="match_export_success">Match exported</string>
+    <string name="match_export_already_present">Match was already exported</string>
+    <string name="match_export_folder_missing">Choose a match export folder in Settings first</string>
+    <string name="match_export_all_result">Exported %1$d · already present %2$d · failed %3$d</string>
     <string name="csv_file_name">hs-games.csv</string>
     <string name="match_vs">%1$s vs %2$s</string>
     <string name="matches">Games</string>

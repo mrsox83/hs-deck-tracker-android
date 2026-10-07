@@ -34,9 +34,17 @@ staging document. The final filename is never overwritten. The staging document
 uses application/octet-stream, so providers do not append another JSON extension.
 
 Export errors are logged and show a notice; the saved match remains in History.
-There is no background retry/backfill queue. Process termination between saving
-and export can leave a match unexported. If an export fails, fix/reselect the
-folder; use the existing full JSON backup to recover that match's data.
+There is no background retry queue. Process termination between saving and export
+can leave a match unexported. After fixing or reselecting the folder, open the
+saved match in History and use **Export this match as JSON**, or use **Export
+missing match JSON files** from the History list to backfill all saved matches.
+Existing filenames are skipped, so either action is safe to repeat.
+
+The `timeline` array is the same data used by the in-app turn view. It stays in
+the compact, language-independent storage format: `t` is the turn, `k` is the
+event kind, `d` is the card database ID, and `c` is the card ID. The app's History
+screen resolves those IDs against its card database and adds localized labels;
+those display-only descriptions are not duplicated in the JSON.
 
 To sync to Google Drive, point your Android folder-sync app at Matches and include
 only *.json (exclude *.part). Export itself does not upload anything.
@@ -73,6 +81,8 @@ creating replacement keys would break updates. Use the debug APK for this patch.
 4. Turn export off, finish a match, and check that History grows but the folder does
    not. Turn it on again to export subsequent matches.
 5. Revoke/remove the chosen folder; a completed match should remain saved and show
-   the export failure notice. Reselect a writable folder for subsequent matches.
+   the export failure notice. Reselect a writable folder, manually export that
+   match from its History detail, then run the bulk missing-match export and verify
+   that existing files are skipped.
 6. Validate on Android 8/9 and Android 11+; local build/tests do not prove device
    folder permissions or synchronization to Drive.

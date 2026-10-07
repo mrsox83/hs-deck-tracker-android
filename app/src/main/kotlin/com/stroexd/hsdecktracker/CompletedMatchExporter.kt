@@ -12,10 +12,12 @@ import kotlinx.coroutines.withContext
 
 /** Writes only to a user-granted document tree; no legacy storage permissions. */
 class CompletedMatchExporter(context: Context) {
+    enum class Result { WRITTEN, ALREADY_PRESENT }
+
     private val resolver = context.applicationContext.contentResolver
     private val mutex = Mutex()
 
-    suspend fun export(record: MatchRecord, folder: String) = withContext(Dispatchers.IO) {
+    suspend fun export(record: MatchRecord, folder: String): Result = withContext(Dispatchers.IO) {
         mutex.withLock {
             val tree = Uri.parse(folder)
             val parentId = DocumentsContract.getTreeDocumentId(tree)
@@ -37,13 +39,14 @@ class CompletedMatchExporter(context: Context) {
             }
             // A process interruption can leave our incomplete staging document behind.
             pending.forEach { check(DocumentsContract.deleteDocument(resolver, it)) }
-            if (alreadyExported) return@withLock
+            if (alreadyExported) return@withLock Result.ALREADY_PRESENT
             val document = DocumentsContract.createDocument(resolver, parent, "application/octet-stream", "$filename.part")
                 ?: error("Cannot create match export")
             try {
                 val stream = resolver.openOutputStream(document, "w") ?: error("Cannot write match export")
                 stream.bufferedWriter(Charsets.UTF_8).use { it.write(MatchJsonExport.encode(record)) }
                 checkNotNull(DocumentsContract.renameDocument(resolver, document, filename)) { "Cannot finalize match export" }
+                Result.WRITTEN
             } catch (e: Exception) {
                 // Remove only the document created by this attempt, never existing exports.
                 runCatching { DocumentsContract.deleteDocument(resolver, document) }
