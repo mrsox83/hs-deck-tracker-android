@@ -278,11 +278,17 @@ class VisionTest {
 
         events.clear()
         repeat(6) { feed(*zoomRow("Mathias Shaw", "Eviscerate", "Loot Hoarder").toTypedArray(), endTurn()) }
-        feed(drawn("Preparation"), endTurn())
         assertEquals(
             mapOf(listOf(101) to 1, listOf(102) to 1),
             events.filterIsInstance<GameEvent.FriendlyCardPlayed>().groupingBy { it.dbfIds }.eachCount(),
         )
+
+        events.clear()
+        repeat(6) { feed(*zoomRow("Spymistress", "Mathias Shaw", "Eviscerate", "Loot Hoarder").toTypedArray(), endTurn()) }
+        assertTrue(events.none { it is GameEvent.FriendlyCardSeen })
+
+        events.clear()
+        feed(drawn("Preparation"), endTurn())
         assertEquals(listOf(GameEvent.FriendlyCardSeen(listOf(102))), events.filterIsInstance<GameEvent.FriendlyCardSeen>())
 
         events.clear()
@@ -316,7 +322,7 @@ class VisionTest {
         val tracker = VisionGameTracker(index)
         val events = mutableListOf<GameEvent>()
         fun feed(vararg lines: OcrLine) = events.addAll(tracker.onFrame(frame(*lines)))
-        repeat(6) { feed(*zoomRow("Spymistress", "Preparation", "Backstab").toTypedArray(), enemyTurn()) }
+        repeat(10) { feed(*zoomRow("Spymistress", "Preparation", "Backstab").toTypedArray(), enemyTurn()) }
         assertEquals(GameEvent.GameStarted, events.first())
         assertEquals(3, events.count { it is GameEvent.FriendlyCardSeen })
         repeat(3) { feed(endTurn()) }

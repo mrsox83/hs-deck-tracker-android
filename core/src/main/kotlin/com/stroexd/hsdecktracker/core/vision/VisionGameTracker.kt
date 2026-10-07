@@ -134,6 +134,7 @@ class VisionGameTracker(
         var pendingHandCounts: Map<String, Int>? = null
         var pendingHandSince = 0L
         var pendingHandFrames = 0
+        var stableHandEstablished = false
         val popupLastSeen = HashMap<String, Long>()
         val lastChoice = HashMap<String, Long>()
 
@@ -445,20 +446,12 @@ class VisionGameTracker(
     }
 
     /**
-     * Counts copies received per card: more copies visible in the hand than counted means a draw was
-     * missed; an enlarged card on the right is a draw unless the card is already in hand (then it's
-     * just being inspected).
+     * A stable hand row can confirm that a known card disappeared, but cannot safely establish how
+     * an unfamiliar card entered the hand. Only the dedicated enlarged-card signal emits draws;
+     * otherwise OCR fluctuations could repeatedly turn the same card into a draw and a play.
      */
     private fun handleOwnCards(f: FrameInfo, now: Long, events: MutableList<GameEvent>) {
         val hand = f.cards.filter { ScreenRegions.isHand(it.line) }
-        val handCounts = hand.groupingBy { it.key }.eachCount()
-        for ((key, count) in handCounts) {
-            val known = inHand(key)
-            if (count > known) {
-                log { "Hand: ×$count (known $known) ${hand.filter { it.key == key }.joinToString { describe(it) }}" }
-                emitDraw(key, count - known, fromDeck = true, events)
-            }
-        }
         detectPlayedCards(hand, now, events)
         if (game.turnState == false || f.choice) return
         for (card in f.cards) {
@@ -491,6 +484,13 @@ class VisionGameTracker(
         }
         game.pendingHandFrames++
         if (game.pendingHandFrames < HAND_FRAMES_FOR_PLAYED || now - game.pendingHandSince < PLAYED_MIN_MILLIS) return
+        if (!game.stableHandEstablished) {
+            for ((key, count) in rowCounts) {
+                val unseen = count - inHand(key)
+                if (unseen > 0) emitDraw(key, unseen, fromDeck = true, events)
+            }
+            game.stableHandEstablished = true
+        }
         for (key in game.drawn.keys.toList()) {
             val known = inHand(key)
             val count = rowCounts[key] ?: 0
