@@ -14,7 +14,7 @@ Completed match JSON now includes `PLAYER_PLAY` timeline events. The event uses 
 - `k` identifies a probable friendly card play.
 - `d` is the card's dbfId.
 
-The vision tracker emits this event only after a previously recognized card is repeatedly absent from a sufficiently complete hand row for at least two seconds. This reuses the existing conservative hand-disappearance safeguards; it does not infer attacks, targets, or exact play order within the same observation window.
+The vision tracker emits this event only after the complete recognized hand-row reading remains stable across at least four frames and two seconds. It can reconcile several cards played between two hand inspections without becoming permanently blocked by the first missed play. This remains conservative visual evidence; it does not infer attacks, targets, or exact play order within the same observation window.
 
 `PLAYER_PLAY` is probable visual evidence, not a deterministic game-log event. Choice and replay effects may delay what the screen reveals, and reconnects can remove corroborating history. Consumers should retain the observation while avoiding unsupported claims about targets or precise timing.
 

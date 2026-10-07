@@ -277,12 +277,13 @@ class VisionTest {
         )
 
         events.clear()
-        repeat(6) { feed(*zoomRow("Spymistress", "Mathias Shaw", "Eviscerate", "Loot Hoarder").toTypedArray(), endTurn()) }
+        repeat(6) { feed(*zoomRow("Mathias Shaw", "Eviscerate", "Loot Hoarder").toTypedArray(), endTurn()) }
         feed(drawn("Preparation"), endTurn())
         assertEquals(
-            listOf(GameEvent.FriendlyCardPlayed(listOf(102)), GameEvent.FriendlyCardSeen(listOf(102))),
-            events,
+            mapOf(listOf(101) to 1, listOf(102) to 1),
+            events.filterIsInstance<GameEvent.FriendlyCardPlayed>().groupingBy { it.dbfIds }.eachCount(),
         )
+        assertEquals(listOf(GameEvent.FriendlyCardSeen(listOf(102))), events.filterIsInstance<GameEvent.FriendlyCardSeen>())
 
         events.clear()
         feed(resultText("Victory!"), endTurn())

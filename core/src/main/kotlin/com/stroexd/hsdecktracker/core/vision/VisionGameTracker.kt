@@ -131,7 +131,9 @@ class VisionGameTracker(
         /** Copies received per card, and how many of them left the hand. */
         val drawn = HashMap<String, Int>()
         val played = HashMap<String, Int>()
-        val handMisses = HashMap<String, Pair<Int, Long>>()
+        var pendingHandCounts: Map<String, Int>? = null
+        var pendingHandSince = 0L
+        var pendingHandFrames = 0
         val popupLastSeen = HashMap<String, Long>()
         val lastChoice = HashMap<String, Long>()
 
@@ -456,9 +458,8 @@ class VisionGameTracker(
                 log { "Hand: ×$count (known $known) ${hand.filter { it.key == key }.joinToString { describe(it) }}" }
                 emitDraw(key, count - known, fromDeck = true, events)
             }
-            game.handMisses.remove(key)
         }
-        detectPlayedCards(hand, handCounts, now, events)
+        detectPlayedCards(hand, now, events)
         if (game.turnState == false || f.choice) return
         for (card in f.cards) {
             if (!ScreenRegions.isDrawPopup(card.line)) continue
@@ -471,26 +472,40 @@ class VisionGameTracker(
         }
     }
 
-    /** Conservative on purpose: wrongly "played" cards would be counted twice later. */
-    private fun detectPlayedCards(hand: List<CardLine>, handCounts: Map<String, Int>, now: Long, events: MutableList<GameEvent>) {
-        val rowSize = hand.count { ScreenRegions.isHandZoomRow(it.line) }
-        val expected = game.drawn.keys.sumOf { inHand(it) }
-        if (rowSize < 3 || rowSize < expected - 1) return
+    /**
+     * Reconciles a stable enlarged-hand reading with the cards previously seen. Requiring the
+     * whole recognized row to remain unchanged protects against one-frame OCR omissions while
+     * still allowing several cards to have been played between two hand inspections.
+     */
+    private fun detectPlayedCards(hand: List<CardLine>, now: Long, events: MutableList<GameEvent>) {
+        val rowCounts = hand.filter { ScreenRegions.isHandZoomRow(it.line) }.groupingBy { it.key }.eachCount()
+        if (rowCounts.values.sum() < MIN_HAND_ROW_SIZE) {
+            clearPendingHand()
+            return
+        }
+        if (game.pendingHandCounts != rowCounts) {
+            game.pendingHandCounts = rowCounts
+            game.pendingHandSince = now
+            game.pendingHandFrames = 1
+            return
+        }
+        game.pendingHandFrames++
+        if (game.pendingHandFrames < HAND_FRAMES_FOR_PLAYED || now - game.pendingHandSince < PLAYED_MIN_MILLIS) return
         for (key in game.drawn.keys.toList()) {
             val known = inHand(key)
-            val count = handCounts[key] ?: 0
+            val count = rowCounts[key] ?: 0
             if (known <= count) continue
-            val (misses, since) = game.handMisses[key] ?: (0 to now)
-            if (misses + 1 >= HAND_MISSES_FOR_PLAYED && now - since >= PLAYED_MIN_MILLIS) {
-                log { "Played: $key (missing from hand row)" }
-                val played = known - count
-                ids[key]?.let { candidates -> repeat(played) { events += GameEvent.FriendlyCardPlayed(candidates) } }
-                game.played[key] = (game.played[key] ?: 0) + played
-                game.handMisses.remove(key)
-            } else {
-                game.handMisses[key] = misses + 1 to since
-            }
+            log { "Played: $key (missing from stable hand row)" }
+            val played = known - count
+            ids[key]?.let { candidates -> repeat(played) { events += GameEvent.FriendlyCardPlayed(candidates) } }
+            game.played[key] = (game.played[key] ?: 0) + played
         }
+    }
+
+    private fun clearPendingHand() {
+        game.pendingHandCounts = null
+        game.pendingHandFrames = 0
+        game.pendingHandSince = 0L
     }
 
     private fun handleOpponent(f: FrameInfo, now: Long, events: MutableList<GameEvent>) {
@@ -514,7 +529,8 @@ class VisionGameTracker(
     companion object {
         private const val BUTTON_WINDOW = 8
         private const val MID_GAME_FRAMES = 6
-        private const val HAND_MISSES_FOR_PLAYED = 4
+        private const val MIN_HAND_ROW_SIZE = 3
+        private const val HAND_FRAMES_FOR_PLAYED = 4
         private const val PLAYED_MIN_MILLIS = 2_000L
         private const val RESTART_COOLDOWN_MILLIS = 15_000L
         private const val MID_GAME_AFTER_END_MILLIS = 120_000L
