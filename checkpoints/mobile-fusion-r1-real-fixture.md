@@ -34,6 +34,16 @@ The private test class is excluded from `:core:test`. The dedicated task fails b
 - Session-local end time resolves in America/Chicago to seven seconds before the tracker timestamp.
 - Pairing is accepted only after endpoint, result, first-player and anchor evidence agree; replaying the same reduced source does not duplicate it.
 
+## Verified truncated multi-match bundle
+
+- Bundle SHA-256: `9c731e4ce8c09a710d971cb0fa5b13dccee8cf12dc7c1fc6bfaec5e4e14fd71f`.
+- Legacy schema `hs-export-bundle/0.3`, whose manifest does not expose the newer truncation field.
+- Inner Power.log manifest SHA-256 matched the raw entry.
+- The raw Hearthstone size-limit marker was independently detected and its source line retained.
+- Three source matches were reduced: completion states `[true, true, false]` and truncation states `[false, false, true]`.
+- Earlier completed matches were not contaminated by a later session truncation.
+- The incomplete suffix retained its observed events and a last-valid snapshot instead of being discarded.
+
 ## Boundary
 
-This is one independently asserted real pair, not complete R1 or R2 acceptance. Remaining work includes broad bundle inventory reduction, incomplete/truncated and multi-match fixture assertions, richer entity transition semantics, counters/resources/health derivations, block-boundary snapshots, and negative real pairing cases. No phone or installed-APK behavior was tested.
+This covers one independently asserted pair and one truncated three-match session, not complete R1 or R2 acceptance. Remaining work includes broad bundle inventory reduction, richer entity transition semantics, counters/resources/health derivations, stronger block-boundary snapshots, and negative real pairing cases. No phone or installed-APK behavior was tested.
