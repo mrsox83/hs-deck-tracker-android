@@ -95,6 +95,14 @@ class RealFusionFixtureTest {
         assertNotNull(heraldPlayer)
         assertEquals(ClaimStatus.OBSERVED, heraldPlayer.heraldAmount.status)
         assertEquals(null, heraldPlayer.heraldThresholdReached.value)
+
+        val encoded = Files.createTempFile("hs-fused-rafaam-", ".json")
+        try {
+            Files.newOutputStream(encoded).use { FusionArtifactCodec.encodeToStream(fused, it) }
+            assertTrue(Files.size(encoded) > 0)
+        } finally {
+            Files.deleteIfExists(encoded)
+        }
     }
 
     @Test

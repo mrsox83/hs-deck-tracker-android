@@ -203,7 +203,7 @@ data class PairingDecision(
 
 @Serializable
 data class FusedMatch(
-    val schema: String = FUSION_SCHEMA,
+    val schema: String,
     val matchId: String,
     val revision: Int = 1,
     val fusionVersion: String,
