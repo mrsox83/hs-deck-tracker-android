@@ -49,6 +49,7 @@ object EvidenceAdapters {
         val matchEntries = linkedMapOf<String, ByteArray>()
         val contentHashes = linkedMapOf<String, String>()
         val truncationLines = linkedMapOf<String, Int>()
+        val playerNames = linkedMapOf<String, List<PlayerNameMapping>>()
         var manifest: JsonObject? = null
         ZipInputStream(bytes.inputStream()).use { zip ->
             while (true) {
@@ -59,9 +60,19 @@ object EvidenceAdapters {
                     entry.name.endsWith("/Power.log") -> {
                         val raw = zip.readBytes()
                         contentHashes[entry.name] = sha256(raw)
-                        val markerLine = raw.toString(Charsets.UTF_8).lineSequence()
-                            .indexOfFirst { it.contains("Truncating log, which has reached the size limit") }
-                        if (markerLine >= 0) truncationLines[entry.name.substringBefore('/')] = markerLine + 1
+                        val session = entry.name.substringBefore('/')
+                        var markerLine: Int? = null
+                        val mappings = linkedMapOf<String, PlayerNameMapping>()
+                        raw.toString(Charsets.UTF_8).lineSequence().forEachIndexed { index, line ->
+                            if (markerLine == null && line.contains("Truncating log, which has reached the size limit")) markerLine = index + 1
+                            val match = playerNameLine.find(line)
+                            if (match != null) {
+                                val name = match.groupValues[2].trim()
+                                mappings[name] = PlayerNameMapping(name, match.groupValues[1].toInt(), index + 1)
+                            }
+                        }
+                        if (markerLine != null) truncationLines[session] = markerLine!!
+                        if (mappings.isNotEmpty()) playerNames[session] = mappings.values.toList()
                     }
                     entry.name.matches(Regex(".*/match-[0-9]+\\.json")) -> matchEntries[entry.name] = zip.readBytes()
                 }
@@ -88,16 +99,26 @@ object EvidenceAdapters {
             val parsed = powerDocument(data, artifactHash, relevantHash)
             val session = name.substringBefore('/')
             val truncationLine = truncationLines[session]
-            if (truncationLine == null || lastMatchBySession[session] != name) parsed
-            else {
-                val root = parsed.second
+            val root = parsed.second
+            val rootFields = root.toMutableMap()
+            playerNames[session]?.let { mappings ->
+                rootFields["player_name_mappings"] = kotlinx.serialization.json.JsonArray(mappings.map { mapping ->
+                    JsonObject(mapOf(
+                        "name" to JsonPrimitive(mapping.name),
+                        "controller" to JsonPrimitive(mapping.controller),
+                        "source_line" to JsonPrimitive(mapping.sourceLine),
+                    ))
+                })
+            }
+            if (truncationLine != null && lastMatchBySession[session] == name) {
                 val match = root.getValue("match").jsonObject
                 val patchedMatch = JsonObject(match + mapOf(
                     "source_truncated" to JsonPrimitive(true),
                     "truncation_source_line" to JsonPrimitive(truncationLine),
                 ))
-                parsed.first to JsonObject(root + ("match" to patchedMatch))
+                rootFields["match"] = patchedMatch
             }
+            parsed.first to JsonObject(rootFields)
         }
         return ExporterBundleEvidence(artifactHash, manifest?.get("schema")?.jsonPrimitive?.contentOrNull, matches, diagnostics)
     }
@@ -126,3 +147,6 @@ object EvidenceAdapters {
     fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
         .digest(bytes).joinToString("") { "%02x".format(it.toInt() and 0xff) }
 }
+
+private data class PlayerNameMapping(val name: String, val controller: Int, val sourceLine: Int)
+private val playerNameLine = Regex("PlayerID=([0-9]+), PlayerName=(.*)$")

@@ -67,6 +67,12 @@ data class IdentityObservation(
 )
 
 @Serializable
+data class ValueObservation<T>(
+    val value: T,
+    val evidence: EvidenceRef,
+)
+
+@Serializable
 data class EntityState(
     val id: String,
     val cardId: Claim<String> = Claim(reason = "Identity not observed"),
@@ -74,6 +80,12 @@ data class EntityState(
     val tags: Map<String, String> = emptyMap(),
     val tagHistory: List<TagObservation> = emptyList(),
     val identityHistory: List<IdentityObservation> = emptyList(),
+    val zoneHistory: List<ValueObservation<String>> = emptyList(),
+    val positionHistory: List<ValueObservation<Int>> = emptyList(),
+    val controllerHistory: List<ValueObservation<Int>> = emptyList(),
+    val visibilityHistory: List<ValueObservation<Boolean>> = emptyList(),
+    val aliasHistory: List<ValueObservation<String>> = emptyList(),
+    val entityLinks: Map<String, Claim<String>> = emptyMap(),
 )
 
 @Serializable
@@ -87,6 +99,7 @@ data class CanonicalEvent(
     val parentEventId: String? = null,
     val rawTurn: Int? = null,
     val activeController: Int? = null,
+    val playerTurnIndex: Int? = null,
     val evidence: List<EvidenceRef>,
 )
 
@@ -114,6 +127,7 @@ data class FusionSnapshot(
     val phase: String,
     val activeController: Int? = null,
     val rawTurn: Int? = null,
+    val playerTurnIndices: Map<Int, Int> = emptyMap(),
     val unresolvedBlock: Boolean = false,
     val entityTags: Map<String, Map<String, String>>,
     val counters: Map<String, Map<String, Claim<Int>>> = emptyMap(),

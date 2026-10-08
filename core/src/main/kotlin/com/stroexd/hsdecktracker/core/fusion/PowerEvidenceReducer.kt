@@ -14,6 +14,10 @@ object PowerEvidenceReducer {
     private val inlineTag = Regex("tag=([^ ]+) value=(.*)")
     private val fullEntity = Regex("FULL_ENTITY - Creating ID=([0-9]+) CardID=(.*)")
     private val shownEntity = Regex("(?:SHOW_ENTITY|CHANGE_ENTITY) - Updating Entity=.*? id=([0-9]+).*? CardID=([^ ]*)")
+    private val playerEntity = Regex("Player EntityID=([0-9]+) PlayerID=([0-9]+).*")
+    private val gameEntity = Regex("GameEntity EntityID=([0-9]+).*")
+    private val entityName = Regex("entityName=(.*?) id=([0-9]+)")
+    private val linkedEntityTags = setOf("CREATOR", "COPIED_FROM_ENTITY_ID", "COPY_OF_ENTITY_ID", "HERO_ENTITY", "HERO_POWER", "ATTACHED")
     private val snapshotCounters = setOf(
         "RESOURCES", "RESOURCES_USED", "TEMP_RESOURCES", "OVERLOAD_OWED", "OVERLOAD_LOCKED",
         "HEALTH", "DAMAGE", "ARMOR", "HERALD_COLOSSAL_AMOUNT", "QUEST_PROGRESS",
@@ -27,6 +31,15 @@ object PowerEvidenceReducer {
         val snapshots = mutableListOf<FusionSnapshot>()
         val diagnostics = mutableListOf<String>()
         val blockStack = ArrayDeque<String>()
+        val aliases = linkedMapOf<String, String>()
+        val playerTurnIndices = linkedMapOf<Int, Int>()
+        val playerNamesByController = document["player_name_mappings"]?.jsonArray.orEmpty().mapNotNull { item ->
+            val mapping = item.jsonObject
+            val name = mapping.string("name") ?: return@mapNotNull null
+            val controller = mapping.int("controller") ?: return@mapNotNull null
+            val sourceLine = mapping.int("source_line") ?: return@mapNotNull null
+            controller to (name to EvidenceRef(source.id, sourceLine, rule = "power-player-name/1"))
+        }.groupBy({ it.first }, { it.second })
         var pendingEntity: String? = null
         var activeController: Int? = null
         var rawTurn: Int? = null
@@ -48,14 +61,36 @@ object PowerEvidenceReducer {
                 val entity = mutableEntities.getOrPut(id) { MutableEntity(id) }
                 entity.observeCard(created.groupValues[2], evidence)
             }
+            playerEntity.matchEntire(body)?.let { player ->
+                pendingEntity = player.groupValues[1]
+                val controller = player.groupValues[2].toInt()
+                observeTag(
+                    mutableEntities, pendingEntity!!, "PLAYER_ID", controller.toString(), sequence, line, time, evidence,
+                )
+                playerNamesByController[controller].orEmpty().forEach { (name, aliasEvidence) ->
+                    aliases[name] = pendingEntity!!
+                    mutableEntities.getValue(pendingEntity!!).observeAlias(name, aliasEvidence)
+                }
+            }
+            gameEntity.matchEntire(body)?.let { game -> pendingEntity = game.groupValues[1] }
+            observeAlias(body, aliases)
 
             val tagName = event.string("tag")
             val tagValue = event.string("value")
-            val tagEntity = event.string("entity")?.let(::entityReference) ?: pendingEntity
+            val tagEntityText = event.string("entity")
+            observeAlias(tagEntityText, aliases)
+            val tagEntity = if (tagEntityText != null) entityReference(tagEntityText, aliases) else pendingEntity
             if (tagName != null && tagValue != null && tagEntity != null) {
                 observeTag(mutableEntities, tagEntity, tagName, tagValue, sequence, line, time, evidence)
                 if (tagName == "TURN") rawTurn = tagValue.toIntOrNull()
-                if (tagName == "CURRENT_PLAYER" && tagValue == "1") activeController = mutableEntities[tagEntity]?.tags?.get("CONTROLLER")?.toIntOrNull()
+                if (tagName == "CURRENT_PLAYER" && tagValue == "1") {
+                    val nextController = mutableEntities[tagEntity]?.controller?.value
+                        ?: mutableEntities[tagEntity]?.tags?.get("PLAYER_ID")?.toIntOrNull()
+                    if (nextController != null && nextController != activeController) {
+                        playerTurnIndices[nextController] = (playerTurnIndices[nextController] ?: 0) + 1
+                        activeController = nextController
+                    }
+                }
             } else {
                 val inline = inlineTag.matchEntire(body)
                 if (inline != null && pendingEntity != null) {
@@ -69,16 +104,19 @@ object PowerEvidenceReducer {
                     val kind = event.string("block_type") ?: "BLOCK"
                     val actorText = event.string("actor")
                     val targetText = event.string("target")
-                    val actor = actorText?.let(::entityReference)
-                    val target = targetText?.let(::entityReference)
-                    observeDescriptor(mutableEntities, actorText, evidence)
-                    observeDescriptor(mutableEntities, targetText, evidence)
+                    observeAlias(actorText, aliases)
+                    observeAlias(targetText, aliases)
+                    val actor = actorText?.let { entityReference(it, aliases) }
+                    val target = targetText?.let { entityReference(it, aliases) }
+                    observeDescriptor(mutableEntities, actorText, evidence, aliases)
+                    observeDescriptor(mutableEntities, targetText, evidence, aliases)
                     if (blockStack.isEmpty()) snapshots += snapshot(
-                        source, sequence, "BEFORE_ACTION", activeController, rawTurn, false, mutableEntities, evidence,
+                        source, sequence, "BEFORE_ACTION", activeController, rawTurn, playerTurnIndices, false, mutableEntities, evidence,
                     )
                     outputEvents += CanonicalEvent(
                         id, outputEvents.size + 1, sequence, kind, actor, target,
-                        blockStack.lastOrNull(), rawTurn, activeController, listOf(evidence),
+                        blockStack.lastOrNull(), rawTurn, activeController,
+                        activeController?.let { playerTurnIndices[it] }, listOf(evidence),
                     )
                     blockStack.addLast(id)
                 }
@@ -87,17 +125,24 @@ object PowerEvidenceReducer {
                     else {
                         blockStack.removeLast()
                         if (blockStack.isEmpty()) snapshots += snapshot(
-                            source, sequence, "AFTER_OUTER_ACTION", activeController, rawTurn, false, mutableEntities, evidence,
+                            source, sequence, "AFTER_OUTER_ACTION", activeController, rawTurn, playerTurnIndices, false, mutableEntities, evidence,
                         )
                     }
                 }
                 tagName == "CURRENT_PLAYER" && tagValue == "1" -> snapshots +=
-                    snapshot(source, sequence, "TURN_SIGNAL", activeController, rawTurn, blockStack.isNotEmpty(), mutableEntities, evidence)
+                    snapshot(source, sequence, "TURN_SIGNAL", activeController, rawTurn, playerTurnIndices, blockStack.isNotEmpty(), mutableEntities, evidence)
+            }
+            if (body.startsWith("SHOW_ENTITY")) {
+                val id = event.string("entity_id") ?: entityReference(body, aliases)
+                if (id != null) mutableEntities.getOrPut(id) { MutableEntity(id) }.observeVisibility(true, evidence)
+            } else if (body.startsWith("HIDE_ENTITY")) {
+                val id = entityReference(body, aliases)
+                if (id != null) mutableEntities.getOrPut(id) { MutableEntity(id) }.observeVisibility(false, evidence)
             }
         }
         if (blockStack.isNotEmpty()) diagnostics += "${blockStack.size} unterminated block(s); final snapshot is unresolved"
         if (lastEvidence != null) snapshots += snapshot(
-            source, Int.MAX_VALUE, "LAST_VALID", activeController, rawTurn, blockStack.isNotEmpty(), mutableEntities, lastEvidence,
+            source, Int.MAX_VALUE, "LAST_VALID", activeController, rawTurn, playerTurnIndices, blockStack.isNotEmpty(), mutableEntities, lastEvidence,
         )
 
         val choices = match["choices"]?.jsonArray.orEmpty().map { choice(source, it.jsonObject) }
@@ -124,10 +169,13 @@ object PowerEvidenceReducer {
         entity.tags[name] = value
         entity.history += TagObservation(sequence, line, time, name, value, evidence)
         if (name == "CONTROLLER") entity.observeController(value.toIntOrNull(), evidence)
+        if (name == "ZONE") entity.observeZone(value, evidence)
+        if (name == "ZONE_POSITION") entity.observePosition(value.toIntOrNull(), evidence)
+        if (name in linkedEntityTags && value.toIntOrNull() != null) entity.observeLink(name, value, evidence)
     }
 
     private fun snapshot(
-        source: FusionSource, sequence: Int, phase: String, controller: Int?, turn: Int?, unresolved: Boolean,
+        source: FusionSource, sequence: Int, phase: String, controller: Int?, turn: Int?, turnIndices: Map<Int, Int>, unresolved: Boolean,
         entities: Map<String, MutableEntity>, evidence: EvidenceRef,
     ) = FusionSnapshot(
         id = "${source.id}:snapshot:${phase.lowercase()}:$sequence",
@@ -135,6 +183,7 @@ object PowerEvidenceReducer {
         phase = phase,
         activeController = controller,
         rawTurn = turn,
+        playerTurnIndices = turnIndices.toMap(),
         unresolvedBlock = unresolved,
         entityTags = entities.mapValues { it.value.tags.toMap() },
         counters = entities.mapValues { (_, entity) ->
@@ -176,14 +225,21 @@ object PowerEvidenceReducer {
         )
     }
 
-    private fun entityReference(value: String): String? = entityId.find(value)?.groupValues?.get(1)
+    private fun entityReference(value: String, aliases: Map<String, String>): String? = entityId.find(value)?.groupValues?.get(1)
         ?: value.trim().takeIf { it != "0" && it.all(Char::isDigit) }
+        ?: aliases[value.trim()]
 
-    private fun observeDescriptor(entities: MutableMap<String, MutableEntity>, value: String?, evidence: EvidenceRef) {
+    private fun observeDescriptor(entities: MutableMap<String, MutableEntity>, value: String?, evidence: EvidenceRef, aliases: Map<String, String>) {
         if (value == null) return
-        val id = entityReference(value) ?: return
+        val id = entityReference(value, aliases) ?: return
         val observedCardId = cardId.find(value)?.groupValues?.get(1).orEmpty()
         if (observedCardId.isNotEmpty()) entities.getOrPut(id) { MutableEntity(id) }.observeCard(observedCardId, evidence)
+    }
+
+    private fun observeAlias(value: String?, aliases: MutableMap<String, String>) {
+        if (value == null) return
+        val match = entityName.find(value) ?: return
+        aliases[match.groupValues[1]] = match.groupValues[2]
     }
 
     private class MutableEntity(val id: String) {
@@ -192,6 +248,12 @@ object PowerEvidenceReducer {
         val tags = linkedMapOf<String, String>()
         val history = mutableListOf<TagObservation>()
         val identities = mutableListOf<IdentityObservation>()
+        val zones = mutableListOf<ValueObservation<String>>()
+        val positions = mutableListOf<ValueObservation<Int>>()
+        val controllers = mutableListOf<ValueObservation<Int>>()
+        val visibility = mutableListOf<ValueObservation<Boolean>>()
+        val entityAliases = mutableListOf<ValueObservation<String>>()
+        val links = linkedMapOf<String, Claim<String>>()
 
         fun observeCard(value: String, evidence: EvidenceRef) {
             if (value.isNotEmpty()) {
@@ -200,9 +262,30 @@ object PowerEvidenceReducer {
             }
         }
         fun observeController(value: Int?, evidence: EvidenceRef) {
-            if (value != null) controller = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CONTROLLER tag observed", listOf(evidence))
+            if (value != null) {
+                if (controllers.lastOrNull()?.value != value) controllers += ValueObservation(value, evidence)
+                controller = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CONTROLLER tag observed", listOf(evidence))
+            }
         }
-        fun freeze() = EntityState(id, cardId, controller, tags.toMap(), history.toList(), identities.toList())
+        fun observeZone(value: String, evidence: EvidenceRef) {
+            if (zones.lastOrNull()?.value != value) zones += ValueObservation(value, evidence)
+        }
+        fun observePosition(value: Int?, evidence: EvidenceRef) {
+            if (value != null && positions.lastOrNull()?.value != value) positions += ValueObservation(value, evidence)
+        }
+        fun observeVisibility(value: Boolean, evidence: EvidenceRef) {
+            if (visibility.lastOrNull()?.value != value) visibility += ValueObservation(value, evidence)
+        }
+        fun observeAlias(value: String, evidence: EvidenceRef) {
+            if (entityAliases.none { it.value == value }) entityAliases += ValueObservation(value, evidence)
+        }
+        fun observeLink(name: String, value: String, evidence: EvidenceRef) {
+            links[name] = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "$name entity link observed", listOf(evidence))
+        }
+        fun freeze() = EntityState(
+            id, cardId, controller, tags.toMap(), history.toList(), identities.toList(), zones.toList(),
+            positions.toList(), controllers.toList(), visibility.toList(), entityAliases.toList(), links.toMap(),
+        )
     }
 }
 

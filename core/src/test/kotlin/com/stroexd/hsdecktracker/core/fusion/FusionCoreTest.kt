@@ -24,9 +24,15 @@ class FusionCoreTest {
         assertEquals(listOf("PLAY", "ATTACK"), reduced.events.map { it.kind })
         assertEquals(reduced.events[0].id, reduced.events[1].parentEventId)
         assertEquals(null, reduced.events[0].targetEntityId)
+        assertEquals(2, reduced.events[0].activeController)
+        assertEquals(1, reduced.events[0].playerTurnIndex)
         assertEquals("CARD_A", reduced.entities.getValue("7").cardId.value)
         assertEquals("2", reduced.entities.getValue("7").tags["CONTROLLER"])
         assertEquals("4", reduced.entities.getValue("7").tags["HERALD_COLOSSAL_AMOUNT"])
+        assertEquals(listOf("HAND"), reduced.entities.getValue("7").zoneHistory.map { it.value })
+        assertEquals(listOf(2), reduced.entities.getValue("7").positionHistory.map { it.value })
+        assertEquals(listOf(false, true), reduced.entities.getValue("7").visibilityHistory.map { it.value })
+        assertEquals("9", reduced.entities.getValue("7").entityLinks.getValue("CREATOR").value)
         assertTrue(reduced.entities.getValue("7").tagHistory.all { it.evidence.sourceLine != null })
         assertEquals(listOf("[id=8 cardId=OPTION_A]"), reduced.choices.single().offered.entityRefs)
         assertEquals(listOf("[id=8 cardId=OPTION_A]"), reduced.choices.single().submitted.entityRefs)
@@ -35,6 +41,7 @@ class FusionCoreTest {
         assertEquals(1, reduced.snapshots.count { it.phase == "AFTER_OUTER_ACTION" })
         assertEquals(4, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").value)
         assertEquals(6, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").evidence.single().sourceLine)
+        assertEquals(mapOf(2 to 1), reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.playerTurnIndices)
         assertFalse(reduced.snapshots.last().unresolvedBlock)
         assertTrue(reduced.diagnostics.isEmpty())
     }
@@ -204,6 +211,12 @@ class FusionCoreTest {
               {"sequence":1,"source_line":1,"log_time":"12:00:00.0","raw":"CREATE_GAME","kind":"CREATE_GAME"},
               {"sequence":2,"source_line":2,"log_time":"12:00:01.0","raw":"FULL_ENTITY - Creating ID=7 CardID=CARD_A","kind":"FULL_ENTITY","entity_id":"7","card_id":"CARD_A"},
               {"sequence":3,"source_line":3,"log_time":"12:00:02.0","raw":"tag=CONTROLLER value=2","kind":"tag=CONTROLLER"},
+              {"sequence":30,"source_line":30,"log_time":"12:00:02.1","raw":"tag=ZONE value=HAND","kind":"tag=ZONE"},
+              {"sequence":31,"source_line":31,"log_time":"12:00:02.2","raw":"tag=ZONE_POSITION value=2","kind":"tag=ZONE_POSITION"},
+              {"sequence":32,"source_line":32,"log_time":"12:00:02.3","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=HAND] tag=CREATOR value=9","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=HAND]","tag":"CREATOR","value":"9"},
+              {"sequence":33,"source_line":33,"log_time":"12:00:02.4","raw":"HIDE_ENTITY - Entity=[entityName=A id=7 zone=HAND]","kind":"HIDE_ENTITY"},
+              {"sequence":34,"source_line":34,"log_time":"12:00:02.5","raw":"SHOW_ENTITY - Updating Entity=[entityName=A id=7 zone=HAND] CardID=CARD_A","kind":"SHOW_ENTITY","entity_id":"7","card_id":"CARD_A"},
+              {"sequence":35,"source_line":35,"log_time":"12:00:02.6","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=HAND] tag=CURRENT_PLAYER value=1","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=HAND]","tag":"CURRENT_PLAYER","value":"1"},
               {"sequence":4,"source_line":4,"log_time":"12:00:03.0","raw":"tag=FUTURE_TAG value=opaque","kind":"tag=FUTURE_TAG"},
               {"sequence":5,"source_line":5,"log_time":"12:00:04.0","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=PLAY] tag=TURN value=3","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=PLAY]","tag":"TURN","value":"3"},
               {"sequence":6,"source_line":6,"log_time":"12:00:05.0","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=PLAY] tag=HERALD_COLOSSAL_AMOUNT value=4","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=PLAY]","tag":"HERALD_COLOSSAL_AMOUNT","value":"4"},
