@@ -171,6 +171,7 @@ data class ReducedPowerMatch(
     val index: Int,
     val startedLogTime: String,
     val endedLogTime: String? = null,
+    val endedEvidence: EvidenceRef? = null,
     val completed: Boolean,
     val sourceTruncated: Boolean,
     val events: List<CanonicalEvent>,
@@ -189,6 +190,7 @@ data class PairingCandidate(
     val score: Int,
     val reasons: List<String>,
     val rejectedReasons: List<String> = emptyList(),
+    val evidence: List<EvidenceRef> = emptyList(),
 )
 
 @Serializable

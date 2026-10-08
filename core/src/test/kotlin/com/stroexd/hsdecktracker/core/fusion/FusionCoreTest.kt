@@ -91,28 +91,55 @@ class FusionCoreTest {
     fun `pairing requires unique multi characteristic evidence`() {
         val tracker = tracker()
         val reduced = reducedPower()
+        fun facts(match: ReducedPowerMatch, offsetMillis: Long = 7_000) = PowerPairingFacts(
+            match = match,
+            endedAt = Instant.ofEpochMilli(tracker.record.timestamp - offsetMillis),
+            result = MatchResult.WIN,
+            wentFirst = true,
+            anchorCardIds = setOf("CARD_A"),
+            endEvidence = listOf(EvidenceRef(match.source.id, sourceLine = 20)),
+            resultEvidence = listOf(EvidenceRef(match.source.id, sourceLine = 21)),
+            wentFirstEvidence = listOf(EvidenceRef(match.source.id, sourceLine = 22)),
+            anchorEvidence = mapOf("CARD_A" to listOf(EvidenceRef(match.source.id, sourceLine = 7))),
+        )
         val accepted = FusionPairing.decide(
             tracker,
-            listOf(PowerPairingFacts(reduced, Instant.ofEpochMilli(tracker.record.timestamp - 7_000), MatchResult.WIN, true, setOf("CARD_A"))),
+            listOf(facts(reduced)),
             setOf("CARD_A"),
         )
         assertEquals(PairingStatus.ACCEPTED, accepted.status)
+        assertTrue(accepted.candidates.single().evidence.all { it.sourceLine != null || it.jsonPointer != null })
 
         val ambiguous = FusionPairing.decide(
             tracker,
             listOf(
-                PowerPairingFacts(reduced, Instant.ofEpochMilli(tracker.record.timestamp - 7_000), MatchResult.WIN),
-                PowerPairingFacts(reduced.copy(source = reduced.source.copy(id = "power:other")), Instant.ofEpochMilli(tracker.record.timestamp - 8_000), MatchResult.WIN),
+                facts(reduced),
+                facts(reduced.copy(source = reduced.source.copy(id = "power:other")), 8_000),
             ),
         )
         assertEquals(PairingStatus.CONFLICTED, ambiguous.status)
     }
 
     @Test
+    fun `pairing does not accept matching values without exact power evidence`() {
+        val tracker = tracker()
+        val reduced = reducedPower()
+        val decision = FusionPairing.decide(
+            tracker,
+            listOf(PowerPairingFacts(reduced, Instant.ofEpochMilli(tracker.record.timestamp), MatchResult.WIN, true, setOf("CARD_A"))),
+            setOf("CARD_A"),
+        )
+
+        assertEquals(PairingStatus.PENDING, decision.status)
+        assertTrue(decision.candidates.single().rejectedReasons.all { it.contains("lacks source evidence") })
+        assertTrue(decision.candidates.single().evidence.isEmpty())
+    }
+
+    @Test
     fun `replayed and shuffled imports produce one deterministic fused artifact`() {
         val tracker = tracker()
         val power = reducedPower()
-        val decision = PairingDecision(PairingStatus.ACCEPTED, power.source.id, emptyList(), "test")
+        val decision = evidencedDecision(power)
         val first = FusionCoordinator.assemble(tracker, listOf(power, power), decision)
         val second = FusionCoordinator.assemble(tracker, listOf(power), decision)
 
@@ -121,6 +148,25 @@ class FusionCoreTest {
         assertEquals(FUSION_SCHEMA, first.schema)
         assertTrue(first.events.all { it.evidence.isNotEmpty() })
         assertNotNull(first.matchId)
+    }
+
+    @Test
+    fun `provenance validator rejects an accepted fact with no exact evidence`() {
+        val tracker = tracker()
+        val power = reducedPower()
+        val fused = FusionCoordinator.assemble(tracker, listOf(power), evidencedDecision(power))
+        assertTrue(FusionProvenanceValidator.validate(fused).isEmpty())
+
+        val invalid = fused.copy(events = fused.events.mapIndexed { index, event ->
+            when (index) {
+                0 -> event.copy(evidence = emptyList())
+                1 -> event.copy(evidence = listOf(EvidenceRef("missing-source", sourceLine = 8)))
+                else -> event
+            }
+        })
+        val errors = FusionProvenanceValidator.validate(invalid)
+        assertTrue(errors.any { it == "events[0] has no evidence" })
+        assertTrue(errors.any { it == "events[1] evidence[0] references unknown source missing-source" })
     }
 
     @Test
@@ -196,7 +242,7 @@ class FusionCoreTest {
 
         val reduced = listOf(left, right).map { PowerEvidenceReducer.reduce(it.first, it.second) }
         val tracker = tracker()
-        val decision = PairingDecision(PairingStatus.ACCEPTED, left.first.id, emptyList(), "test")
+        val decision = evidencedDecision(reduced.first())
         val fused = FusionCoordinator.assemble(tracker, reduced, decision)
         val source = fused.sources.single { it.id == left.first.id }
         assertEquals(2, source.artifactAliases.size)
@@ -215,6 +261,21 @@ class FusionCoreTest {
         val (source, document) = EvidenceAdapters.powerDocument(powerEvidence().toByteArray())
         return PowerEvidenceReducer.reduce(source, document)
     }
+
+    private fun evidencedDecision(power: ReducedPowerMatch) = PairingDecision(
+        status = PairingStatus.ACCEPTED,
+        acceptedSourceId = power.source.id,
+        candidates = listOf(
+            PairingCandidate(
+                powerSourceId = power.source.id,
+                score = 4,
+                reasons = listOf("test evidence"),
+                rejectedReasons = emptyList(),
+                evidence = listOf(EvidenceRef(power.source.id, sourceLine = 1, rule = "test/1")),
+            ),
+        ),
+        reason = "test",
+    )
 
     private fun powerEvidence() = """
         {
