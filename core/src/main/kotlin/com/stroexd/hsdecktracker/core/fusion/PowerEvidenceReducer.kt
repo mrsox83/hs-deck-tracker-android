@@ -14,6 +14,11 @@ object PowerEvidenceReducer {
     private val inlineTag = Regex("tag=([^ ]+) value=(.*)")
     private val fullEntity = Regex("FULL_ENTITY - Creating ID=([0-9]+) CardID=(.*)")
     private val shownEntity = Regex("(?:SHOW_ENTITY|CHANGE_ENTITY) - Updating Entity=.*? id=([0-9]+).*? CardID=([^ ]*)")
+    private val snapshotCounters = setOf(
+        "RESOURCES", "RESOURCES_USED", "TEMP_RESOURCES", "OVERLOAD_OWED", "OVERLOAD_LOCKED",
+        "HEALTH", "DAMAGE", "ARMOR", "HERALD_COLOSSAL_AMOUNT", "QUEST_PROGRESS",
+        "QUEST_PROGRESS_TOTAL", "NUM_TURNS_IN_PLAY",
+    )
 
     fun reduce(source: FusionSource, document: JsonObject): ReducedPowerMatch {
         val match = document.getValue("match").jsonObject
@@ -68,6 +73,9 @@ object PowerEvidenceReducer {
                     val target = targetText?.let(::entityReference)
                     observeDescriptor(mutableEntities, actorText, evidence)
                     observeDescriptor(mutableEntities, targetText, evidence)
+                    if (blockStack.isEmpty()) snapshots += snapshot(
+                        source, sequence, "BEFORE_ACTION", activeController, rawTurn, false, mutableEntities, evidence,
+                    )
                     outputEvents += CanonicalEvent(
                         id, outputEvents.size + 1, sequence, kind, actor, target,
                         blockStack.lastOrNull(), rawTurn, activeController, listOf(evidence),
@@ -78,7 +86,9 @@ object PowerEvidenceReducer {
                     if (blockStack.isEmpty()) diagnostics += "Unmatched BLOCK_END at source line $line"
                     else {
                         blockStack.removeLast()
-                        snapshots += snapshot(source, sequence, "AFTER_ACTION", activeController, rawTurn, blockStack.isNotEmpty(), mutableEntities, evidence)
+                        if (blockStack.isEmpty()) snapshots += snapshot(
+                            source, sequence, "AFTER_OUTER_ACTION", activeController, rawTurn, false, mutableEntities, evidence,
+                        )
                     }
                 }
                 tagName == "CURRENT_PLAYER" && tagValue == "1" -> snapshots +=
@@ -127,6 +137,20 @@ object PowerEvidenceReducer {
         rawTurn = turn,
         unresolvedBlock = unresolved,
         entityTags = entities.mapValues { it.value.tags.toMap() },
+        counters = entities.mapValues { (_, entity) ->
+            entity.tags.mapNotNull { (name, rawValue) ->
+                if (name !in snapshotCounters) return@mapNotNull null
+                val value = rawValue.toIntOrNull() ?: return@mapNotNull null
+                val observation = entity.history.lastOrNull { it.name == name } ?: return@mapNotNull null
+                name to Claim(
+                    value = value,
+                    status = ClaimStatus.OBSERVED,
+                    confidence = Confidence.HIGH,
+                    reason = "$name tag observed at snapshot boundary",
+                    evidence = listOf(observation.evidence),
+                )
+            }.toMap()
+        }.filterValues { it.isNotEmpty() },
         evidence = listOf(evidence),
     )
 
@@ -167,14 +191,18 @@ object PowerEvidenceReducer {
         var controller: Claim<Int> = Claim(reason = "Controller not observed")
         val tags = linkedMapOf<String, String>()
         val history = mutableListOf<TagObservation>()
+        val identities = mutableListOf<IdentityObservation>()
 
         fun observeCard(value: String, evidence: EvidenceRef) {
-            if (value.isNotEmpty()) cardId = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CardID observed in power record", listOf(evidence))
+            if (value.isNotEmpty()) {
+                if (identities.lastOrNull()?.cardId != value) identities += IdentityObservation(value, evidence)
+                cardId = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CardID observed in power record", listOf(evidence))
+            }
         }
         fun observeController(value: Int?, evidence: EvidenceRef) {
             if (value != null) controller = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CONTROLLER tag observed", listOf(evidence))
         }
-        fun freeze() = EntityState(id, cardId, controller, tags.toMap(), history.toList())
+        fun freeze() = EntityState(id, cardId, controller, tags.toMap(), history.toList(), identities.toList())
     }
 }
 

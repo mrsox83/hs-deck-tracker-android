@@ -61,12 +61,19 @@ data class TagObservation(
 )
 
 @Serializable
+data class IdentityObservation(
+    val cardId: String,
+    val evidence: EvidenceRef,
+)
+
+@Serializable
 data class EntityState(
     val id: String,
     val cardId: Claim<String> = Claim(reason = "Identity not observed"),
     val controller: Claim<Int> = Claim(reason = "Controller not observed"),
     val tags: Map<String, String> = emptyMap(),
     val tagHistory: List<TagObservation> = emptyList(),
+    val identityHistory: List<IdentityObservation> = emptyList(),
 )
 
 @Serializable
@@ -109,6 +116,7 @@ data class FusionSnapshot(
     val rawTurn: Int? = null,
     val unresolvedBlock: Boolean = false,
     val entityTags: Map<String, Map<String, String>>,
+    val counters: Map<String, Map<String, Claim<Int>>> = emptyMap(),
     val evidence: List<EvidenceRef>,
 )
 

@@ -31,7 +31,10 @@ class FusionCoreTest {
         assertEquals(listOf("[id=8 cardId=OPTION_A]"), reduced.choices.single().offered.entityRefs)
         assertEquals(listOf("[id=8 cardId=OPTION_A]"), reduced.choices.single().submitted.entityRefs)
         assertEquals(listOf("[id=8 cardId=OPTION_A]"), reduced.choices.single().confirmed.entityRefs)
-        assertTrue(reduced.snapshots.any { it.phase == "AFTER_ACTION" })
+        assertEquals(1, reduced.snapshots.count { it.phase == "BEFORE_ACTION" })
+        assertEquals(1, reduced.snapshots.count { it.phase == "AFTER_OUTER_ACTION" })
+        assertEquals(4, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").value)
+        assertEquals(6, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").evidence.single().sourceLine)
         assertFalse(reduced.snapshots.last().unresolvedBlock)
         assertTrue(reduced.diagnostics.isEmpty())
     }
@@ -47,6 +50,19 @@ class FusionCoreTest {
         assertEquals("opaque", reduced.entities.getValue("7").tags["FUTURE_TAG"])
         assertTrue(reduced.snapshots.last().unresolvedBlock)
         assertTrue(reduced.diagnostics.single().contains("unterminated"))
+    }
+
+    @Test
+    fun `entity identity revisions retain when each identity became known`() {
+        val changed = powerEvidence().replace(
+            "{\"sequence\":4,\"source_line\":4,\"log_time\":\"12:00:03.0\",\"raw\":\"tag=FUTURE_TAG value=opaque\",\"kind\":\"tag=FUTURE_TAG\"}",
+            "{\"sequence\":4,\"source_line\":4,\"log_time\":\"12:00:03.0\",\"raw\":\"CHANGE_ENTITY - Updating Entity=[entityName=A id=7 zone=PLAY] CardID=CARD_B\",\"kind\":\"CHANGE_ENTITY\",\"entity_id\":\"7\",\"card_id\":\"CARD_B\"}",
+        )
+        val (source, document) = EvidenceAdapters.powerDocument(changed.toByteArray())
+        val entity = PowerEvidenceReducer.reduce(source, document).entities.getValue("7")
+        assertEquals(listOf("CARD_A", "CARD_B"), entity.identityHistory.map { it.cardId })
+        assertEquals(listOf(2, 4), entity.identityHistory.map { it.evidence.sourceLine })
+        assertEquals("CARD_B", entity.cardId.value)
     }
 
     @Test

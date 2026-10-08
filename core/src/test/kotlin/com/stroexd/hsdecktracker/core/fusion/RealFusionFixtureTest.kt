@@ -75,6 +75,9 @@ class RealFusionFixtureTest {
         assertTrue(fused.events.isNotEmpty())
         assertTrue(fused.events.all { it.evidence.isNotEmpty() })
         assertTrue(fused.entities.values.flatMap { it.tagHistory }.all { (it.evidence.sourceLine ?: 0) > 0 })
+        assertTrue(reduced.snapshots.any { snapshot -> snapshot.counters.values.any { "RESOURCES_USED" in it } })
+        assertTrue(reduced.snapshots.any { snapshot -> snapshot.counters.values.any { "HERALD_COLOSSAL_AMOUNT" in it } })
+        assertTrue(reduced.entities.values.any { it.identityHistory.size > 1 })
     }
 
     @Test
