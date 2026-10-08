@@ -62,8 +62,12 @@ object PowerEvidenceReducer {
                 body.startsWith("BLOCK_START") -> {
                     val id = "${source.id}:event:$sequence"
                     val kind = event.string("block_type") ?: "BLOCK"
-                    val actor = event.string("actor")?.let(::entityReference)
-                    val target = event.string("target")?.let(::entityReference)
+                    val actorText = event.string("actor")
+                    val targetText = event.string("target")
+                    val actor = actorText?.let(::entityReference)
+                    val target = targetText?.let(::entityReference)
+                    observeDescriptor(mutableEntities, actorText, evidence)
+                    observeDescriptor(mutableEntities, targetText, evidence)
                     outputEvents += CanonicalEvent(
                         id, outputEvents.size + 1, sequence, kind, actor, target,
                         blockStack.lastOrNull(), rawTurn, activeController, listOf(evidence),
@@ -149,7 +153,14 @@ object PowerEvidenceReducer {
     }
 
     private fun entityReference(value: String): String? = entityId.find(value)?.groupValues?.get(1)
-        ?: value.trim().takeIf { it.all(Char::isDigit) }
+        ?: value.trim().takeIf { it != "0" && it.all(Char::isDigit) }
+
+    private fun observeDescriptor(entities: MutableMap<String, MutableEntity>, value: String?, evidence: EvidenceRef) {
+        if (value == null) return
+        val id = entityReference(value) ?: return
+        val observedCardId = cardId.find(value)?.groupValues?.get(1).orEmpty()
+        if (observedCardId.isNotEmpty()) entities.getOrPut(id) { MutableEntity(id) }.observeCard(observedCardId, evidence)
+    }
 
     private class MutableEntity(val id: String) {
         var cardId: Claim<String> = Claim(reason = "Identity not observed")

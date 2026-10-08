@@ -23,6 +23,7 @@ class FusionCoreTest {
 
         assertEquals(listOf("PLAY", "ATTACK"), reduced.events.map { it.kind })
         assertEquals(reduced.events[0].id, reduced.events[1].parentEventId)
+        assertEquals(null, reduced.events[0].targetEntityId)
         assertEquals("CARD_A", reduced.entities.getValue("7").cardId.value)
         assertEquals("2", reduced.entities.getValue("7").tags["CONTROLLER"])
         assertEquals("4", reduced.entities.getValue("7").tags["HERALD_COLOSSAL_AMOUNT"])

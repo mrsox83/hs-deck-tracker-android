@@ -25,3 +25,11 @@ Authorized access to `H:\My Drive\HSReplay` is now available. Inspected the v0.4
 Added a pure-JVM `hs-fused-match/1` core: immutable provenance-bearing claims and sources, tracker and Power evidence adapters, deterministic replay deduplication, conservative pairing with ambiguous/composite rejection, ordered nested action blocks, time-scoped entity/tag history, unknown-tag retention, separate choice stages, boundary snapshots, and compact source pointers. This is offline-only and does not change tracker capture, persistence, legacy export, Android permissions or UI.
 
 Added five synthetic fusion tests covering nested ordering/provenance, unknown tags and incomplete blocks, accepted and ambiguous pairing, shuffled/repeated import, and composite rejection. The complete `:core:test` suite passed using JDK 17 and cached dependencies. Real-fixture acceptance remains open; synthetic success is not a substitute for the private-fixture assertions requested by R1/R2.
+
+## 2026-10-08 — first real-fixture gate
+
+Added `PowerClock` to resolve exporter log times only when a dated session alias and explicit timezone are available, including guarded midnight rollover. Added a separate `realFusionFixtureTest` Gradle task that requires `-PhsFusionFixtureDir`; the ordinary `:core:test` task excludes it, so CI neither requires private data nor reports a false fixture pass.
+
+The dedicated gate passed against the exact Rafaam pair on Drive. It verified the tracker ZIP/document hashes, bundle schema, inner Power.log manifest hash, 22,601 selected events, nine distinct choices, submitted and confirmed Raze/Enthrall stages, Master Dusk at source line 38189 before Deathwing at 45191, explicit target zero represented as no target, seven-second endpoint difference after America/Chicago clock resolution, accepted multi-characteristic pairing, replay deduplication and evidence pointers on canonical events and tag histories.
+
+The ordinary private-fixture-free `:core:test` gate also passed after the change. No private artifacts were copied into Git. No capture, persistence, UI, Android permission, merge, push or deployment changes were made.

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -27,4 +28,21 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.onnxruntime)
+}
+
+tasks.test {
+    exclude("**/RealFusionFixtureTest.class")
+}
+
+tasks.register<Test>("realFusionFixtureTest") {
+    description = "Runs private mobile fusion fixture assertions from -PhsFusionFixtureDir"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealFusionFixtureTest.class")
+    val fixtureDir = providers.gradleProperty("hsFusionFixtureDir")
+    doFirst {
+        require(fixtureDir.isPresent) { "Pass -PhsFusionFixtureDir=<private fixture directory>" }
+        systemProperty("hsFusionFixtureDir", fixtureDir.get())
+    }
 }
