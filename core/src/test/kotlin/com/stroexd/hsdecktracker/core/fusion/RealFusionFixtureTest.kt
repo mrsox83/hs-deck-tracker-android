@@ -83,6 +83,11 @@ class RealFusionFixtureTest {
         assertTrue(reduced.entities.values.any { it.visibilityHistory.isNotEmpty() })
         assertTrue(reduced.entities.values.any { "HERO_ENTITY" in it.entityLinks })
         assertTrue(reduced.events.any { it.activeController != null && it.playerTurnIndex != null })
+        val observedPlayer = reduced.snapshots.asSequence().flatMap { it.players.values.asSequence() }
+            .firstOrNull { it.remainingHealth.value != null }
+        assertNotNull(observedPlayer)
+        assertEquals(ClaimStatus.DERIVED, observedPlayer.remainingHealth.status)
+        assertEquals(2, observedPlayer.remainingHealth.evidence.size)
     }
 
     @Test

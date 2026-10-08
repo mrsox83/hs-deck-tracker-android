@@ -121,6 +121,22 @@ data class FusedChoice(
 )
 
 @Serializable
+data class PlayerSnapshot(
+    val controller: Int,
+    val playerEntityId: String,
+    val heroEntityId: Claim<String>,
+    val health: Claim<Int> = Claim(reason = "HEALTH not observed"),
+    val damage: Claim<Int> = Claim(reason = "DAMAGE not observed"),
+    val remainingHealth: Claim<Int> = Claim(reason = "HEALTH and DAMAGE are both required"),
+    val armor: Claim<Int> = Claim(reason = "ARMOR not observed"),
+    val resources: Claim<Int> = Claim(reason = "RESOURCES not observed"),
+    val resourcesUsed: Claim<Int> = Claim(reason = "RESOURCES_USED not observed"),
+    val temporaryResources: Claim<Int> = Claim(reason = "TEMP_RESOURCES not observed"),
+    val overloadOwed: Claim<Int> = Claim(reason = "OVERLOAD_OWED not observed"),
+    val overloadLocked: Claim<Int> = Claim(reason = "OVERLOAD_LOCKED not observed"),
+)
+
+@Serializable
 data class FusionSnapshot(
     val id: String,
     val sequence: Int,
@@ -131,6 +147,7 @@ data class FusionSnapshot(
     val unresolvedBlock: Boolean = false,
     val entityTags: Map<String, Map<String, String>>,
     val counters: Map<String, Map<String, Claim<Int>>> = emptyMap(),
+    val players: Map<Int, PlayerSnapshot> = emptyMap(),
     val evidence: List<EvidenceRef>,
 )
 
