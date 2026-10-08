@@ -47,6 +47,7 @@ data class FusionSource(
     val complete: Boolean? = null,
     val parentSourceIds: List<String> = emptyList(),
     val contentSha256: Map<String, String> = emptyMap(),
+    val artifactAliases: List<String> = emptyList(),
 )
 
 @Serializable

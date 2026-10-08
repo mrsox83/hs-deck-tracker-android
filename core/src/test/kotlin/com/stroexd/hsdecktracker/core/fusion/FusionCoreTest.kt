@@ -135,6 +135,36 @@ class FusionCoreTest {
         assertTrue(bundle.diagnostics.single().contains("line 2"))
     }
 
+    @Test
+    fun `different wrappers around identical power content share source identity and retain aliases`() {
+        fun bundle(readme: String): ByteArray {
+            val raw = "same-power-log".toByteArray()
+            val entries = linkedMapOf(
+                "session-a/Power.log" to raw,
+                "session-a/match-001.json" to powerEvidence().toByteArray(),
+                "manifest.json" to """{"schema":"hs-export-bundle/0.4","sessions":[{"session":"session-a","source_sha256":"${EvidenceAdapters.sha256(raw)}"}]}""".toByteArray(),
+                "README.txt" to readme.toByteArray(),
+            )
+            val output = ByteArrayOutputStream()
+            ZipOutputStream(output).use { zip -> entries.forEach { (name, content) ->
+                zip.putNextEntry(ZipEntry(name)); zip.write(content); zip.closeEntry()
+            } }
+            return output.toByteArray()
+        }
+        val left = EvidenceAdapters.exporterBundle(bundle("left")).matches.single()
+        val right = EvidenceAdapters.exporterBundle(bundle("right")).matches.single()
+        assertEquals(left.first.id, right.first.id)
+        assertFalse(left.first.artifactSha256 == right.first.artifactSha256)
+
+        val reduced = listOf(left, right).map { PowerEvidenceReducer.reduce(it.first, it.second) }
+        val tracker = tracker()
+        val decision = PairingDecision(PairingStatus.ACCEPTED, left.first.id, emptyList(), "test")
+        val fused = FusionCoordinator.assemble(tracker, reduced, decision)
+        val source = fused.sources.single { it.id == left.first.id }
+        assertEquals(2, source.artifactAliases.size)
+        assertEquals(reduced.first().events, fused.events)
+    }
+
     private fun tracker(): TrackerEvidence {
         val record = MatchRecord(
             id = "tracker-match", timestamp = 1_791_401_186_774, result = MatchResult.WIN,

@@ -44,6 +44,13 @@ The private test class is excluded from `:core:test`. The dedicated task fails b
 - Earlier completed matches were not contaminated by a later session truncation.
 - The incomplete suffix retained its observed events and a last-valid snapshot instead of being discarded.
 
+## Verified duplicate-wrapper identity
+
+- `HS-export-20261007-110747-2272cd33.zip` and `HS-export-20261007-110749-cf440038.zip` have different outer SHA-256 identities.
+- Their inner Power.log hashes and per-match source identities are equal.
+- The fusion coordinator retains both outer artifact hashes as aliases on one Power source.
+- Replayed wrappers do not create duplicate canonical events or independent corroboration.
+
 ## Boundary
 
-This covers one independently asserted pair and one truncated three-match session, not complete R1 or R2 acceptance. Remaining work includes broad bundle inventory reduction, richer entity transition semantics, counters/resources/health derivations, stronger block-boundary snapshots, and negative real pairing cases. No phone or installed-APK behavior was tested.
+The scoped R1 checklist is complete: schema/adapters, identities, conservative pairing, replay deduplication, compact provenance, shuffled/repeated import, composite and ambiguous rejection, and partial-result coverage are asserted. R2 remains incomplete; remaining work includes richer entity transition semantics, counters/resources/health derivations and stronger block-boundary snapshots. No phone or installed-APK behavior was tested.

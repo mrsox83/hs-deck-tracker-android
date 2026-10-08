@@ -107,8 +107,9 @@ object EvidenceAdapters {
         val documentHash = sha256(bytes)
         val match = root["match"]?.jsonObject ?: error("Power evidence has no match object")
         val index = match["index"]?.jsonPrimitive?.content ?: "unknown"
+        val sourceContentHash = contentHashes.entries.firstOrNull { it.key.endsWith("/Power.log") }?.value ?: documentHash
         val source = FusionSource(
-            id = "power:$artifactHash:$index",
+            id = "power:$sourceContentHash:$index",
             artifactSha256 = artifactHash,
             type = SourceType.ANDROID_POWER_EVIDENCE,
             schema = root["schema"]?.jsonPrimitive?.content,
@@ -117,6 +118,7 @@ object EvidenceAdapters {
             matchAlias = index,
             complete = match["completed"]?.jsonPrimitive?.content?.toBooleanStrictOrNull(),
             contentSha256 = contentHashes + ("match-document" to documentHash),
+            artifactAliases = listOf(artifactHash),
         )
         return source to root
     }

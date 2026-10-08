@@ -93,4 +93,20 @@ class RealFusionFixtureTest {
         assertTrue(reduced.last().events.isNotEmpty())
         assertTrue(reduced.last().snapshots.isNotEmpty())
     }
+
+    @Test
+    fun `duplicate wrappers share inner source identity without becoming independent witnesses`() {
+        val leftBytes = Files.readAllBytes(fixtureDir.resolve("HS-export-20261007-110747-2272cd33.zip"))
+        val rightBytes = Files.readAllBytes(fixtureDir.resolve("HS-export-20261007-110749-cf440038.zip"))
+        assertEquals("6f0f7e8d65f242cb7b57b45d1dec0e9423c89a09fc28dc44dae0c686a2749e10", EvidenceAdapters.sha256(leftBytes))
+        assertEquals("3f5818836410ff3a63a7284962dd81425f668629bac095691461e594d68b2503", EvidenceAdapters.sha256(rightBytes))
+        val left = EvidenceAdapters.exporterBundle(leftBytes)
+        val right = EvidenceAdapters.exporterBundle(rightBytes)
+        assertFalse(left.artifactSha256 == right.artifactSha256)
+        assertEquals(left.matches.map { it.first.id }, right.matches.map { it.first.id })
+        assertEquals(
+            left.matches.flatMap { it.first.contentSha256.filterKeys { key -> key.endsWith("/Power.log") }.values },
+            right.matches.flatMap { it.first.contentSha256.filterKeys { key -> key.endsWith("/Power.log") }.values },
+        )
+    }
 }
