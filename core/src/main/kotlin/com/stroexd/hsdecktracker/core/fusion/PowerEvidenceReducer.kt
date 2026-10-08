@@ -200,8 +200,46 @@ object PowerEvidenceReducer {
                 )
             }.toMap()
         }.filterValues { it.isNotEmpty() },
+        players = playerSnapshots(entities),
         evidence = listOf(evidence),
     )
+
+    private fun playerSnapshots(entities: Map<String, MutableEntity>): Map<Int, PlayerSnapshot> = entities.values.mapNotNull { player ->
+        val controller = player.controller.value ?: player.tags["PLAYER_ID"]?.toIntOrNull() ?: return@mapNotNull null
+        val heroLink = player.links["HERO_ENTITY"] ?: return@mapNotNull null
+        val heroId = heroLink.value ?: return@mapNotNull null
+        val hero = entities[heroId]
+        fun observed(entity: MutableEntity?, name: String): Claim<Int> {
+            val value = entity?.tags?.get(name)?.toIntOrNull()
+                ?: return Claim(reason = "$name not observed for current hero/player")
+            val observation = entity.history.lastOrNull { it.name == name }
+                ?: return Claim(reason = "$name has no retained observation")
+            return Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "$name tag observed", listOf(observation.evidence))
+        }
+        val health = observed(hero, "HEALTH")
+        val damage = observed(hero, "DAMAGE")
+        val remaining = if (health.value != null && damage.value != null) Claim(
+            value = health.value - damage.value,
+            status = ClaimStatus.DERIVED,
+            confidence = Confidence.HIGH,
+            reason = "Current hero HEALTH minus DAMAGE",
+            evidence = (health.evidence + damage.evidence).distinct(),
+        ) else Claim(reason = "Current hero HEALTH and DAMAGE are both required")
+        controller to PlayerSnapshot(
+            controller = controller,
+            playerEntityId = player.id,
+            heroEntityId = heroLink,
+            health = health,
+            damage = damage,
+            remainingHealth = remaining,
+            armor = observed(hero, "ARMOR"),
+            resources = observed(player, "RESOURCES"),
+            resourcesUsed = observed(player, "RESOURCES_USED"),
+            temporaryResources = observed(player, "TEMP_RESOURCES"),
+            overloadOwed = observed(player, "OVERLOAD_OWED"),
+            overloadLocked = observed(player, "OVERLOAD_LOCKED"),
+        )
+    }.toMap()
 
     private fun choice(source: FusionSource, value: JsonObject): FusedChoice {
         fun stage(field: String, timeField: String, methods: Set<String>): ChoiceStage {

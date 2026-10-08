@@ -18,12 +18,14 @@ Implemented and tested:
 - observed CREATOR/copy/hero/entity links without card-name heuristics;
 - raw-log-backed player-name aliases with source-line provenance;
 - per-controller turn indices advanced by resolved CURRENT_PLAYER transitions, not parity.
+- typed player snapshots joined through observed HERO_ENTITY relationships;
+- current-hero remaining health derived only from observed HEALTH and DAMAGE, with both evidence references;
+- armor, permanent resources, used resources, temporary resources and overload retained as separate claims.
 
 Real fixture assertions confirm that the Rafaam match contains time-scoped identity revisions, zone and visibility transitions, hero links, per-controller turn indices and provenance-bearing RESOURCES_USED and HERALD_COLOSSAL_AMOUNT snapshots. Synthetic assertions cover nested blocks, exact counter source lines, aliases, typed transitions, unknown tags and incomplete blocks.
 
 Not yet accepted:
 
-- safe remaining-health derivation tied to resolved current heroes;
 - permanent/temporary/used/overload mana semantics beyond observed values;
 - quest completion/reward and Herald threshold interpretation;
 - readiness, attack availability, deck membership/origin and generated/transform links;

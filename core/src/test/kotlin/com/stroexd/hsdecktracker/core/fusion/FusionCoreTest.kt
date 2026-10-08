@@ -42,6 +42,14 @@ class FusionCoreTest {
         assertEquals(4, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").value)
         assertEquals(6, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").evidence.single().sourceLine)
         assertEquals(mapOf(2 to 1), reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.playerTurnIndices)
+        val player = reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.players.getValue(2)
+        assertEquals("9", player.heroEntityId.value)
+        assertEquals(30, player.health.value)
+        assertEquals(7, player.damage.value)
+        assertEquals(23, player.remainingHealth.value)
+        assertEquals(ClaimStatus.DERIVED, player.remainingHealth.status)
+        assertEquals(listOf(43, 44), player.remainingHealth.evidence.map { it.sourceLine })
+        assertEquals(2, player.armor.value)
         assertFalse(reduced.snapshots.last().unresolvedBlock)
         assertTrue(reduced.diagnostics.isEmpty())
     }
@@ -209,6 +217,13 @@ class FusionCoreTest {
             "index":1,"started_log_time":"12:00:00.0","ended_log_time":"12:00:10.0","completed":true,"source_truncated":false,
             "events":[
               {"sequence":1,"source_line":1,"log_time":"12:00:00.0","raw":"CREATE_GAME","kind":"CREATE_GAME"},
+              {"sequence":40,"source_line":40,"log_time":"12:00:00.1","raw":"Player EntityID=2 PlayerID=2 GameAccountId=[hi=1 lo=2]","kind":"Player"},
+              {"sequence":41,"source_line":41,"log_time":"12:00:00.2","raw":"tag=CONTROLLER value=2","kind":"tag=CONTROLLER"},
+              {"sequence":42,"source_line":42,"log_time":"12:00:00.3","raw":"tag=HERO_ENTITY value=9","kind":"tag=HERO_ENTITY"},
+              {"sequence":43,"source_line":43,"log_time":"12:00:00.4","raw":"FULL_ENTITY - Creating ID=9 CardID=HERO_A","kind":"FULL_ENTITY","entity_id":"9","card_id":"HERO_A"},
+              {"sequence":44,"source_line":43,"log_time":"12:00:00.5","raw":"tag=HEALTH value=30","kind":"tag=HEALTH"},
+              {"sequence":45,"source_line":44,"log_time":"12:00:00.6","raw":"tag=DAMAGE value=7","kind":"tag=DAMAGE"},
+              {"sequence":46,"source_line":45,"log_time":"12:00:00.7","raw":"tag=ARMOR value=2","kind":"tag=ARMOR"},
               {"sequence":2,"source_line":2,"log_time":"12:00:01.0","raw":"FULL_ENTITY - Creating ID=7 CardID=CARD_A","kind":"FULL_ENTITY","entity_id":"7","card_id":"CARD_A"},
               {"sequence":3,"source_line":3,"log_time":"12:00:02.0","raw":"tag=CONTROLLER value=2","kind":"tag=CONTROLLER"},
               {"sequence":30,"source_line":30,"log_time":"12:00:02.1","raw":"tag=ZONE value=HAND","kind":"tag=ZONE"},
@@ -216,7 +231,7 @@ class FusionCoreTest {
               {"sequence":32,"source_line":32,"log_time":"12:00:02.3","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=HAND] tag=CREATOR value=9","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=HAND]","tag":"CREATOR","value":"9"},
               {"sequence":33,"source_line":33,"log_time":"12:00:02.4","raw":"HIDE_ENTITY - Entity=[entityName=A id=7 zone=HAND]","kind":"HIDE_ENTITY"},
               {"sequence":34,"source_line":34,"log_time":"12:00:02.5","raw":"SHOW_ENTITY - Updating Entity=[entityName=A id=7 zone=HAND] CardID=CARD_A","kind":"SHOW_ENTITY","entity_id":"7","card_id":"CARD_A"},
-              {"sequence":35,"source_line":35,"log_time":"12:00:02.6","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=HAND] tag=CURRENT_PLAYER value=1","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=HAND]","tag":"CURRENT_PLAYER","value":"1"},
+              {"sequence":35,"source_line":35,"log_time":"12:00:02.6","raw":"TAG_CHANGE Entity=[entityName=Player id=2 zone=PLAY] tag=CURRENT_PLAYER value=1","kind":"TAG_CHANGE","entity":"[entityName=Player id=2 zone=PLAY]","tag":"CURRENT_PLAYER","value":"1"},
               {"sequence":4,"source_line":4,"log_time":"12:00:03.0","raw":"tag=FUTURE_TAG value=opaque","kind":"tag=FUTURE_TAG"},
               {"sequence":5,"source_line":5,"log_time":"12:00:04.0","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=PLAY] tag=TURN value=3","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=PLAY]","tag":"TURN","value":"3"},
               {"sequence":6,"source_line":6,"log_time":"12:00:05.0","raw":"TAG_CHANGE Entity=[entityName=A id=7 zone=PLAY] tag=HERALD_COLOSSAL_AMOUNT value=4","kind":"TAG_CHANGE","entity":"[entityName=A id=7 zone=PLAY]","tag":"HERALD_COLOSSAL_AMOUNT","value":"4"},
