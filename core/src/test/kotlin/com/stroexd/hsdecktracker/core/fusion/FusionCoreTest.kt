@@ -151,6 +151,20 @@ class FusionCoreTest {
     }
 
     @Test
+    fun `versioned fused artifact survives json round trip`() {
+        val tracker = tracker()
+        val power = reducedPower()
+        val fused = FusionCoordinator.assemble(tracker, listOf(power), evidencedDecision(power))
+
+        val encoded = AppJson.encodeToString(FusedMatch.serializer(), fused)
+        val decoded = AppJson.decodeFromString(FusedMatch.serializer(), encoded)
+
+        assertTrue(encoded.contains("\"schema\":\"$FUSION_SCHEMA\""))
+        assertEquals(fused, decoded)
+        assertTrue(FusionProvenanceValidator.validate(decoded).isEmpty())
+    }
+
+    @Test
     fun `provenance validator rejects an accepted fact with no exact evidence`() {
         val tracker = tracker()
         val power = reducedPower()
