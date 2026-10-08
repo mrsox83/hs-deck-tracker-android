@@ -16,4 +16,6 @@ Approved scope: offline mobile evidence fusion only. No merge, deployment, PC ad
 
 Current implementation checkpoint: the pure-JVM schema, adapters, deterministic coordinator, conservative pairing and first Power evidence reducer are implemented with synthetic tests. Real-fixture acceptance and the remaining R1/R2 assertions are still open.
 
+Real-fixture checkpoint: the exact Rafaam tracker/exporter pair now passes a dedicated private-fixture gate, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. Broader fixture coverage and remaining reducer semantics are still open.
+
 Implementation is blocked at preflight. Do not mark fixture acceptance complete from the plan's narrative alone.
