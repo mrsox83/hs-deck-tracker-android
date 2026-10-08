@@ -78,6 +78,11 @@ class RealFusionFixtureTest {
         assertTrue(reduced.snapshots.any { snapshot -> snapshot.counters.values.any { "RESOURCES_USED" in it } })
         assertTrue(reduced.snapshots.any { snapshot -> snapshot.counters.values.any { "HERALD_COLOSSAL_AMOUNT" in it } })
         assertTrue(reduced.entities.values.any { it.identityHistory.size > 1 })
+        assertTrue(reduced.entities.values.any { it.zoneHistory.size > 1 })
+        assertTrue(reduced.entities.values.any { it.controllerHistory.isNotEmpty() })
+        assertTrue(reduced.entities.values.any { it.visibilityHistory.isNotEmpty() })
+        assertTrue(reduced.entities.values.any { "HERO_ENTITY" in it.entityLinks })
+        assertTrue(reduced.events.any { it.activeController != null && it.playerTurnIndex != null })
     }
 
     @Test
