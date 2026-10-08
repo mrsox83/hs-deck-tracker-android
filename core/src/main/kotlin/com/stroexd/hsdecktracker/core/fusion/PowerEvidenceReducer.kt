@@ -17,7 +17,9 @@ object PowerEvidenceReducer {
     private val playerEntity = Regex("Player EntityID=([0-9]+) PlayerID=([0-9]+).*")
     private val gameEntity = Regex("GameEntity EntityID=([0-9]+).*")
     private val entityName = Regex("entityName=(.*?) id=([0-9]+)")
-    private val linkedEntityTags = setOf("CREATOR", "COPIED_FROM_ENTITY_ID", "COPY_OF_ENTITY_ID", "HERO_ENTITY", "HERO_POWER", "ATTACHED")
+    private val linkedEntityTags = setOf(
+        "CREATOR", "COPIED_FROM_ENTITY_ID", "COPY_OF_ENTITY_ID", "HERO_ENTITY", "HERO_POWER", "ATTACHED", "REWARD_ENTITY",
+    )
     private val snapshotCounters = setOf(
         "RESOURCES", "RESOURCES_USED", "TEMP_RESOURCES", "OVERLOAD_OWED", "OVERLOAD_LOCKED",
         "HEALTH", "DAMAGE", "ARMOR", "HERALD_COLOSSAL_AMOUNT", "QUEST_PROGRESS",
@@ -201,6 +203,7 @@ object PowerEvidenceReducer {
             }.toMap()
         }.filterValues { it.isNotEmpty() },
         players = playerSnapshots(entities),
+        quests = questSnapshots(entities),
         evidence = listOf(evidence),
     )
 
@@ -238,8 +241,35 @@ object PowerEvidenceReducer {
             temporaryResources = observed(player, "TEMP_RESOURCES"),
             overloadOwed = observed(player, "OVERLOAD_OWED"),
             overloadLocked = observed(player, "OVERLOAD_LOCKED"),
+            heraldAmount = observed(player, "HERALD_COLOSSAL_AMOUNT"),
+            heraldClass = observed(player, "HERALD_COLOSSAL_CLASS"),
         )
     }.toMap()
+
+    private fun questSnapshots(entities: Map<String, MutableEntity>): Map<String, QuestSnapshot> = entities.values
+        .filter { entity -> entity.tags.keys.any { it in setOf("QUEST_PROGRESS", "QUEST_PROGRESS_TOTAL", "QUEST_COMPLETED") } }
+        .associate { entity ->
+            fun observedInt(name: String): Claim<Int> {
+                val value = entity.tags[name]?.toIntOrNull() ?: return Claim(reason = "$name not observed")
+                val observation = entity.history.lastOrNull { it.name == name }
+                    ?: return Claim(reason = "$name has no retained observation")
+                return Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "$name tag observed", listOf(observation.evidence))
+            }
+            val completedValue = entity.tags["QUEST_COMPLETED"]?.toIntOrNull()
+            val completedObservation = entity.history.lastOrNull { it.name == "QUEST_COMPLETED" }
+            val completed = if (completedValue != null && completedObservation != null) Claim(
+                completedValue != 0, ClaimStatus.OBSERVED, Confidence.HIGH,
+                "QUEST_COMPLETED tag observed", listOf(completedObservation.evidence),
+            ) else Claim(reason = "QUEST_COMPLETED not observed; progress equality is not treated as completion")
+            entity.id to QuestSnapshot(
+                entityId = entity.id,
+                controller = entity.controller,
+                progress = observedInt("QUEST_PROGRESS"),
+                total = observedInt("QUEST_PROGRESS_TOTAL"),
+                completed = completed,
+                rewardEntityId = entity.links["REWARD_ENTITY"] ?: Claim(reason = "REWARD_ENTITY not observed"),
+            )
+        }
 
     private fun choice(source: FusionSource, value: JsonObject): FusedChoice {
         fun stage(field: String, timeField: String, methods: Set<String>): ChoiceStage {

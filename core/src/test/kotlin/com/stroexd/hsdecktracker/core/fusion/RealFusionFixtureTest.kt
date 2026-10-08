@@ -88,6 +88,11 @@ class RealFusionFixtureTest {
         assertNotNull(observedPlayer)
         assertEquals(ClaimStatus.DERIVED, observedPlayer.remainingHealth.status)
         assertEquals(2, observedPlayer.remainingHealth.evidence.size)
+        val heraldPlayer = reduced.snapshots.asSequence().flatMap { it.players.values.asSequence() }
+            .firstOrNull { it.heraldAmount.value != null }
+        assertNotNull(heraldPlayer)
+        assertEquals(ClaimStatus.OBSERVED, heraldPlayer.heraldAmount.status)
+        assertEquals(null, heraldPlayer.heraldThresholdReached.value)
     }
 
     @Test
