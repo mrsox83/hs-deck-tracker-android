@@ -11,7 +11,7 @@ object FusionCoordinator {
     ): FusedMatch {
         val uniquePower = powerMatches.distinctBy { it.source.id }.sortedBy { it.source.id }
         val accepted = uniquePower.singleOrNull { it.source.id == pairing.acceptedSourceId }
-        val sources = (listOf(tracker.source) + uniquePower.map { it.source }).distinctBy { it.id }.sortedBy { it.id }
+        val sources = mergeSources(listOf(tracker.source) + powerMatches.map { it.source })
         val matchId = stableId("logical", tracker.record.id, *sources.map { it.id }.toTypedArray())
         return FusedMatch(
             matchId = matchId,
@@ -25,6 +25,14 @@ object FusionCoordinator {
             diagnostics = accepted?.diagnostics.orEmpty(),
         )
     }
+
+    private fun mergeSources(sources: List<FusionSource>): List<FusionSource> = sources.groupBy { it.id }
+        .map { (_, revisions) ->
+            val first = revisions.first()
+            val aliases = revisions.flatMap { it.artifactAliases + it.artifactSha256 }.distinct().sorted()
+            first.copy(artifactAliases = aliases)
+        }
+        .sortedBy { it.id }
 
     private fun stableId(vararg parts: String): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(parts.joinToString("\u0000").toByteArray())
