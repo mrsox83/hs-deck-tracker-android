@@ -76,4 +76,21 @@ class RealFusionFixtureTest {
         assertTrue(fused.events.all { it.evidence.isNotEmpty() })
         assertTrue(fused.entities.values.flatMap { it.tagHistory }.all { (it.evidence.sourceLine ?: 0) > 0 })
     }
+
+    @Test
+    fun `legacy truncated session keeps two completed matches and partial suffix`() {
+        val bundlePath = fixtureDir.resolve("HS-export-20261007-120905-b91f0ce1.zip")
+        val bytes = Files.readAllBytes(bundlePath)
+        assertEquals("9c731e4ce8c09a710d971cb0fa5b13dccee8cf12dc7c1fc6bfaec5e4e14fd71f", EvidenceAdapters.sha256(bytes))
+        val bundle = EvidenceAdapters.exporterBundle(bytes)
+        assertEquals("hs-export-bundle/0.3", bundle.schema)
+        assertEquals(3, bundle.matches.size)
+        assertTrue(bundle.diagnostics.single().contains("Source truncation marker observed"))
+        val reduced = bundle.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) }
+        assertEquals(listOf(true, true, false), reduced.map { it.completed })
+        assertEquals(listOf(false, false, true), reduced.map { it.sourceTruncated })
+        assertTrue(reduced.take(2).all { it.events.isNotEmpty() })
+        assertTrue(reduced.last().events.isNotEmpty())
+        assertTrue(reduced.last().snapshots.isNotEmpty())
+    }
 }

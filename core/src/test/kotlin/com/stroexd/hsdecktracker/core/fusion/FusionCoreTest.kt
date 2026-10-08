@@ -113,6 +113,28 @@ class FusionCoreTest {
         assertEquals(bundle.artifactSha256, bundle.matches.single().first.artifactSha256)
     }
 
+    @Test
+    fun `legacy bundle truncation marker patches only final source match`() {
+        val first = powerEvidence().replace("\"index\":1", "\"index\":1")
+        val last = powerEvidence().replace("\"index\":1", "\"index\":2")
+            .replace("\"completed\":true", "\"completed\":false")
+        val raw = "line one\nD marker - Truncating log, which has reached the size limit\n".toByteArray()
+        val entries = linkedMapOf(
+            "session-a/Power.log" to raw,
+            "session-a/match-001.json" to first.toByteArray(),
+            "session-a/match-002.json" to last.toByteArray(),
+            "manifest.json" to """{"schema":"hs-export-bundle/0.3","sessions":[{"session":"session-a","source_sha256":"${EvidenceAdapters.sha256(raw)}"}]}""".toByteArray(),
+        )
+        val output = ByteArrayOutputStream()
+        ZipOutputStream(output).use { zip -> entries.forEach { (name, content) ->
+            zip.putNextEntry(ZipEntry(name)); zip.write(content); zip.closeEntry()
+        } }
+        val bundle = EvidenceAdapters.exporterBundle(output.toByteArray())
+        val reduced = bundle.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) }
+        assertEquals(listOf(false, true), reduced.map { it.sourceTruncated })
+        assertTrue(bundle.diagnostics.single().contains("line 2"))
+    }
+
     private fun tracker(): TrackerEvidence {
         val record = MatchRecord(
             id = "tracker-match", timestamp = 1_791_401_186_774, result = MatchResult.WIN,
