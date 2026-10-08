@@ -15,8 +15,8 @@ The R0-R2 range after that baseline changes only checkpoint/TODO/work-log docume
 
 ## Compatibility and evidence audit
 
-- `hs-fused-match/1` is explicitly serialized with defaults and now has an encode/decode equality test.
-- The decoded artifact is rechecked by `FusionProvenanceValidator`.
+- `FusionArtifactCodec` is the strict `hs-fused-match/1` boundary: schema presence/type/version and provenance are checked on import and export.
+- String and stream encode/decode equality are covered for the synthetic artifact; large artifacts have a direct-to-stream export path.
 - Accepted pairing characteristics require exact evidence from both Power and tracker sources.
 - Non-unknown typed claims, canonical events, entity histories, populated choice stages and snapshots must resolve to a known source and an exact source line or JSON pointer.
 - Duplicate wrappers share the inner Power source identity while retaining physical artifact aliases.
@@ -25,7 +25,9 @@ The R0-R2 range after that baseline changes only checkpoint/TODO/work-log docume
 
 ## Validation gates
 
-The complete ordinary suite passed 108 tests and the private fixture gate passed 3 tests, with no failures, errors or skips. The ordinary total increased by one for the versioned-artifact round-trip assertion, so this checkpoint is accepted locally.
+The complete ordinary suite passed 110 tests and the private fixture gate passed 3 tests, with no failures, errors or skips. The real 22,601-event artifact passes provenance validation and direct-to-stream export under the default test heap.
+
+The real-fixture test intentionally does not retain the original full fused graph while claiming a second full decoded graph is cheap: that duplicate-graph experiment exhausted the default heap. Large-artifact stream decoding in an isolated consumer lifecycle remains unmeasured; only the synthetic stream round trip and large stream export are currently proven.
 
 ## Deliberately deferred
 

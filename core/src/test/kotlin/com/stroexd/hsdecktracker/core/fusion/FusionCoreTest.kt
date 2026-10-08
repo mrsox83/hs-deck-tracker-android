@@ -6,11 +6,13 @@ import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.util.AppJson
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import java.time.Instant
 import java.io.ByteArrayOutputStream
+import java.io.ByteArrayInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -156,12 +158,49 @@ class FusionCoreTest {
         val power = reducedPower()
         val fused = FusionCoordinator.assemble(tracker, listOf(power), evidencedDecision(power))
 
-        val encoded = AppJson.encodeToString(FusedMatch.serializer(), fused)
-        val decoded = AppJson.decodeFromString(FusedMatch.serializer(), encoded)
+        val encoded = FusionArtifactCodec.encode(fused)
+        val decoded = FusionArtifactCodec.decode(encoded)
+        val streamed = ByteArrayOutputStream().also { FusionArtifactCodec.encodeToStream(fused, it) }
+        val streamDecoded = ByteArrayInputStream(streamed.toByteArray()).use(FusionArtifactCodec::decodeFromStream)
 
         assertTrue(encoded.contains("\"schema\":\"$FUSION_SCHEMA\""))
         assertEquals(fused, decoded)
-        assertTrue(FusionProvenanceValidator.validate(decoded).isEmpty())
+        assertEquals(fused, streamDecoded)
+    }
+
+    @Test
+    fun `fused artifact codec requires an explicit supported schema`() {
+        val power = reducedPower()
+        val encoded = FusionArtifactCodec.encode(FusionCoordinator.assemble(tracker(), listOf(power), evidencedDecision(power)))
+        val withoutSchema = encoded.replace("\"schema\":\"$FUSION_SCHEMA\",", "")
+        val wrongSchema = encoded.replace("\"schema\":\"$FUSION_SCHEMA\"", "\"schema\":\"hs-fused-match/2\"")
+        val numericSchema = encoded.replace("\"schema\":\"$FUSION_SCHEMA\"", "\"schema\":2")
+
+        val missing = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.decode(withoutSchema) }
+        val unsupported = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.decode(wrongSchema) }
+        val nonString = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.decode(numericSchema) }
+
+        assertEquals("Fused artifact schema is required", missing.message)
+        assertEquals("Unsupported fused artifact schema: hs-fused-match/2", unsupported.message)
+        assertEquals("Fused artifact schema must be a string", nonString.message)
+    }
+
+    @Test
+    fun `fused artifact codec rejects malformed json and invalid provenance`() {
+        val malformed = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.decode("{not-json") }
+        assertEquals("Invalid fused artifact JSON", malformed.message)
+
+        val power = reducedPower()
+        val fused = FusionCoordinator.assemble(tracker(), listOf(power), evidencedDecision(power))
+        val invalid = fused.copy(events = fused.events.mapIndexed { index, event ->
+            if (index == 0) event.copy(evidence = emptyList()) else event
+        })
+        val invalidJson = AppJson.encodeToString(FusedMatch.serializer(), invalid)
+
+        val encodeError = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.encode(invalid) }
+        val decodeError = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.decode(invalidJson) }
+        assertTrue(encodeError.message.orEmpty().contains("events[0] has no evidence"))
+        assertTrue(decodeError.message.orEmpty().contains("events[0] has no evidence"))
     }
 
     @Test

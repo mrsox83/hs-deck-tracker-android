@@ -14,6 +14,7 @@ object FusionCoordinator {
         val sources = mergeSources(listOf(tracker.source) + powerMatches.map { it.source })
         val matchId = stableId("logical", tracker.record.id, *sources.map { it.id }.toTypedArray())
         return FusedMatch(
+            schema = FUSION_SCHEMA,
             matchId = matchId,
             fusionVersion = fusionVersion,
             sources = sources,
