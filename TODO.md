@@ -11,11 +11,11 @@ Approved scope: offline mobile evidence fusion only. No merge, deployment, PC ad
 - [x] R1: implement versioned evidence schema, adapters, identities, conservative pairing, replay deduplication, and compact output with provenance.
 - [x] R1: verify shuffled/repeated import, composite tracker rejection, ambiguous pairs, and partial-result coverage.
 - [x] R2: implement time-scoped entities, block ordering, counters, separate choice stages, turn boundaries, and snapshots with unknown fields retained.
-- [ ] R2: assert critical mobile facts and synthetic edge cases; verify every accepted claim traces to exact evidence.
-- [ ] Run relevant core/schema/build checks and record reviewable checkpoints; preserve legacy exports and tracker behavior.
+- [x] R2: assert critical mobile facts and synthetic edge cases; verify every accepted claim traces to exact evidence.
+- [x] Run relevant core/schema/build checks and record reviewable checkpoints; preserve legacy exports and tracker behavior.
 
-Current implementation checkpoint: the pure-JVM schema, adapters, deterministic coordinator, conservative pairing and first Power evidence reducer are implemented with synthetic tests. Real-fixture acceptance and the remaining R1/R2 assertions are still open.
+Current implementation checkpoint: the approved offline R0-R2 core is implemented and locally verified. Every accepted pairing characteristic and non-unknown typed claim is required to resolve to a known fused source and an exact source line or tracker JSON pointer; entity histories, canonical events, choice stages and snapshots are checked too.
 
 Real-fixture checkpoint: the exact Rafaam tracker/exporter pair now passes a dedicated private-fixture gate, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. Broader fixture coverage and remaining reducer semantics are still open.
 
-Implementation is blocked at preflight. Do not mark fixture acceptance complete from the plan's narrative alone.
+Remote write authentication remains unproven and is intentionally not required for this local-only checkpoint. No merge, push or deployment was attempted.

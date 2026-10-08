@@ -148,11 +148,17 @@ object PowerEvidenceReducer {
         )
 
         val choices = match["choices"]?.jsonArray.orEmpty().map { choice(source, it.jsonObject) }
+        val endedEvidence = match["events"]?.jsonArray.orEmpty().asSequence().map { it.jsonObject }.lastOrNull { event ->
+            event.string("tag") == "STEP" && event.string("value") == "FINAL_GAMEOVER"
+        }?.let { event ->
+            EvidenceRef(source.id, event.int("source_line"), observedTime = event.string("log_time"), rule = "power-final-gameover/1")
+        }
         return ReducedPowerMatch(
             source = source,
             index = match.int("index") ?: 0,
             startedLogTime = match.string("started_log_time") ?: "",
             endedLogTime = match.string("ended_log_time"),
+            endedEvidence = endedEvidence,
             completed = match.boolean("completed") ?: false,
             sourceTruncated = match.boolean("source_truncated") ?: false,
             events = outputEvents,

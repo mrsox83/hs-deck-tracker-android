@@ -23,8 +23,11 @@ Implemented and tested:
 - armor, permanent resources, used resources, temporary resources and overload retained as separate claims.
 - quest progress, total, explicit completion and reward entity retained as separate claims;
 - Herald amount and class observed separately from unknown build-specific threshold interpretation.
+- endpoint, result, first-player and card-anchor pairing agreements accepted only with exact Power source lines plus tracker JSON pointers;
+- fused-artifact validation requiring every non-unknown typed claim and accepted pairing to reference a known source at an exact line or JSON pointer;
+- provenance validation for canonical events, entity tag/identity/zone/position/controller/visibility/alias histories, choice stages and snapshots.
 
-Real fixture assertions confirm that the Rafaam match contains time-scoped identity revisions, zone and visibility transitions, hero links, per-controller turn indices and provenance-bearing RESOURCES_USED and HERALD_COLOSSAL_AMOUNT snapshots. Synthetic assertions cover nested blocks, exact counter source lines, aliases, typed transitions, unknown tags and incomplete blocks.
+Real fixture assertions confirm that the Rafaam match contains time-scoped identity revisions, zone and visibility transitions, hero links, per-controller turn indices and provenance-bearing RESOURCES_USED and HERALD_COLOSSAL_AMOUNT snapshots. Pairing facts are derived from the reduced log for local controller 2, and the complete fused artifact passes provenance validation. Synthetic assertions cover nested blocks, exact counter source lines, aliases, typed transitions, unknown tags, incomplete blocks, evidence-free pairing rejection and invalid fused evidence.
 
 Not yet accepted:
 
@@ -32,6 +35,6 @@ Not yet accepted:
 - game-build-specific Herald threshold interpretation;
 - readiness, attack availability, deck membership/origin and generated/transform links;
 - extra-turn semantics beyond observed controller transition counts;
-- broader real-fixture critical-fact assertions.
+- additional game-build semantics or fixture-specific facts beyond the approved R0-R2 evidence model.
 
 No Android capture, UI, permission, persistence, merge, push or deployment work is included.

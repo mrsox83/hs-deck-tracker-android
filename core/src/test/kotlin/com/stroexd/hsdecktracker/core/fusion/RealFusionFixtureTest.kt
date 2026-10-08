@@ -65,12 +65,14 @@ class RealFusionFixtureTest {
         assertNotNull(end)
         val pairing = FusionPairing.decide(
             tracker,
-            listOf(PowerPairingFacts(reduced, end, result = MatchResult.WIN, wentFirst = true, anchorCardIds = setOf("CATA_190h"))),
+            listOf(PowerPairingFacts.fromReduced(reduced, end, localController = 2)),
             trackerCardIds = setOf("CATA_190h"),
         )
         assertEquals(PairingStatus.ACCEPTED, pairing.status)
+        assertTrue(pairing.candidates.single().evidence.all { it.sourceLine != null || it.jsonPointer != null })
 
         val fused = FusionCoordinator.assemble(tracker, listOf(reduced, reduced), pairing)
+        assertTrue(FusionProvenanceValidator.validate(fused).isEmpty(), FusionProvenanceValidator.validate(fused).joinToString())
         assertEquals(2, fused.sources.size)
         assertTrue(fused.events.isNotEmpty())
         assertTrue(fused.events.all { it.evidence.isNotEmpty() })
