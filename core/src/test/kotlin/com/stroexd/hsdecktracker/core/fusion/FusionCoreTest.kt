@@ -50,6 +50,13 @@ class FusionCoreTest {
         assertEquals(ClaimStatus.DERIVED, player.remainingHealth.status)
         assertEquals(listOf(43, 44), player.remainingHealth.evidence.map { it.sourceLine })
         assertEquals(2, player.armor.value)
+        assertEquals(4, player.heraldAmount.value)
+        assertEquals(null, player.heraldThresholdReached.value)
+        val quest = reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.quests.getValue("10")
+        assertEquals(3, quest.progress.value)
+        assertEquals(3, quest.total.value)
+        assertEquals(null, quest.completed.value)
+        assertEquals("11", quest.rewardEntityId.value)
         assertFalse(reduced.snapshots.last().unresolvedBlock)
         assertTrue(reduced.diagnostics.isEmpty())
     }
@@ -220,10 +227,17 @@ class FusionCoreTest {
               {"sequence":40,"source_line":40,"log_time":"12:00:00.1","raw":"Player EntityID=2 PlayerID=2 GameAccountId=[hi=1 lo=2]","kind":"Player"},
               {"sequence":41,"source_line":41,"log_time":"12:00:00.2","raw":"tag=CONTROLLER value=2","kind":"tag=CONTROLLER"},
               {"sequence":42,"source_line":42,"log_time":"12:00:00.3","raw":"tag=HERO_ENTITY value=9","kind":"tag=HERO_ENTITY"},
+              {"sequence":47,"source_line":47,"log_time":"12:00:00.31","raw":"tag=HERALD_COLOSSAL_AMOUNT value=4","kind":"tag=HERALD_COLOSSAL_AMOUNT"},
+              {"sequence":48,"source_line":48,"log_time":"12:00:00.32","raw":"tag=HERALD_COLOSSAL_CLASS value=7","kind":"tag=HERALD_COLOSSAL_CLASS"},
               {"sequence":43,"source_line":43,"log_time":"12:00:00.4","raw":"FULL_ENTITY - Creating ID=9 CardID=HERO_A","kind":"FULL_ENTITY","entity_id":"9","card_id":"HERO_A"},
               {"sequence":44,"source_line":43,"log_time":"12:00:00.5","raw":"tag=HEALTH value=30","kind":"tag=HEALTH"},
               {"sequence":45,"source_line":44,"log_time":"12:00:00.6","raw":"tag=DAMAGE value=7","kind":"tag=DAMAGE"},
               {"sequence":46,"source_line":45,"log_time":"12:00:00.7","raw":"tag=ARMOR value=2","kind":"tag=ARMOR"},
+              {"sequence":50,"source_line":50,"log_time":"12:00:00.8","raw":"FULL_ENTITY - Creating ID=10 CardID=QUEST_A","kind":"FULL_ENTITY","entity_id":"10","card_id":"QUEST_A"},
+              {"sequence":51,"source_line":51,"log_time":"12:00:00.81","raw":"tag=CONTROLLER value=2","kind":"tag=CONTROLLER"},
+              {"sequence":52,"source_line":52,"log_time":"12:00:00.82","raw":"tag=QUEST_PROGRESS value=3","kind":"tag=QUEST_PROGRESS"},
+              {"sequence":53,"source_line":53,"log_time":"12:00:00.83","raw":"tag=QUEST_PROGRESS_TOTAL value=3","kind":"tag=QUEST_PROGRESS_TOTAL"},
+              {"sequence":54,"source_line":54,"log_time":"12:00:00.84","raw":"tag=REWARD_ENTITY value=11","kind":"tag=REWARD_ENTITY"},
               {"sequence":2,"source_line":2,"log_time":"12:00:01.0","raw":"FULL_ENTITY - Creating ID=7 CardID=CARD_A","kind":"FULL_ENTITY","entity_id":"7","card_id":"CARD_A"},
               {"sequence":3,"source_line":3,"log_time":"12:00:02.0","raw":"tag=CONTROLLER value=2","kind":"tag=CONTROLLER"},
               {"sequence":30,"source_line":30,"log_time":"12:00:02.1","raw":"tag=ZONE value=HAND","kind":"tag=ZONE"},

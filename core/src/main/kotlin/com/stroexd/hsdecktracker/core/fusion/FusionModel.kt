@@ -134,6 +134,19 @@ data class PlayerSnapshot(
     val temporaryResources: Claim<Int> = Claim(reason = "TEMP_RESOURCES not observed"),
     val overloadOwed: Claim<Int> = Claim(reason = "OVERLOAD_OWED not observed"),
     val overloadLocked: Claim<Int> = Claim(reason = "OVERLOAD_LOCKED not observed"),
+    val heraldAmount: Claim<Int> = Claim(reason = "HERALD_COLOSSAL_AMOUNT not observed"),
+    val heraldClass: Claim<Int> = Claim(reason = "HERALD_COLOSSAL_CLASS not observed"),
+    val heraldThresholdReached: Claim<Boolean> = Claim(reason = "No game-build-specific Herald threshold configured"),
+)
+
+@Serializable
+data class QuestSnapshot(
+    val entityId: String,
+    val controller: Claim<Int>,
+    val progress: Claim<Int> = Claim(reason = "QUEST_PROGRESS not observed"),
+    val total: Claim<Int> = Claim(reason = "QUEST_PROGRESS_TOTAL not observed"),
+    val completed: Claim<Boolean> = Claim(reason = "QUEST_COMPLETED not observed"),
+    val rewardEntityId: Claim<String> = Claim(reason = "REWARD_ENTITY not observed"),
 )
 
 @Serializable
@@ -148,6 +161,7 @@ data class FusionSnapshot(
     val entityTags: Map<String, Map<String, String>>,
     val counters: Map<String, Map<String, Claim<Int>>> = emptyMap(),
     val players: Map<Int, PlayerSnapshot> = emptyMap(),
+    val quests: Map<String, QuestSnapshot> = emptyMap(),
     val evidence: List<EvidenceRef>,
 )
 

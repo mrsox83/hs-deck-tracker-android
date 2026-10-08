@@ -21,13 +21,15 @@ Implemented and tested:
 - typed player snapshots joined through observed HERO_ENTITY relationships;
 - current-hero remaining health derived only from observed HEALTH and DAMAGE, with both evidence references;
 - armor, permanent resources, used resources, temporary resources and overload retained as separate claims.
+- quest progress, total, explicit completion and reward entity retained as separate claims;
+- Herald amount and class observed separately from unknown build-specific threshold interpretation.
 
 Real fixture assertions confirm that the Rafaam match contains time-scoped identity revisions, zone and visibility transitions, hero links, per-controller turn indices and provenance-bearing RESOURCES_USED and HERALD_COLOSSAL_AMOUNT snapshots. Synthetic assertions cover nested blocks, exact counter source lines, aliases, typed transitions, unknown tags and incomplete blocks.
 
 Not yet accepted:
 
 - permanent/temporary/used/overload mana semantics beyond observed values;
-- quest completion/reward and Herald threshold interpretation;
+- game-build-specific Herald threshold interpretation;
 - readiness, attack availability, deck membership/origin and generated/transform links;
 - extra-turn semantics beyond observed controller transition counts;
 - broader real-fixture critical-fact assertions.
