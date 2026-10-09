@@ -30,10 +30,26 @@ Owner: next Codex session on `feature/mobile-fusion-offline`, after refreshing u
 
 The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 112 tests, the expanded private fixture gate passed 5 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
 
-No further implementation unit is assigned inside R0-R2. Additional offline hardening should be selected deliberately from the deferred semantics in the final audit rather than expanding into Android integration.
+No further **new** R0-R2 implementation unit is assigned. The completed baseline, final audit and passing gates remain valid as of their recorded commit. An in-flight R2 unit is not silently cancelled by this status.
 
-Scheduled continuation: resume at 02:50 Central on 2026-10-09, record fresh usage, and continue evidence-driven R0-R2 hardening. The 02:00-07:00 ceiling is 95% of the five-hour window. If the seven-day limit blocks work, one reset credit is authorized; reread usage afterward and stop by 90% of the reset five-hour window.
+## R2 closeout and R3 authorization gate — owner direction, 2026-10-09
+
+This section supersedes the earlier open-ended instruction to "continue evidence-driven R0-R2 hardening." **Do not abruptly halt work already in progress.** Finish and verify that bounded unit first. No recurring polish loop and no automatic phase transition.
+
+Owner: currently active R2 agent, then user for R3 decision.
+
+- [ ] **Existing in-flight R2 task only:** at the next safe checkpoint, inspect the current branch/head, local uncommitted changes, agent task description, TODO, WORK_LOG and checkpoints. Identify the exact started unit and its acceptance criteria. Do not assume previously green tests cover changes since the last checkpoint.
+- [ ] Finish that unit to a coherent boundary, including any immediately necessary bug fixes or regressions introduced by the work. Preserve the four tracker patches, raw-fixture privacy, versioned schema and evidence/provenance rules. Do not start unrelated R2 enhancements while closing this work.
+- [ ] Run the tests appropriate to the touched code, including `:core:test` and the real-fixture/lifecycle gates when relevant; review failures and correct reproducible in-scope defects. Explicitly check compatibility and any changed artifact/stream behavior. Never mark DONE solely because implementation was written or tests previously passed.
+- [ ] Review the diff for unintended changes, document accepted results and remaining limitations in WORK_LOG and a checkpoint, update this task's status and exact branch/commit, and safely commit/push the verified checkpoint. If the task cannot be completed due to a real blocker, time/usage ceiling or failing gate, retain recoverable work, record the specific blocker and next repair step, leave the checkbox OPEN, and resume that same task before any R3 start. Do not mislabel an unverified or WIP commit as release-ready.
+- [ ] **Transition review:** once the in-flight unit is closed with its acceptance evidence (or explicitly reported blocked), present a concise R2 closeout and specific R3 proposal to the user. Ask for explicit R3 authorization; do not commence it on the agent's own initiative.
+
+Stop rule: after safe R2 closeout, **do not initiate further optional/offline hardening** merely to use available time or tokens. Only a concrete, reproducible defect that threatens R2 acceptance may trigger another bounded R2 fix; log its evidence and acceptance criterion. Defer unsupported gameplay semantics, speculative enhancements and QoL ideas to their proper project backlog. If uncertainty is material, ask the user to prioritize rather than invent another task.
+
+Coordination: GitHub and Drive working copies do not update each other automatically. Refresh the remote branch and this TODO before starting/resuming work; reconcile any newer agent changes without overwriting them. This TODO update is a direction for the next safe checkpoint, not a live cancellation or claim that the active agent has read it.
+
+Usage/schedule guard: the prior 02:50 Central 2026-10-09 continuation may be used to finish **the already-started bounded R2 task only**, not to open-endedly polish R2. Retain the previously authorized 02:00–07:00 five-hour ceiling of 95% and the one conditional seven-day reset credit (reread usage afterward; 90% ceiling). Respect hard usage ceilings; if reached, checkpoint recoverably and resume the unfinished unit instead of abruptly abandoning it.
 
 Owner: user/project decision.
 
-- [ ] Explicitly authorize a later phase before any R3-R6 Android capture, UI, permissions, persistence, merge or deployment work begins.
+- [ ] Explicitly authorize R3 before any R3-R6 Android capture, UI, permissions, persistence, merge or deployment work begins.
