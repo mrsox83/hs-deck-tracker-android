@@ -77,3 +77,9 @@ Active v2 delivery directories:
 Android must offer **Install**, not **Update** or **Replace**, for the v2 APK. Physical validation remains pending, and R4 remains unstarted.
 
 The final corrective gate passed `:core:test` and `:app:assembleFusionTest`. The final APK metadata and both local/Drive copies were independently reread after assembly; the Drive copy matched the recorded byte count and SHA-256.
+
+## Device validation progress
+
+The corrected v2 APK installed successfully as a new app. The user confirmed that **HS Deck Tracker Fusion Test** showed no historical decks or games from the working tracker, so the dedicated identity and separate app-private data boundary are phone-verified.
+
+Still pending before R3 acceptance: reopen and confirm the original tracker's expected data, exercise active-match force-stop recovery, finish/reopen without duplication, and test evidence-import cancellation/retry plus persisted status. R4 remains unstarted.
