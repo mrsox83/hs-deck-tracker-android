@@ -178,4 +178,6 @@ Final corrective validation used the compatible JDK 17/Android SDK 35 toolchain:
 
 The user downloaded and installed the corrected v2 APK. Android installed it as a new app rather than offering the unsafe update path encountered with v1. On first open, **HS Deck Tracker Fusion Test** contained no historical decks or games from the working tracker. This confirms separate app-private storage on the device for the active `com.stroexd.hsdecktracker.fusiontest` identity.
 
-This is a passed installation/isolation gate, not complete R3 device acceptance. Confirmation that the original tracker still contains its expected data, active-match force-stop recovery, completed-match deduplication, evidence-import cancellation/retry and persisted fusion status remain pending. R4 has not started.
+At that point this was a passed new-app isolation check, not complete R3 device acceptance. Verification of the original tracker, active-match force-stop recovery, completed-match deduplication, evidence-import cancellation/retry and persisted fusion status were still pending. R4 had not started.
+
+The user then reopened the original tracker and confirmed its decks and match history remained present and active. The phone-verified isolation gate therefore passes in both directions: the fusion-test app did not inherit working data, and installing/opening it did not remove or replace the original tracker's data. Active-match recovery and later R3 phone gates remain pending.
