@@ -357,6 +357,10 @@
     <string name="export_csv_action">Export as CSV</string>
     <string name="export_missing_matches">Export missing match JSON files</string>
     <string name="export_match_json">Export this match as JSON</string>
+    <string name="import_fusion_bundle">Import post-match evidence bundle</string>
+    <string name="fusion_import_success">Fused evidence saved locally</string>
+    <string name="fusion_import_pending">Evidence retained, but no unique conservative match was found</string>
+    <string name="fusion_import_failed">Evidence import failed: %1$s</string>
     <string name="match_export_success">Match exported</string>
     <string name="match_export_already_present">Match was already exported</string>
     <string name="match_export_folder_missing">Choose a match export folder in Settings first</string>

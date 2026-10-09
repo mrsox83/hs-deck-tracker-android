@@ -14,10 +14,73 @@ import java.time.Instant
 import java.time.ZoneId
 import java.io.ByteArrayOutputStream
 import java.io.ByteArrayInputStream
+import java.io.File
+import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlinx.coroutines.test.runTest
 
 class FusionCoreTest {
+    @Test
+    fun `selected exporter bundle persists fused artifact and separate status`() = runTest {
+        val dir = Files.createTempDirectory("hs-fusion-import").toFile()
+        val session = "Hearthstone_2026_10_07_12_00_00"
+        val document = powerEvidence()
+            .replace("\"source_session\":\"session-a\"", "\"source_session\":\"$session\"")
+            .replace("\"ended_log_time\":\"12:00:10.0\"", "\"ended_log_time\":\"12:00:10.0000000\"")
+            .replace(
+                "{\"sequence\":10,\"source_line\":20,\"log_time\":\"12:00:10.0\",\"raw\":\"BLOCK_END\",\"kind\":\"BLOCK_END\"}",
+                "{\"sequence\":10,\"source_line\":20,\"log_time\":\"12:00:09.0\",\"raw\":\"BLOCK_END\",\"kind\":\"BLOCK_END\"}," +
+                    "{\"sequence\":413,\"source_line\":413,\"log_time\":\"12:00:10.0000000\",\"raw\":\"TAG_CHANGE Entity=GameEntity tag=STEP value=FINAL_GAMEOVER\",\"kind\":\"TAG_CHANGE\",\"tag\":\"STEP\",\"value\":\"FINAL_GAMEOVER\"}",
+            )
+            .replace(
+                "{\"sequence\":42,\"source_line\":42",
+                "{\"sequence\":411,\"source_line\":411,\"log_time\":\"12:00:00.25\",\"raw\":\"tag=PLAYSTATE value=WON\",\"kind\":\"tag=PLAYSTATE\"}," +
+                    "{\"sequence\":412,\"source_line\":412,\"log_time\":\"12:00:00.26\",\"raw\":\"tag=FIRST_PLAYER value=1\",\"kind\":\"tag=FIRST_PLAYER\"}," +
+                    "{\"sequence\":42,\"source_line\":42",
+            )
+        val endedAt = checkNotNull(PowerClock.resolve(session, "12:00:10.0000000", ZoneId.of("UTC")))
+        val record = MatchRecord(
+            id = "import-match",
+            timestamp = endedAt.toEpochMilli(),
+            result = MatchResult.WIN,
+            wentFirst = true,
+            source = MatchSource.AUTO,
+        )
+        val repository = FusionImportRepository(dir, clock = { 50L })
+        val result = FusionImporter(repository, ZoneId.of("UTC"))
+            .import(record, listOf(exporterBundle(session, document)), setOf("CARD_A"))
+
+        assertEquals(FusionImportState.FUSED_LOCAL, result.entry.state, result.entry.pairing.toString())
+        assertEquals(1, result.entry.attempts)
+        assertNotNull(result.entry.artifactFile)
+        val artifact = File(dir, "fused-matches/${result.entry.artifactFile}")
+        assertTrue(artifact.isFile)
+        assertEquals(record.id, FusionArtifactCodec.decodeFromStream(artifact.inputStream()).sources.single {
+            it.type == SourceType.ANDROID_TRACKER_JSON
+        }.matchAlias)
+        assertEquals(FusionImportState.FUSED_LOCAL, FusionImportRepository(dir).entries.value.single().state)
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun `ambiguous or malformed imports remain retryable without changing tracker match status`() = runTest {
+        val dir = Files.createTempDirectory("hs-fusion-pending").toFile()
+        val repository = FusionImportRepository(dir, clock = { 70L })
+        val record = MatchRecord(id = "pending-match", timestamp = 1, result = MatchResult.LOSS)
+        val pending = FusionImporter(repository, ZoneId.of("UTC"))
+            .import(record, listOf(exporterBundle("session-a", powerEvidence())))
+        assertEquals(FusionImportState.PENDING_PAIRING, pending.entry.state)
+
+        val failed = FusionImporter(repository, ZoneId.of("UTC"))
+            .import(record, listOf("not a zip".toByteArray()))
+        assertEquals(FusionImportState.FAILED, failed.entry.state)
+        assertEquals(2, failed.entry.attempts)
+        assertTrue(failed.entry.lastError?.isNotBlank() == true)
+        assertEquals(FusionImportState.FAILED, FusionImportRepository(dir).entries.value.single().state)
+        dir.deleteRecursively()
+    }
+
     @Test
     fun `power reducer retains order tags blocks choices and provenance`() {
         val bytes = powerEvidence().toByteArray()
@@ -413,6 +476,20 @@ class FusionCoreTest {
         ),
         reason = "test",
     )
+
+    private fun exporterBundle(session: String, document: String): ByteArray {
+        val raw = "synthetic power log".toByteArray()
+        val entries = linkedMapOf(
+            "$session/Power.log" to raw,
+            "$session/match-001.json" to document.toByteArray(),
+            "manifest.json" to """{"schema":"hs-export-bundle/0.4","sessions":[{"session":"$session","source_sha256":"${EvidenceAdapters.sha256(raw)}"}]}""".toByteArray(),
+        )
+        return ByteArrayOutputStream().also { output ->
+            ZipOutputStream(output).use { zip -> entries.forEach { (name, content) ->
+                zip.putNextEntry(ZipEntry(name)); zip.write(content); zip.closeEntry()
+            } }
+        }.toByteArray()
+    }
 
     private fun powerEvidence() = """
         {
