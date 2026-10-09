@@ -83,6 +83,7 @@ import com.stroexd.hsdecktracker.core.cards.GameFormat
 import com.stroexd.hsdecktracker.core.cards.HsClass
 import com.stroexd.hsdecktracker.core.deck.DeckAnalysis
 import com.stroexd.hsdecktracker.core.meta.OpponentPredictor
+import com.stroexd.hsdecktracker.core.fusion.FusionImportState
 import com.stroexd.hsdecktracker.core.stats.MatchExporter
 import com.stroexd.hsdecktracker.core.stats.MatchHistory
 import com.stroexd.hsdecktracker.core.stats.MatchQuery
@@ -115,7 +116,9 @@ import com.stroexd.hsdecktracker.ui.theme.HsColors
 import com.stroexd.hsdecktracker.ui.theme.uiColor
 import com.stroexd.hsdecktracker.ui.theme.winRateColor
 import com.stroexd.hsdecktracker.ui.writeText
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.time.LocalDate
 import java.time.ZoneId
@@ -484,6 +487,34 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
     var editing by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var selectedCard by remember { mutableStateOf<Card?>(null) }
+    val importFusion = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        val selectedMatch = match
+        if (selectedMatch != null && uris.isNotEmpty()) {
+            scope.launch {
+                runCatching {
+                    val bundles = withContext(Dispatchers.IO) {
+                        uris.map { uri ->
+                            checkNotNull(context.contentResolver.openInputStream(uri)) { "Cannot open selected bundle" }.use { it.readBytes() }
+                        }
+                    }
+                    container.importFusionBundles(selectedMatch, bundles)
+                }.onSuccess { result ->
+                    val message = when (result.entry.state) {
+                        FusionImportState.FUSED_LOCAL -> context.getString(R.string.fusion_import_success)
+                        FusionImportState.PENDING_PAIRING -> context.getString(R.string.fusion_import_pending)
+                        else -> context.getString(R.string.fusion_import_failed, result.entry.lastError.orEmpty())
+                    }
+                    android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
+                }.onFailure { error ->
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.fusion_import_failed, error.message.orEmpty()),
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -496,6 +527,9 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                 },
                 actions = {
                     if (match != null) {
+                        IconButton(onClick = { importFusion.launch(arrayOf("application/zip", "application/octet-stream")) }) {
+                            Icon(Icons.Filled.Timeline, contentDescription = stringResource(R.string.import_fusion_bundle))
+                        }
                         IconButton(
                             onClick = {
                                 scope.launch {

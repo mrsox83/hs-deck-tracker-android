@@ -356,6 +356,10 @@
     <string name="export_csv_action">Als CSV exportieren</string>
     <string name="export_missing_matches">Fehlende Partie-JSON-Dateien exportieren</string>
     <string name="export_match_json">Diese Partie als JSON exportieren</string>
+    <string name="import_fusion_bundle">Beweispaket nach der Partie importieren</string>
+    <string name="fusion_import_success">Zusammengeführte Beweise lokal gespeichert</string>
+    <string name="fusion_import_pending">Beweise gespeichert, aber keine eindeutige konservative Zuordnung gefunden</string>
+    <string name="fusion_import_failed">Beweisimport fehlgeschlagen: %1$s</string>
     <string name="match_export_success">Partie exportiert</string>
     <string name="match_export_already_present">Partie wurde bereits exportiert</string>
     <string name="match_export_folder_missing">Zuerst in den Einstellungen einen Exportordner wählen</string>

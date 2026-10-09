@@ -29,6 +29,9 @@ import com.stroexd.hsdecktracker.core.meta.FormatDetection
 import com.stroexd.hsdecktracker.core.meta.MetaDeck
 import com.stroexd.hsdecktracker.core.meta.MetaSnapshot
 import com.stroexd.hsdecktracker.core.meta.OpponentPredictor
+import com.stroexd.hsdecktracker.core.fusion.FusionImportRepository
+import com.stroexd.hsdecktracker.core.fusion.FusionImportResult
+import com.stroexd.hsdecktracker.core.fusion.FusionImporter
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.tracker.GameEvent
@@ -57,6 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import java.io.File
+import java.time.ZoneId
 import java.util.Locale
 
 data class RecognitionStatus(
@@ -115,6 +119,8 @@ class AppContainer(context: Context) {
     val decks = DeckRepository(dataDir)
     val collection = CollectionRepository(dataDir)
     val matches = MatchRepository(dataDir)
+    val fusionImports = FusionImportRepository(dataDir)
+    private val fusionImporter = FusionImporter(fusionImports, ZoneId.systemDefault())
     private val activeMatchJournal = ActiveMatchJournalRepository(dataDir)
     private val matchJournalCommands = Channel<MatchJournalCommand>(Channel.UNLIMITED)
     private val matchExporter = CompletedMatchExporter(context)
@@ -284,6 +290,14 @@ class AppContainer(context: Context) {
             MatchTransferResult.ALREADY_PRESENT, null -> CompletedMatchExporter.Result.ALREADY_PRESENT
         }
     }
+
+    suspend fun importFusionBundles(record: MatchRecord, bundles: List<ByteArray>): FusionImportResult =
+        withContext(Dispatchers.Default) {
+            val trackerCardIds = record.timeline.mapNotNull { event ->
+                event.cardId ?: event.dbfId?.let { cards.db.byDbfId(it)?.id }
+            }.toSet()
+            fusionImporter.import(record, bundles, trackerCardIds)
+        }
 
     suspend fun exportMissingMatches(records: List<MatchRecord> = matches.matches.value): MatchExportSummary {
         checkNotNull(settings.value.matchExportFolder) { appContext.getString(R.string.match_export_folder_missing) }
