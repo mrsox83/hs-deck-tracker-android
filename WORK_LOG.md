@@ -87,3 +87,9 @@ Added schema-compatible `FULL`/`DELTA` snapshot state, full checkpoints at the f
 The same fused artifact now measures 11,033,645 bytes, a 92.1% reduction. Its snapshot section fell to 4,924,095 bytes while event, entity and choice section sizes remained unchanged. A fresh 512 MiB consumer decoded all 1,144 snapshots in 540 ms and reported 71,857,664 bytes used after decode; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. Final gates: 112 ordinary tests, 3 private fixture tests and 1 isolated lifecycle test, all with zero failures, errors or skips. No private fixture entered Git; no Android integration, merge or deployment was performed.
 
 A focused consumer-safety review added a leading-delta guard to both provenance validation and lazy materialization. Malformed compact streams can no longer reconstruct silently from empty state, while empty snapshot lists and legacy all-full artifacts remain valid. The ordinary gate now passes 112 tests.
+
+## 2026-10-08 — full private corpus smoke gate
+
+Refreshed the Drive inventory from 19 to 29 tracker records and from 11 to 21 exporter bundles, pinning exact SHA-256 values for every current fixture. Added sequential corpus tests that parse every tracker and reduce all 48 exporter source matches under the existing 512 MiB private worker without assigning speculative cross-source pairings.
+
+The full exporter corpus produced 21,018 canonical events and 29,674 compact snapshots. Every canonical event retained exact same-source line evidence; every nonempty snapshot stream began and ended with `FULL` state; lazy materialization reproduced each final checkpoint. The expanded private gate passes 5 tests with zero failures, errors or skips. Raw fixtures remain outside Git, and no Android integration, merge or deployment was performed.

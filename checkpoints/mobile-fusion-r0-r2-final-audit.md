@@ -25,7 +25,7 @@ The R0-R2 range after that baseline changes only checkpoint/TODO/work-log docume
 
 ## Validation gates
 
-The complete ordinary suite passed 112 tests, the private fixture gate passed 3 tests, and the isolated lifecycle gate passed 1 test, with no failures, errors or skips. The real 22,601-event artifact passes provenance validation and direct-to-stream export; its 1,144 snapshots decode successfully in a fresh 512 MiB consumer.
+The complete ordinary suite passed 112 tests, the expanded private fixture gate passed 5 tests, and the isolated lifecycle gate passed 1 test, with no failures, errors or skips. The private gate pins and parses all 29 current tracker records and reduces 48 source matches across all 21 current exporter bundles: 21,018 canonical events and 29,674 compact snapshots. The real 22,601-raw-event representative artifact passes provenance validation and direct-to-stream export; its 1,144 snapshots decode successfully in a fresh 512 MiB consumer.
 
 The first isolated artifact measured 139,607,285 bytes and still exhausted a fresh 512 MiB consumer. Profiling showed snapshots consumed 95.62% of the file. Schema-compatible sparse deltas plus full first/turn/last checkpoints reduced the artifact to 11,033,645 bytes; isolated decoding completed in 540 ms with 71,857,664 bytes used after decode. Lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. Legacy artifacts default to `FULL` snapshot semantics, and lazy materialization restores full snapshot views without eagerly retaining another complete list.
 

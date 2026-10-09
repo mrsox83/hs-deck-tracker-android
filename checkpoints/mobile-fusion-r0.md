@@ -64,3 +64,9 @@ Tracker fixture SHA-256 inventory:
 ## Acceptance boundary
 
 R0 source/artifact availability and inventory are complete. The plan's narrative was cross-checked against raw source and the representative pair. Full real-fixture R1/R2 acceptance remains open and must not be inferred from this inventory or from synthetic tests.
+
+## 2026-10-08 corpus refresh
+
+The live Drive directory now contains 29 tracker records and 21 exporter bundles. The private gate pins every current SHA-256, parses every tracker record, and reduces all 48 source matches sequentially under a 512 MiB worker. The exporter corpus produced 21,018 canonical events and 29,674 compact snapshots; each event retained an exact source line, every nonempty snapshot stream began and ended with `FULL` state, and lazy final-state materialization matched the stored last checkpoint.
+
+Ten tracker records and ten bundles were added after the initial inventory. Their pinned hashes are retained in `RealFusionFixtureTest`; no private contents are copied into Git. The corpus smoke gate does not invent tracker-to-Power pairings for records without independent match labels.
