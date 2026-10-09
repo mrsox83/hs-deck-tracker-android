@@ -15,7 +15,7 @@ This handoff document, TODO correction and final log entry must be committed and
 
 ## Last verified gates
 
-- Ordinary `:core:test`: 111 tests, 0 failures, 0 errors, 0 skipped.
+- Ordinary `:core:test`: 112 tests, 0 failures, 0 errors, 0 skipped.
 - Private `:core:realFusionFixtureTest`: 3 tests, 0 failures, 0 errors, 0 skipped.
 - Private fixture directory: `H:\My Drive\HSReplay`
 - No private fixture content is stored in Git.

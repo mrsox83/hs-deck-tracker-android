@@ -21,6 +21,8 @@ Across 1,144 snapshots, repeated entity-tag state through counters occupied 80,0
 
 `FusionSnapshotMaterializer` reconstructs full views lazily. Current reducer maps are monotonic: tags are overwritten rather than removed, counters derive from retained tags, and observed players/quests persist. Removal tombstones are therefore unnecessary for the current R2 state model.
 
+Both the codec validator and materializer reject a stream whose first snapshot is a delta. This prevents a malformed compact artifact from silently reconstructing incomplete state. Empty snapshot lists remain valid for evidence with no snapshot boundaries.
+
 ## Measured result
 
 The same exact fixture now produces an 11,033,645-byte artifact, a reduction of 128,573,640 bytes (92.1%). The snapshot section is 4,924,095 bytes; the event, entity and choice byte ranges are unchanged.
@@ -40,7 +42,7 @@ The recorded heap values and 81,294,848-byte peak memory-pool sum are JVM measur
 
 ## Gates
 
-- ordinary `:core:test`: 111 tests, 0 failures, 0 errors, 0 skipped;
+- ordinary `:core:test`: 112 tests, 0 failures, 0 errors, 0 skipped;
 - private `:core:realFusionFixtureTest`: 3 tests, 0 failures, 0 errors, 0 skipped;
 - isolated `:core:realFusionArtifactLifecycleTest`: 1 test, 0 failures, 0 errors, 0 skipped.
 

@@ -7,6 +7,7 @@ object FusionSnapshotMaterializer {
         var counters = emptyMap<String, Map<String, Claim<Int>>>()
         var players = emptyMap<Int, PlayerSnapshot>()
         var quests = emptyMap<String, QuestSnapshot>()
+        var initialized = false
 
         for (snapshot in snapshots) {
             if (snapshot.stateMode == SnapshotStateMode.FULL) {
@@ -14,7 +15,9 @@ object FusionSnapshotMaterializer {
                 counters = snapshot.counters
                 players = snapshot.players
                 quests = snapshot.quests
+                initialized = true
             } else {
+                require(initialized) { "Snapshot stream must begin with FULL state" }
                 entityTags = mergeNested(entityTags, snapshot.entityTags)
                 counters = mergeNested(counters, snapshot.counters)
                 players = players + snapshot.players
