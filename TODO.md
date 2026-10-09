@@ -16,7 +16,7 @@ Approved scope: offline mobile evidence fusion only. No merge, deployment, PC ad
 
 Current implementation checkpoint: the approved offline R0-R2 core is implemented and locally verified. Every accepted pairing characteristic and non-unknown typed claim is required to resolve to a known fused source and an exact source line or tracker JSON pointer; entity histories, canonical events, choice stages and snapshots are checked too.
 
-Real-fixture checkpoint: the exact Rafaam tracker/exporter pair now passes a dedicated private-fixture gate, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. Broader fixture coverage and remaining reducer semantics are still open.
+Real-fixture checkpoint: the exact Rafaam tracker/exporter pair passes deep assertions, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. The private corpus gate also pins and parses all 29 current tracker records and reduces all 48 source matches across 21 current exporter bundles, covering 21,018 canonical events and 29,674 compact snapshots. Unsupported higher-level game semantics remain deliberately unknown.
 
 Remote write authentication is proven for `feature/mobile-fusion-offline`. The isolated lifecycle and sparse-snapshot checkpoint supersedes the prior pause handoff. No merge or deployment was attempted.
 
@@ -28,7 +28,7 @@ Owner: next Codex session on `feature/mobile-fusion-offline`, after refreshing u
 - [x] Characterize dominant artifact sections and implement schema-compatible sparse snapshot deltas with full checkpoints, preserving provenance and defaulting legacy artifacts to full-state semantics.
 - [x] Re-run `:core:test`, `:core:realFusionFixtureTest`, and the isolated lifecycle gate; record the results and push the completed checkpoint.
 
-The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 112 tests, the private fixture gate passed 3 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
+The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 112 tests, the expanded private fixture gate passed 5 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
 
 No further implementation unit is assigned inside R0-R2. Additional offline hardening should be selected deliberately from the deferred semantics in the final audit rather than expanding into Android integration.
 

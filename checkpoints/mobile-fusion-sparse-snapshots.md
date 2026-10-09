@@ -43,7 +43,7 @@ The recorded heap values and 81,294,848-byte peak memory-pool sum are JVM measur
 ## Gates
 
 - ordinary `:core:test`: 112 tests, 0 failures, 0 errors, 0 skipped;
-- private `:core:realFusionFixtureTest`: 3 tests, 0 failures, 0 errors, 0 skipped;
+- private `:core:realFusionFixtureTest`: 5 tests, 0 failures, 0 errors, 0 skipped;
 - isolated `:core:realFusionArtifactLifecycleTest`: 1 test, 0 failures, 0 errors, 0 skipped.
 
 Private fixture content remains outside Git. The four tracker patches remain preserved. No Android integration, merge or deployment was attempted.
