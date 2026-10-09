@@ -63,3 +63,13 @@ Owner: current Codex session on `feature/mobile-fusion-offline`.
 - [ ] Stop and explicitly surface readiness before beginning R4, R5 or R6.
 
 R3 source/build work is complete at the isolated-phone-validation boundary. Physical device acceptance remains pending and is not implied by the passing local gates. Do not begin R4 until the user reports the R3 phone results and explicitly authorizes the transition.
+
+### R3 device identity correction — 2026-10-09
+
+- [x] Treat the first phone gate as failed safely before installation: Android offered **Update**, and the user cancelled.
+- [x] Supersede the `.debug` delivery for this phone without deleting its historical checkpoint.
+- [x] Add and independently inspect a dedicated `fusionTest` build identity: package `com.stroexd.hsdecktracker.fusiontest`, version `1.5.0-fusiontest`, label **HS Deck Tracker Fusion Test**.
+- [x] Build and stage a corrected v2 APK and phone-validation checklist.
+- [ ] Complete physical-device acceptance with the v2 APK. Android must offer **Install**, not **Update**.
+
+The `.debug` package was not isolated from this phone's existing tracker installation, regardless of the source repository's production-ID assumption. Only the v2 `.fusiontest` package is active for device validation. R4 remains blocked on reported R3 phone results and explicit authorization.

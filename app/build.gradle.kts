@@ -50,6 +50,12 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
+        create("fusionTest") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".fusiontest"
+            versionNameSuffix = "-fusiontest"
+            matchingFallbacks += listOf("debug")
+        }
     }
 
     compileOptions {
