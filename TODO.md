@@ -70,7 +70,7 @@ R3 source/build work is complete at the isolated-phone-validation boundary. Phys
 - [x] Supersede the `.debug` delivery for this phone without deleting its historical checkpoint.
 - [x] Add and independently inspect a dedicated `fusionTest` build identity: package `com.stroexd.hsdecktracker.fusiontest`, version `1.5.0-fusiontest`, label **HS Deck Tracker Fusion Test**.
 - [x] Build and stage a corrected v2 APK and phone-validation checklist.
-- [x] Device isolation gate: v2 installed as a new app and opened with no historical decks or games from the working tracker.
+- [x] Device isolation gate: v2 installed as a new app and opened with no historical decks or games from the working tracker; the original tracker retained its active decks and match history.
 - [ ] Complete physical-device acceptance with the v2 APK. Android must offer **Install**, not **Update**.
 
 The `.debug` package was not isolated from this phone's existing tracker installation, regardless of the source repository's production-ID assumption. Only the v2 `.fusiontest` package is active for device validation. R4 remains blocked on reported R3 phone results and explicit authorization.

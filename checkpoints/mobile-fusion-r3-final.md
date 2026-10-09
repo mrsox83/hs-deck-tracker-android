@@ -82,4 +82,6 @@ The final corrective gate passed `:core:test` and `:app:assembleFusionTest`. The
 
 The corrected v2 APK installed successfully as a new app. The user confirmed that **HS Deck Tracker Fusion Test** showed no historical decks or games from the working tracker, so the dedicated identity and separate app-private data boundary are phone-verified.
 
-Still pending before R3 acceptance: reopen and confirm the original tracker's expected data, exercise active-match force-stop recovery, finish/reopen without duplication, and test evidence-import cancellation/retry plus persisted status. R4 remains unstarted.
+At that point, the remaining R3 device checks were to reopen the original tracker, exercise active-match force-stop recovery, finish/reopen without duplication, and test evidence-import cancellation/retry plus persisted status. R4 remained unstarted.
+
+The user subsequently reopened the original tracker and confirmed that its decks and match history remained present and active. The installation/data-isolation portion of R3 physical validation is complete. Remaining device work is active-match recovery, completion deduplication and evidence-import status/retry validation; R4 remains unstarted.
