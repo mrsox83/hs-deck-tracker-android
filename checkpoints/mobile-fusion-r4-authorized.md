@@ -12,11 +12,11 @@ Starting remote-verified tip: `250f0b6cf6e0e2f07059063a30148e6250919691`
 
 The user explicitly authorized R4 after approving a staged targeted-region plan. R4 remains on the dedicated `com.stroexd.hsdecktracker.fusiontest` identity. Do not merge, deploy, alter the working tracker installation/data, begin R5, or broaden this into unrestricted screen recording.
 
-Pixel acquisition is limited to Hearthstone-only single-app MediaProjection. Do not retain full-display frames, use Accessibility screenshots as a fallback, or implement a rolling pre-event buffer. Reuse the existing frame stream and retain only bounded trigger/manual-bookmark keyframes. Timestamp-only bookmarks must continue to work without visual capture.
+R4 must audit and extend the tracker's existing screen-share/OCR module and frame-source lifecycle rather than build a parallel capture stack. Present an explicit privacy-versus-capability choice: prefer Hearthstone-only single-app capture when supported, while allowing an informed opt-in to the broader existing screen-share path with a warning that notifications or other non-Hearthstone pixels may be processed. Visual capture remains opt-in and timestamp-only bookmarks must continue to work without it. Do not persist an unrestricted recording or unnecessary full-display frames, and do not implement a rolling pre-event buffer; retain only bounded trigger/manual-bookmark evidence needed by the selected mode.
 
 ## Staged implementation
 
-1. R4.1: capture lifecycle, normalized/configurable regions, bounded keyframes, cleanup and timestamp-only fallback.
+1. R4.1: audit/reuse the existing screen-share/OCR pipeline; add the privacy/capability selector and disclosure; then implement normalized/configurable regions, bounded keyframes, cleanup and timestamp-only fallback without a second capture engine.
 2. R4.2: shadow-mode pilot groups for hero state, turn/resources and event recovery.
 3. R4.3: evidence-backed per-field promotion from experimental to corroborating to accepted. Unknown and inferred values remain explicit; experimental output cannot create an authoritative event.
 4. R4.4: close after bounded pilot acceptance. Defer complex board/minion, secret, deck-count and choice-panel recognition unless separately justified by real evidence.

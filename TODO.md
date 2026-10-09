@@ -85,15 +85,16 @@ The user explicitly authorized R4 after accepting the bounded staged plan below.
 
 R4 capture decisions from the owner:
 
-- Visual capture must use Hearthstone-only single-app MediaProjection; do not retain full-display frames or use Accessibility screenshots as a fallback.
-- Reuse the existing OCR frame stream and retain only explicit trigger/manual-bookmark keyframes.
+- Reuse and audit the tracker's existing screen-share/OCR module and frame-source lifecycle; do not build a parallel capture stack.
+- Give the user an explicit, clearly explained privacy-versus-capability choice among the existing supported capture paths. Prefer Hearthstone-only single-app capture when available, but allow the user to opt into the more compatible/broader existing screen-share path after warning that non-Hearthstone pixels such as notifications may be processed. Visual capture remains opt-in and timestamp-only operation remains available.
+- Retain only explicit trigger/manual-bookmark keyframes or crops needed for evidence; do not persist an unrestricted screen recording or unnecessary full-display frames.
 - Do not implement a rolling pre-event frame buffer.
 - Timestamp bookmarks must continue working when visual capture is unavailable or stopped.
 - Do not use an exact battery-percentage threshold as an acceptance gate. The owner will monitor practical battery impact and request reduced demand if needed; still reject obvious thermal escalation, gameplay stutter or runaway capture/storage.
 
 Implementation sequence:
 
-- [ ] **R4.1:** establish Hearthstone-only single-app capture, normalized/configurable regions, bounded trigger/manual-bookmark keyframes, lifecycle cleanup, and timestamp-only bookmark fallback. Do not add a rolling buffer.
+- [ ] **R4.1:** audit and extend the existing screen-share/OCR pipeline; add the explicit privacy/capability selector and disclosure; establish normalized/configurable regions, bounded trigger/manual-bookmark keyframes, lifecycle cleanup, and timestamp-only bookmark fallback. Do not create a second capture engine or add a rolling buffer.
 - [ ] **R4.2:** enable three pilot region groups in diagnostic/shadow mode: hero state (health/armor, portrait, hero power and weapon); turn/resources (active player, mana and hand count when reliable); event recovery (card-play area, history rail and reconnect/resume cues).
 - [ ] **R4.3:** validate each observation independently and promote fields individually through `experimental` -> `corroborating` -> `accepted`; ambiguous values remain unknown/inferred with confidence and evidence. No experimental recognizer may create an authoritative match event.
 - [ ] **R4.4:** close R4 after the pilot groups provide trustworthy bounded enrichment. Defer detailed board/minion state, secrets, deck counts and choice-panel recognition unless real missing-data evidence justifies a separately accepted addition.
