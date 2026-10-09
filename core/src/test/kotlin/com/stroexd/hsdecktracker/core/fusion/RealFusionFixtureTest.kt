@@ -35,17 +35,33 @@ class RealFusionFixtureTest {
         var matchCount = 0
         var eventCount = 0
         var snapshotCount = 0
+        var completedCount = 0
+        var truncatedCount = 0
+        val schemas = linkedMapOf<String, Int>()
+        val diagnosticCounts = linkedMapOf<String, Int>()
+        val diagnosticContexts = mutableListOf<String>()
         exporterFixtureHashes.forEach { (name, expectedHash) ->
             val bytes = Files.readAllBytes(fixtureDir.resolve(name))
             assertEquals(expectedHash, EvidenceAdapters.sha256(bytes), name)
             val bundle = EvidenceAdapters.exporterBundle(bytes)
             assertEquals(expectedHash, bundle.artifactSha256, name)
             assertTrue(bundle.matches.isNotEmpty(), "$name has no match evidence")
+            schemas[bundle.schema ?: "missing"] = schemas.getOrDefault(bundle.schema ?: "missing", 0) + 1
             bundle.matches.forEach { (source, document) ->
                 val reduced = PowerEvidenceReducer.reduce(source, document)
                 matchCount++
                 eventCount += reduced.events.size
                 snapshotCount += reduced.snapshots.size
+                if (reduced.completed) completedCount++
+                if (reduced.sourceTruncated) truncatedCount++
+                reduced.diagnostics.forEach { diagnostic ->
+                    val category = diagnostic
+                        .replace(Regex("at source line [0-9]+"), "at source line <n>")
+                        .replace(Regex("^[0-9]+ unterminated"), "<n> unterminated")
+                    diagnosticCounts[category] = diagnosticCounts.getOrDefault(category, 0) + 1
+                    diagnosticContexts += "$name#${source.matchAlias} completed=${reduced.completed} " +
+                        "truncated=${reduced.sourceTruncated}: $diagnostic"
+                }
                 assertTrue(reduced.events.all { event ->
                     event.evidence.isNotEmpty() && event.evidence.all { it.sourceId == source.id && it.sourceLine != null }
                 }, "$name match ${source.matchAlias} has an event without exact source evidence")
@@ -60,10 +76,27 @@ class RealFusionFixtureTest {
                 }
             }
         }
-        assertTrue(matchCount >= exporterFixtureHashes.size)
-        assertTrue(eventCount > 0)
-        assertTrue(snapshotCount > 0)
-        println("REAL_FUSION_CORPUS bundles=${exporterFixtureHashes.size} matches=$matchCount events=$eventCount snapshots=$snapshotCount")
+        assertEquals(48, matchCount)
+        assertEquals(43, completedCount)
+        assertEquals(4, truncatedCount)
+        assertEquals(21_018, eventCount)
+        assertEquals(29_674, snapshotCount)
+        assertEquals(
+            linkedMapOf("hs-export-bundle/0.2" to 4, "hs-export-bundle/0.3" to 2, "hs-export-bundle/0.4" to 15),
+            schemas,
+        )
+        assertEquals(
+            linkedMapOf(
+                "Unmatched BLOCK_END at source line <n>" to 6,
+                "<n> unterminated block(s); final snapshot is unresolved" to 1,
+            ),
+            diagnosticCounts,
+        )
+        println(
+            "REAL_FUSION_CORPUS bundles=${exporterFixtureHashes.size} matches=$matchCount " +
+                "completed=$completedCount truncated=$truncatedCount events=$eventCount snapshots=$snapshotCount " +
+                "schemas=$schemas diagnostics=$diagnosticCounts diagnosticContexts=$diagnosticContexts",
+        )
     }
 
     @Test
