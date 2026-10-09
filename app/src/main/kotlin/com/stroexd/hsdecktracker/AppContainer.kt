@@ -8,6 +8,7 @@ import com.stroexd.hsdecktracker.core.collection.CardCollection
 import com.stroexd.hsdecktracker.core.collection.ChangedCard
 import com.stroexd.hsdecktracker.core.collection.CollectionChange
 import com.stroexd.hsdecktracker.core.collection.CollectionChanges
+import com.stroexd.hsdecktracker.core.data.ActiveMatchJournalRepository
 import com.stroexd.hsdecktracker.core.data.CardRepository
 import com.stroexd.hsdecktracker.core.data.CollectionRepository
 import com.stroexd.hsdecktracker.core.data.CollectionUndo
@@ -43,6 +44,7 @@ import com.stroexd.hsdecktracker.vision.CapturePacing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -76,6 +78,12 @@ data class ScanProgress(
     val lastPage: List<String> = emptyList(),
 )
 
+private sealed interface MatchJournalCommand {
+    data class Save(val state: TrackerState) : MatchJournalCommand
+    data class Clear(val draftId: String) : MatchJournalCommand
+    data class Commit(val record: MatchRecord, val clearDraft: Boolean) : MatchJournalCommand
+}
+
 data class MatchExportSummary(
     val written: Int,
     val alreadyPresent: Int,
@@ -107,6 +115,8 @@ class AppContainer(context: Context) {
     val decks = DeckRepository(dataDir)
     val collection = CollectionRepository(dataDir)
     val matches = MatchRepository(dataDir)
+    private val activeMatchJournal = ActiveMatchJournalRepository(dataDir)
+    private val matchJournalCommands = Channel<MatchJournalCommand>(Channel.UNLIMITED)
     private val matchExporter = CompletedMatchExporter(context)
     val matchOutbox = MatchOutboxRepository(dataDir)
     private val completedMatchCommitter = CompletedMatchCommitter(matches, matchOutbox) { record ->
@@ -150,6 +160,30 @@ class AppContainer(context: Context) {
     private var ocrFrameCount = 0
 
     init {
+        activeMatchJournal.active?.let { draft ->
+            if (matches.contains(draft.draftId) || matchOutbox.contains(draft.draftId)) {
+                matchJournalCommands.trySend(MatchJournalCommand.Clear(draft.draftId))
+            } else {
+                tracker.restore(draft)
+            }
+        }
+        tracker.onStateChanged = { previous, current ->
+            when {
+                current?.draftActive == true -> matchJournalCommands.trySend(MatchJournalCommand.Save(current))
+                current == null && previous != null -> matchJournalCommands.trySend(MatchJournalCommand.Clear(previous.draftId))
+            }
+        }
+        appScope.launch {
+            for (command in matchJournalCommands) {
+                try {
+                    processMatchJournalCommand(command)
+                } catch (error: kotlinx.coroutines.CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    android.util.Log.e("MatchJournal", "Journal command failed", error)
+                }
+            }
+        }
         appScope.launch {
             gameLocale.collect { locale ->
                 cards.load(locale)
@@ -213,20 +247,29 @@ class AppContainer(context: Context) {
             ?.deck
             ?.archetypeName
         val record = tracker.finishGame(result, archetype) ?: return
-        saveCompletedMatch(record)
+        saveCompletedMatch(record, clearDraft = true)
     }
 
-    fun saveCompletedMatch(record: MatchRecord) {
-        appScope.launch {
-            val exportSettings = settings.value
-            val result = completedMatchCommitter.commit(
-                record,
-                transferEnabled = exportSettings.autoExportMatches && exportSettings.matchExportFolder != null,
-            )
-            if (result.entry.state == MatchOutboxState.TRANSFER_FAILED) {
-                android.util.Log.w("MatchExport", "Completed match export failed: ${result.entry.lastError}")
-                withContext(Dispatchers.Main) {
-                    android.widget.Toast.makeText(appContext, R.string.match_export_failed, android.widget.Toast.LENGTH_LONG).show()
+    fun saveCompletedMatch(record: MatchRecord, clearDraft: Boolean = false) {
+        matchJournalCommands.trySend(MatchJournalCommand.Commit(record, clearDraft))
+    }
+
+    private suspend fun processMatchJournalCommand(command: MatchJournalCommand) {
+        when (command) {
+            is MatchJournalCommand.Save -> activeMatchJournal.save(command.state)
+            is MatchJournalCommand.Clear -> activeMatchJournal.clear(command.draftId)
+            is MatchJournalCommand.Commit -> {
+                val exportSettings = settings.value
+                val result = completedMatchCommitter.commit(
+                    command.record,
+                    transferEnabled = exportSettings.autoExportMatches && exportSettings.matchExportFolder != null,
+                )
+                if (command.clearDraft) activeMatchJournal.clear(command.record.id)
+                if (result.entry.state == MatchOutboxState.TRANSFER_FAILED) {
+                    android.util.Log.w("MatchExport", "Completed match export failed: ${result.entry.lastError}")
+                    withContext(Dispatchers.Main) {
+                        android.widget.Toast.makeText(appContext, R.string.match_export_failed, android.widget.Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }

@@ -9,8 +9,13 @@ import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.MatchSource
 import com.stroexd.hsdecktracker.core.stats.TimelineEvent
 import com.stroexd.hsdecktracker.core.stats.TimelineType
+import kotlinx.serialization.Serializable
+import java.util.UUID
 
+@Serializable
 data class TrackerState(
+    val draftId: String = UUID.randomUUID().toString(),
+    val draftActive: Boolean = true,
     val deckId: String?,
     val deckName: String,
     val playerClass: HsClass,
@@ -108,7 +113,9 @@ data class TrackerState(
 
     fun withWentFirst(first: Boolean?): TrackerState = copy(wentFirst = first)
 
-    fun resetForNewGame(now: Long): TrackerState = copy(
+    fun resetForNewGame(now: Long, active: Boolean = true): TrackerState = copy(
+        draftId = UUID.randomUUID().toString(),
+        draftActive = active,
         remaining = deckCards,
         drawHistory = emptyList(),
         extraDraws = emptyList(),
@@ -126,6 +133,7 @@ data class TrackerState(
         source: MatchSource = if (autoTracked) MatchSource.AUTO else MatchSource.TRACKER,
         opponentArchetype: String? = null,
     ): MatchRecord = MatchRecord(
+        id = draftId,
         timestamp = now,
         deckId = deckId,
         deckName = deckName,

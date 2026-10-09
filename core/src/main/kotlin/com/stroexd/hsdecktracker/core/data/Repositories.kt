@@ -11,6 +11,7 @@ import com.stroexd.hsdecktracker.core.collection.withScannedCopies
 import com.stroexd.hsdecktracker.core.deck.Deck
 import com.stroexd.hsdecktracker.core.deck.DeckTextParser
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
+import com.stroexd.hsdecktracker.core.tracker.TrackerState
 import com.stroexd.hsdecktracker.core.util.PrettyJson
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
@@ -139,6 +140,8 @@ class MatchRepository(dir: File) {
 
     val matches: StateFlow<List<MatchRecord>> = store.state
 
+    fun contains(id: String): Boolean = store.value.any { it.id == id }
+
     suspend fun add(record: MatchRecord) {
         store.update { it + record }
     }
@@ -196,6 +199,8 @@ class MatchOutboxRepository(dir: File, private val clock: () -> Long = System::c
     )
 
     val entries: StateFlow<List<MatchOutboxEntry>> = store.state
+
+    fun contains(id: String): Boolean = store.value.any { it.match.id == id }
 
     suspend fun stage(record: MatchRecord): MatchOutboxEntry {
         var result: MatchOutboxEntry? = null
@@ -283,6 +288,30 @@ class CompletedMatchCommitter(
                     error.message ?: error::class.simpleName ?: "Unknown transfer failure",
                 ),
             )
+        }
+    }
+}
+
+@Serializable
+data class ActiveMatchJournal(val active: TrackerState? = null)
+
+class ActiveMatchJournalRepository(dir: File) {
+    private val store = JsonFileStore(
+        File(dir, "active-match.json"),
+        ActiveMatchJournal.serializer(),
+        ActiveMatchJournal(),
+    )
+
+    val active: TrackerState? get() = store.value.active
+
+    suspend fun save(state: TrackerState) {
+        require(state.draftActive) { "Inactive tracker state cannot be journaled" }
+        store.set(ActiveMatchJournal(state))
+    }
+
+    suspend fun clear(draftId: String) {
+        store.update { current ->
+            if (current.active?.draftId == draftId) ActiveMatchJournal() else current
         }
     }
 }
