@@ -71,8 +71,9 @@ R3 source/build work is complete at the isolated-phone-validation boundary. Phys
 - [x] Add and independently inspect a dedicated `fusionTest` build identity: package `com.stroexd.hsdecktracker.fusiontest`, version `1.5.0-fusiontest`, label **HS Deck Tracker Fusion Test**.
 - [x] Build and stage a corrected v2 APK and phone-validation checklist.
 - [x] Device isolation gate: v2 installed as a new app and opened with no historical decks or games from the working tracker; the original tracker retained its active decks and match history.
-- [x] Force-stop evidence gate: user played turn 1, stopped during the opponent turn, relaunched and continued; the uploaded exporter ZIP preserves one incomplete pre-stop fragment and one completed post-relaunch fragment.
-- [ ] Confirm **HS Deck Tracker Fusion Test** shows exactly one completed match after relaunch and does not reopen the finished active draft.
+- [x] Force-stop recovery gate: user played turn 1, stopped during the opponent turn, relaunched and continued; the tracker produced one completed six-turn/6:27 record whose original start duration survived, while the exporter ZIP preserves one incomplete pre-stop fragment and one completed post-relaunch fragment.
+- [ ] Confirm no finished active draft reopens after another force-stop/reopen of **HS Deck Tracker Fusion Test**.
+- [ ] Characterize the missing Turn 2 timeline row. Current evidence indicates a bounded OCR/capture gap: the UI emits only turn groups containing timeline events, while duration and pre-stop Start events persisted.
 - [ ] Complete evidence-import cancellation, retry and persisted-status phone checks.
 - [ ] Complete physical-device acceptance with the v2 APK. Android must offer **Install**, not **Update**.
 
