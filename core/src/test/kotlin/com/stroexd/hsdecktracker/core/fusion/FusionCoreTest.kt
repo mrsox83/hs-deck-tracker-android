@@ -22,6 +22,59 @@ import kotlinx.coroutines.test.runTest
 
 class FusionCoreTest {
     @Test
+    fun `interrupted fusion status becomes visible and retryable after restart`() = runTest {
+        val dir = Files.createTempDirectory("hs-fusion-interrupted").toFile()
+        val repository = FusionImportRepository(dir, clock = { 90L })
+        repository.begin("match-interrupted", listOf("hash-a"))
+        repository.transition("match-interrupted", FusionImportState.PROCESSING)
+
+        val restarted = FusionImportRepository(dir, clock = { 100L })
+        assertEquals(1, restarted.recoverInterrupted())
+        val recovered = restarted.entries.value.single()
+        assertEquals(FusionImportState.FAILED, recovered.state)
+        assertTrue(recovered.lastError?.contains("interrupted") == true)
+        assertEquals(1, recovered.attempts)
+        assertEquals(0, FusionImportRepository(dir).recoverInterrupted())
+        val accessFailure = restarted.recordAccessFailure("match-interrupted", "Permission was denied")
+        assertEquals(FusionImportState.FAILED, accessFailure.state)
+        assertEquals(2, accessFailure.attempts)
+        assertEquals("Permission was denied", accessFailure.lastError)
+        val completed = restarted.transition("match-interrupted", FusionImportState.FUSED_LOCAL, artifactFile = "fused.json")
+        assertEquals(completed, restarted.recordAccessFailure("match-interrupted", "later picker failure"))
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun `bundle loader reports permission and missing document failures`() {
+        assertEquals(listOf("bundle".toByteArray().toList()), FusionBundleLoader.load(listOf {
+            ByteArrayInputStream("bundle".toByteArray())
+        }).map { it.toList() })
+        assertTrue(assertFailsWith<FusionBundleAccessException> {
+            FusionBundleLoader.load(listOf { throw SecurityException("denied") })
+        }.message?.contains("Permission was denied") == true)
+        assertTrue(assertFailsWith<FusionBundleAccessException> {
+            FusionBundleLoader.load(listOf { null })
+        }.message?.contains("cannot be opened") == true)
+    }
+
+    @Test
+    fun `failed artifact replacement removes staging file and preserves prior artifact`() = runTest {
+        val dir = Files.createTempDirectory("hs-fusion-atomic").toFile()
+        val repository = FusionImportRepository(dir)
+        val power = reducedPower()
+        val valid = FusionCoordinator.assemble(tracker(), listOf(power), evidencedDecision(power))
+        val name = repository.writeArtifact(valid)
+        val target = File(dir, "fused-matches/$name")
+        val before = target.readBytes()
+
+        val failure = runCatching { repository.writeArtifact(valid.copy(schema = "unsupported")) }.exceptionOrNull()
+        assertTrue(failure is FusionArtifactException)
+        assertTrue(before.contentEquals(target.readBytes()))
+        assertFalse(File(dir, "fused-matches/${valid.matchId}.json.tmp").exists())
+        dir.deleteRecursively()
+    }
+
+    @Test
     fun `selected exporter bundle persists fused artifact and separate status`() = runTest {
         val dir = Files.createTempDirectory("hs-fusion-import").toFile()
         val session = "Hearthstone_2026_10_07_12_00_00"

@@ -48,6 +48,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -121,6 +122,7 @@ class AppContainer(context: Context) {
     val matches = MatchRepository(dataDir)
     val fusionImports = FusionImportRepository(dataDir)
     private val fusionImporter = FusionImporter(fusionImports, ZoneId.systemDefault())
+    private val fusionRecovery = appScope.async { fusionImports.recoverInterrupted() }
     private val activeMatchJournal = ActiveMatchJournalRepository(dataDir)
     private val matchJournalCommands = Channel<MatchJournalCommand>(Channel.UNLIMITED)
     private val matchExporter = CompletedMatchExporter(context)
@@ -293,11 +295,17 @@ class AppContainer(context: Context) {
 
     suspend fun importFusionBundles(record: MatchRecord, bundles: List<ByteArray>): FusionImportResult =
         withContext(Dispatchers.Default) {
+            fusionRecovery.await()
             val trackerCardIds = record.timeline.mapNotNull { event ->
                 event.cardId ?: event.dbfId?.let { cards.db.byDbfId(it)?.id }
             }.toSet()
             fusionImporter.import(record, bundles, trackerCardIds)
         }
+
+    suspend fun recordFusionAccessFailure(matchId: String, error: Throwable) {
+        fusionRecovery.await()
+        fusionImports.recordAccessFailure(matchId, error.message ?: "Selected evidence bundle could not be read")
+    }
 
     suspend fun exportMissingMatches(records: List<MatchRecord> = matches.matches.value): MatchExportSummary {
         checkNotNull(settings.value.matchExportFolder) { appContext.getString(R.string.match_export_folder_missing) }

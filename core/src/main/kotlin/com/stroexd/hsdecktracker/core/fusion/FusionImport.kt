@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import java.io.File
+import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.ZoneId
@@ -42,6 +43,33 @@ class FusionImportRepository(
 
     val entries: StateFlow<List<FusionImportEntry>> = store.state
 
+    suspend fun recoverInterrupted(): Int {
+        var recovered = 0
+        store.update { entries -> entries.map { entry ->
+            if (entry.state == FusionImportState.RECEIVED || entry.state == FusionImportState.PROCESSING) {
+                recovered++
+                entry.copy(
+                    state = FusionImportState.FAILED,
+                    lastError = "Import was interrupted; select the bundle again to retry",
+                    updatedAt = clock(),
+                )
+            } else entry
+        } }
+        return recovered
+    }
+
+    suspend fun recordAccessFailure(matchId: String, message: String): FusionImportEntry = update(matchId) { previous ->
+        if (previous?.state == FusionImportState.FUSED_LOCAL) previous else FusionImportEntry(
+            matchId = matchId,
+            bundleSha256 = previous?.bundleSha256.orEmpty(),
+            state = FusionImportState.FAILED,
+            pairing = previous?.pairing,
+            attempts = (previous?.attempts ?: 0) + 1,
+            lastError = message,
+            updatedAt = clock(),
+        )
+    }
+
     suspend fun begin(matchId: String, hashes: List<String>): FusionImportEntry = update(matchId) { previous ->
         FusionImportEntry(
             matchId = matchId,
@@ -72,8 +100,12 @@ class FusionImportRepository(
         val artifacts = File(dir, "fused-matches").apply { mkdirs() }
         val target = File(artifacts, "${match.matchId}.json")
         val temporary = File(artifacts, "${match.matchId}.json.tmp")
-        temporary.outputStream().buffered().use { FusionArtifactCodec.encodeToStream(match, it) }
-        Files.move(temporary.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+        try {
+            temporary.outputStream().buffered().use { FusionArtifactCodec.encodeToStream(match, it) }
+            Files.move(temporary.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+        } finally {
+            temporary.delete()
+        }
         target.name
     }
 
@@ -89,6 +121,26 @@ class FusionImportRepository(
 }
 
 data class FusionImportResult(val entry: FusionImportEntry, val diagnostics: List<String> = emptyList())
+
+class FusionBundleAccessException(message: String, cause: Throwable? = null) : IllegalArgumentException(message, cause)
+
+object FusionBundleLoader {
+    fun load(openers: List<() -> InputStream?>): List<ByteArray> {
+        if (openers.isEmpty()) return emptyList()
+        return openers.mapIndexed { index, open ->
+            try {
+                val input = open() ?: throw FusionBundleAccessException("Selected bundle ${index + 1} cannot be opened")
+                input.use { it.readBytes() }
+            } catch (error: FusionBundleAccessException) {
+                throw error
+            } catch (error: SecurityException) {
+                throw FusionBundleAccessException("Permission was denied for selected bundle ${index + 1}", error)
+            } catch (error: Exception) {
+                throw FusionBundleAccessException("Selected bundle ${index + 1} could not be read", error)
+            }
+        }
+    }
+}
 
 class FusionImporter(
     private val repository: FusionImportRepository,

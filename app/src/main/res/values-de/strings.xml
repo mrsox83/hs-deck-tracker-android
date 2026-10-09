@@ -360,6 +360,13 @@
     <string name="fusion_import_success">Zusammengeführte Beweise lokal gespeichert</string>
     <string name="fusion_import_pending">Beweise gespeichert, aber keine eindeutige konservative Zuordnung gefunden</string>
     <string name="fusion_import_failed">Beweisimport fehlgeschlagen: %1$s</string>
+    <string name="fusion_status">Status der Beweiszusammenführung</string>
+    <string name="fusion_state_received">Beweise empfangen</string>
+    <string name="fusion_state_processing">Beweise werden verarbeitet</string>
+    <string name="fusion_state_pending">Eindeutige Zuordnung erforderlich</string>
+    <string name="fusion_state_local">Zusammengeführtes Artefakt lokal gespeichert</string>
+    <string name="fusion_state_failed">Import erfordert Aufmerksamkeit</string>
+    <string name="fusion_retry_select">Paket erneut auswählen</string>
     <string name="match_export_success">Partie exportiert</string>
     <string name="match_export_already_present">Partie wurde bereits exportiert</string>
     <string name="match_export_folder_missing">Zuerst in den Einstellungen einen Exportordner wählen</string>
