@@ -161,3 +161,15 @@ Five-hour usage began at 0%, was 28% after implementation, automated gates, priv
 The final live post-push usage reading was 36% of the five-hour window. The published checkpoint remained below the 60% ceiling.
 
 The user subsequently explicitly authorized the external synced-Drive copy. The APK, checksum and phone-validation README were copied to `H:\My Drive\HSReplay\Development\mobile-fusion-r3-device-validation`; the copied 68,824,434-byte APK was reread from Drive and its SHA-256 matched `321ea959e0a08b5a10dfd58e80bf3c3ca92f28950f5a024005e13c3dbe77a361`.
+
+## 2026-10-09 — R3 device identity correction
+
+The first physical-device isolation gate stopped safely before installation. Android offered **Update** rather than **Install** for the `.debug` APK, and the user cancelled. This proves the existing working installation on this phone already occupies `com.stroexd.hsdecktracker.debug`; the earlier repository-based assumption that `.debug` would be separate from the phone installation was invalid for this device. No install, data clear, uninstall, merge or deployment occurred.
+
+Added a dedicated `fusionTest` Android build type derived from debug with application-ID suffix `.fusiontest`, version suffix `-fusiontest`, and the distinct visible label **HS Deck Tracker Fusion Test**. `:app:assembleFusionTest` passed. Independent packaged-metadata inspection reports package `com.stroexd.hsdecktracker.fusiontest`, version `1.5.0-fusiontest`, `application-debuggable`, and package-scoped provider/permission names.
+
+The final cleanly rebuilt APK is 68,036,586 bytes with SHA-256 `9744f913f7c40aaf7e4cbc1e2833a95cccb12e6eaf626f72be8df5a5ab8805d2`. The original v1 local and Drive deliveries are preserved as superseded historical artifacts; the active v2 delivery uses new `mobile-fusion-r3-device-validation-v2` directories so nothing is overwritten. Physical-device behavior remains pending. R4 has not started.
+
+Live five-hour usage was 34% during the corrective checkpoint, below the user-authorized 60% ceiling.
+
+Final corrective validation used the compatible JDK 17/Android SDK 35 toolchain: `:core:test` and `:app:assembleFusionTest` completed with `BUILD SUCCESSFUL`. Packaged metadata was reread after that clean build and still reported the dedicated package, version, label and debuggable flag above. The final APK, checksum and revised checklist were then copied to both v2 delivery directories; the Drive APK was reread at 68,036,586 bytes and its SHA-256 matched `9744f913f7c40aaf7e4cbc1e2833a95cccb12e6eaf626f72be8df5a5ab8805d2`.

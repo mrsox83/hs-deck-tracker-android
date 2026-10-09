@@ -54,3 +54,26 @@ Physical-device behavior remains unverified until the user completes the checkli
 
 Five-hour usage was 32% at the final pre-commit check against the user-authorized 60% ceiling.
 The post-push live reading was 36%.
+
+## Corrected device identity — active v2 handoff
+
+The preceding `.debug` delivery is preserved for history but is **superseded for this phone**. At the first device gate, Android offered **Update** rather than **Install**, proving that the working installation already uses `com.stroexd.hsdecktracker.debug`. The user cancelled before installation, so no known working-app data was modified.
+
+The active phone-validation build is now:
+
+- APK: `mobile-fusion-r3-fusiontest.apk`
+- Package: `com.stroexd.hsdecktracker.fusiontest`
+- Visible label: **HS Deck Tracker Fusion Test**
+- Version: `1.5.0-fusiontest`
+- Debuggable: true
+- Bytes: 68,036,586
+- SHA-256: `9744f913f7c40aaf7e4cbc1e2833a95cccb12e6eaf626f72be8df5a5ab8805d2`
+
+Active v2 delivery directories:
+
+- Local: `C:\Users\Xs_da\Documents\SoxCoachExporter\Matches\mobile-fusion-r3-device-validation-v2`
+- Synced Drive: `H:\My Drive\HSReplay\Development\mobile-fusion-r3-device-validation-v2`
+
+Android must offer **Install**, not **Update** or **Replace**, for the v2 APK. Physical validation remains pending, and R4 remains unstarted.
+
+The final corrective gate passed `:core:test` and `:app:assembleFusionTest`. The final APK metadata and both local/Drive copies were independently reread after assembly; the Drive copy matched the recorded byte count and SHA-256.
