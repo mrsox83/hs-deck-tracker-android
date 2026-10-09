@@ -82,3 +82,13 @@ The `.debug` package was not isolated from this phone's existing tracker install
 ### R4 owner constraint — recorded, not authorized
 
 Hearthstone locks the user's phone to landscape while open. If R4 is authorized, do not require an artificial portrait/landscape rotation test during gameplay. Retain dimension/inset-safe coordinate handling and test landscape startup, lock/unlock, capture stop/reconnect, and any fold or window-size change that can occur without leaving landscape. This note narrows the device test matrix; it does not authorize R4 implementation.
+
+Prospective R4 capture decisions from the owner:
+
+- Visual capture must use Hearthstone-only single-app MediaProjection; do not retain full-display frames or use Accessibility screenshots as a fallback.
+- Reuse the existing OCR frame stream and retain only explicit trigger/manual-bookmark keyframes.
+- Do not implement a rolling pre-event frame buffer.
+- Timestamp bookmarks must continue working when visual capture is unavailable or stopped.
+- Do not use an exact battery-percentage threshold as an acceptance gate. The owner will monitor practical battery impact and request reduced demand if needed; still reject obvious thermal escalation, gameplay stutter or runaway capture/storage.
+
+These are design constraints only. R4 remains unstarted until explicitly authorized.
