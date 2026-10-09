@@ -17,6 +17,7 @@ import com.stroexd.hsdecktracker.core.cards.Ownership
 import com.stroexd.hsdecktracker.core.collection.CardCollection
 import com.stroexd.hsdecktracker.core.collection.OwnedCard
 import com.stroexd.hsdecktracker.core.data.AppSettings
+import com.stroexd.hsdecktracker.core.data.ActiveMatchJournalRepository
 import com.stroexd.hsdecktracker.core.data.Backup
 import com.stroexd.hsdecktracker.core.data.BackupData
 import com.stroexd.hsdecktracker.core.data.DeckRepository
@@ -35,11 +36,13 @@ import com.stroexd.hsdecktracker.core.stats.DrawOdds
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.StatsCalculator
+import com.stroexd.hsdecktracker.core.tracker.TrackerState
 import kotlinx.coroutines.test.runTest
 import java.nio.file.Files
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class MiscTest {
@@ -256,6 +259,20 @@ class MiscTest {
         assertEquals(2, recovered.attempts)
         assertEquals(null, recovered.lastError)
         assertEquals(1, MatchRepository(dir).matches.value.size)
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun activeMatchJournalRestoresAndOnlyClearsTheMatchingDraft() = runTest {
+        val dir = Files.createTempDirectory("hs-active-match").toFile()
+        val draft = TrackerState.empty(now = 100).copy(draftId = "draft-a", turn = 4)
+        ActiveMatchJournalRepository(dir).save(draft)
+
+        assertEquals(draft, ActiveMatchJournalRepository(dir).active)
+        ActiveMatchJournalRepository(dir).clear("another-draft")
+        assertEquals(draft, ActiveMatchJournalRepository(dir).active)
+        ActiveMatchJournalRepository(dir).clear(draft.draftId)
+        assertNull(ActiveMatchJournalRepository(dir).active)
         dir.deleteRecursively()
     }
 }

@@ -15,6 +15,7 @@ import com.stroexd.hsdecktracker.core.tracker.TrackerState
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotEquals
 
 class TrackerTest {
     private val deck = Deck(
@@ -81,5 +82,25 @@ class TrackerTest {
         assertEquals(60, record.durationSeconds)
         assertEquals(2, record.turns)
         assertEquals(MatchSource.TRACKER, record.source)
+    }
+
+    @Test
+    fun restoredDraftKeepsItsCompletionIdentityAndTransitionsInOrder() {
+        var now = 1_000L
+        val original = TrackerState.start(deck, now).copy(draftId = "draft-stable").draw(FIREBALL)
+        val controller = TrackerController(clock = { now })
+        val transitions = mutableListOf<Pair<TrackerState?, TrackerState?>>()
+        controller.onStateChanged = { previous, current -> transitions += previous to current }
+
+        controller.restore(original)
+        controller.update { it.nextTurn() }
+        now = 61_000L
+        val record = assertNotNull(controller.finishGame(MatchResult.WIN))
+
+        assertEquals("draft-stable", record.id)
+        assertEquals(2, record.turns)
+        assertEquals(false, controller.state.value?.draftActive)
+        assertEquals(listOf(null, original, original.nextTurn()), transitions.map { it.first })
+        assertNotEquals("draft-stable", controller.state.value?.draftId)
     }
 }

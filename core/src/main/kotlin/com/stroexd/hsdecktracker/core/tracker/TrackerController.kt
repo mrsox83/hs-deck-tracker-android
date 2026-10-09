@@ -9,7 +9,6 @@ import com.stroexd.hsdecktracker.core.stats.TimelineType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
 /** The running game, shared by the in-app tracker and the overlay. */
 class TrackerController(private val clock: () -> Long = System::currentTimeMillis) {
@@ -17,6 +16,16 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
     val state: StateFlow<TrackerState?> = _state.asStateFlow()
 
     private var selectedDeck: Deck? = null
+
+    /** Called synchronously after each state transition so durable journals can preserve ordering. */
+    var onStateChanged: (previous: TrackerState?, current: TrackerState?) -> Unit = { _, _ -> }
+
+    private fun setState(next: TrackerState?) {
+        val previous = _state.value
+        if (previous == next) return
+        _state.value = next
+        onStateChanged(previous, next)
+    }
 
     /** Decks the tracker may recognize, in priority order. */
     var deckCandidates: () -> List<Deck> = { emptyList() }
@@ -30,16 +39,17 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
 
     fun start(deck: Deck) {
         selectedDeck = deck
-        _state.value = TrackerState.start(deck, clock())
+        setState(TrackerState.start(deck, clock()))
     }
 
     fun stop() {
         selectedDeck = null
-        _state.value = null
+        setState(null)
     }
 
     fun update(transform: (TrackerState) -> TrackerState) {
-        _state.update { current -> current?.let(transform) }
+        val current = _state.value ?: return
+        setState(transform(current))
     }
 
     fun newGame() = update { it.resetForNewGame(clock()) }
@@ -47,8 +57,23 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
     fun finishGame(result: MatchResult, opponentArchetype: String? = null): MatchRecord? {
         val current = _state.value ?: return null
         val record = current.toMatchRecord(result, clock(), opponentArchetype = opponentArchetype)
-        _state.value = current.resetForNewGame(clock())
+        setState(current.resetForNewGame(clock(), active = false))
         return record
+    }
+
+    fun restore(restored: TrackerState) {
+        selectedDeck = restored.deckId?.let { id ->
+            Deck(
+                id = id,
+                name = restored.deckName,
+                heroClass = restored.playerClass,
+                format = restored.format,
+                cards = restored.deckCards,
+            )
+        }
+        seenCards.clear()
+        detectedPlayerClass = restored.playerClass.takeIf { it.isPlayable }
+        setState(restored)
     }
 
     fun onGameEvent(event: GameEvent, db: CardDatabase): MatchRecord? {
@@ -58,7 +83,7 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
                 detectedPlayerClass = null
                 val now = clock()
                 val base = selectedDeck?.let { TrackerState.start(it, now) } ?: TrackerState.empty(now)
-                _state.value = base.copy(autoTracked = true)
+                setState(base.copy(autoTracked = true))
             }
             is GameEvent.ClassDetected -> onClassDetected(event)
             is GameEvent.FriendlyCardSeen -> onFriendlyCardSeen(event.dbfIds, event.fromDeck, db)
@@ -83,14 +108,15 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
         if (current.deckCards.isNotEmpty() && current.playerClass.isPlayable && current.playerClass != event.hsClass) {
             // The last used deck belongs to another class: recognize again
             selectedDeck = null
-            _state.value = TrackerState.empty(current.startedAt).copy(
+            setState(TrackerState.empty(current.startedAt).copy(
+                draftId = current.draftId,
                 autoTracked = current.autoTracked,
                 playerClass = event.hsClass,
                 opponentClass = current.opponentClass,
                 wentFirst = current.wentFirst,
-            )
+            ))
         } else if (current.deckCards.isEmpty() || current.playerClass == HsClass.UNKNOWN) {
-            _state.value = current.copy(playerClass = event.hsClass)
+            setState(current.copy(playerClass = event.hsClass))
         }
     }
 
@@ -160,7 +186,7 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
         val identified = DeckIdentifier.identify(seen, candidates) ?: return false
         if (identified.cards == current.deckCards) return false
         if (mismatch) selectedDeck = null
-        _state.value = rebuildWithDeck(current, identified, db)
+        setState(rebuildWithDeck(current, identified, db))
         return true
     }
 
@@ -186,6 +212,8 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
     private fun rebuildWithDeck(current: TrackerState, deck: Deck, db: CardDatabase): TrackerState {
         val seenIds = seenCards.flatMap { cardIds(it.candidates, db) }.toSet()
         var state = TrackerState.start(deck, current.startedAt).copy(
+            draftId = current.draftId,
+            draftActive = current.draftActive,
             autoTracked = current.autoTracked,
             opponentClass = current.opponentClass,
             opponentCards = current.opponentCards,
@@ -203,6 +231,6 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
     fun selectDeckForCurrentGame(deck: Deck, db: CardDatabase) {
         selectedDeck = deck
         val current = _state.value
-        _state.value = if (current == null) TrackerState.start(deck, clock()) else rebuildWithDeck(current, deck, db)
+        setState(if (current == null) TrackerState.start(deck, clock()) else rebuildWithDeck(current, deck, db))
     }
 }
