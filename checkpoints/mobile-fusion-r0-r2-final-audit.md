@@ -25,9 +25,9 @@ The R0-R2 range after that baseline changes only checkpoint/TODO/work-log docume
 
 ## Validation gates
 
-The complete ordinary suite passed 110 tests and the private fixture gate passed 3 tests, with no failures, errors or skips. The real 22,601-event artifact passes provenance validation and direct-to-stream export under the default test heap.
+The complete ordinary suite passed 111 tests, the private fixture gate passed 3 tests, and the isolated lifecycle gate passed 1 test, with no failures, errors or skips. The real 22,601-event artifact passes provenance validation and direct-to-stream export; its 1,144 snapshots decode successfully in a fresh 512 MiB consumer.
 
-The real-fixture test intentionally does not retain the original full fused graph while claiming a second full decoded graph is cheap: that duplicate-graph experiment exhausted the default heap. Large-artifact stream decoding in an isolated consumer lifecycle remains unmeasured; only the synthetic stream round trip and large stream export are currently proven.
+The first isolated artifact measured 139,607,285 bytes and still exhausted a fresh 512 MiB consumer. Profiling showed snapshots consumed 95.62% of the file. Schema-compatible sparse deltas plus full first/turn/last checkpoints reduced the artifact to 11,033,645 bytes; isolated decoding completed in 540 ms with 71,857,664 bytes used after decode. Lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. Legacy artifacts default to `FULL` snapshot semantics, and lazy materialization restores full snapshot views without eagerly retaining another complete list.
 
 ## Deliberately deferred
 

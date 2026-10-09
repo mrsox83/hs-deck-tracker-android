@@ -75,3 +75,13 @@ The first real-fixture round trip exposed two memory limits under the default te
 Paused at the user's request after verifying clean local and remote branch tips at `239ee23482217e2b068ea2a06658f1c2c1dfc236`. Real Git pushes succeeded, superseding the initial `gh auth`/API uncertainty; the TODO now records write authentication as proven. The latest gates remain 110 ordinary tests and 3 private fixture tests with zero failures, errors or skips.
 
 Assigned the next bounded R0-R2 hardening unit to a future Codex window: measure full real-artifact stream decoding in an isolated lifecycle, record size and memory conditions, and characterize dominant sections only if decoding remains heavy. R3-R6 work remains unassigned pending explicit user authorization. See `checkpoints/mobile-fusion-pause-handoff.md` for exact restart commands and boundaries.
+
+## 2026-10-08 — isolated lifecycle and sparse snapshots
+
+Added separate producer and consumer Gradle test workers with explicit 512 MiB heaps. The producer writes the exact Rafaam fused artifact to disk; the consumer starts fresh, stream-decodes it and records artifact size, runtime and heap conditions. The first isolated artifact was 139,607,285 bytes and still exhausted the consumer heap during `EvidenceRef` deserialization, proving that retaining the reducer graph was not the sole cause.
+
+Byte-range profiling found snapshots occupied 133,497,716 bytes (95.62%): repeated entity tags to counters accounted for 80,082,092 bytes, and counters to players accounted for 44,420,330 bytes. This contradicted the approved plan's requirement to store sparse deltas plus useful checkpoints rather than duplicate every entity after each low-level tag.
+
+Added schema-compatible `FULL`/`DELTA` snapshot state, full checkpoints at the first, turn-signal and last-valid boundaries, nested entity/counter deltas, player/quest deltas, and a lazy full-state materializer. Missing `stateMode` defaults to `FULL`, preserving legacy artifact interpretation. Reducer state is monotonic for these maps, so the delta format does not require removal markers in R2.
+
+The same fused artifact now measures 11,033,645 bytes, a 92.1% reduction. Its snapshot section fell to 4,924,095 bytes while event, entity and choice section sizes remained unchanged. A fresh 512 MiB consumer decoded all 1,144 snapshots in 540 ms and reported 71,857,664 bytes used after decode; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. Final gates: 111 ordinary tests, 3 private fixture tests and 1 isolated lifecycle test, all with zero failures, errors or skips. No private fixture entered Git; no Android integration, merge or deployment was performed.

@@ -1,6 +1,6 @@
 # Mobile fusion pause handoff
 
-Date: 2026-10-08. Status: intentionally paused by the user.
+Date: 2026-10-08. Status: superseded by the sparse-snapshot lifecycle checkpoint.
 
 ## Repository state
 
@@ -15,7 +15,7 @@ This handoff document, TODO correction and final log entry must be committed and
 
 ## Last verified gates
 
-- Ordinary `:core:test`: 110 tests, 0 failures, 0 errors, 0 skipped.
+- Ordinary `:core:test`: 111 tests, 0 failures, 0 errors, 0 skipped.
 - Private `:core:realFusionFixtureTest`: 3 tests, 0 failures, 0 errors, 0 skipped.
 - Private fixture directory: `H:\My Drive\HSReplay`
 - No private fixture content is stored in Git.
@@ -36,18 +36,13 @@ Google Drive may lock `core\build` after a Gradle invocation. Verify the exact r
 - Schema presence/type/version and provenance are enforced at the codec boundary.
 - The feature branch has been pushed successfully; write authentication is proven despite the earlier invalid `gh` token/API status.
 
-## Known limitation and next assigned unit
+## Completed lifecycle unit
 
-The full real artifact was not successfully decoded while the same test retained the original reducer and fused object graph. That duplicate-graph test exhausted the default heap. This does not prove that an isolated consumer cannot decode the stream, and isolated large-artifact decoding has not yet been measured.
+The full real artifact initially remained too large for a fresh 512 MiB consumer even without the reducer/source graph: the 139,607,285-byte artifact exhausted the heap during `EvidenceRef` deserialization. Section profiling showed that snapshots occupied 133,497,716 bytes (95.62%), almost entirely from repeated full entity and counter state.
 
-Assigned to the next Codex window:
+R2 now stores sparse deltas at action boundaries and full checkpoints at the first snapshot, turn signals and last-valid boundary. Legacy artifacts remain compatible because a missing `stateMode` defaults to `FULL`. `FusionSnapshotMaterializer` lazily reconstructs full state for consumers.
 
-1. Refresh five-hour and weekly usage, then confirm a bounded window is available.
-2. Fetch and verify the designated branch and read this handoff, `TODO.md`, `WORK_LOG.md`, and `checkpoints/mobile-fusion-r0-r2-final-audit.md`.
-3. Build an isolated decode measurement that does not retain the reducer/source graph in the decoding process.
-4. Record encoded byte size, test heap conditions, runtime and pass/fail. Do not increase heap merely to turn the gate green.
-5. If decoding remains heavy, measure which artifact sections dominate size before proposing a schema-compatible change.
-6. Run both established gates, update logs, commit and push the completed checkpoint.
+The resulting artifact is 11,033,645 bytes. A fresh isolated 512 MiB consumer decoded it in 540 ms, reporting 71,857,664 bytes used after decode; lazy reconstruction of the final full state took another 78 ms. See `checkpoints/mobile-fusion-sparse-snapshots.md` for exact measurements and validation.
 
 ## Boundaries requiring user direction
 

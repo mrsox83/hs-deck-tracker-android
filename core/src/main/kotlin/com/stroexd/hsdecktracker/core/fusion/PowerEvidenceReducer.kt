@@ -46,6 +46,16 @@ object PowerEvidenceReducer {
         var activeController: Int? = null
         var rawTurn: Int? = null
         var lastEvidence: EvidenceRef? = null
+        var previousSnapshotState: SnapshotState? = null
+
+        fun captureSnapshot(sequence: Int, phase: String, unresolved: Boolean, evidence: EvidenceRef) {
+            val (snapshot, state) = snapshot(
+                source, sequence, phase, activeController, rawTurn, playerTurnIndices,
+                unresolved, mutableEntities, evidence, previousSnapshotState,
+            )
+            snapshots += snapshot
+            previousSnapshotState = state
+        }
 
         for (raw in match["events"]?.jsonArray.orEmpty()) {
             val event = raw.jsonObject
@@ -112,9 +122,7 @@ object PowerEvidenceReducer {
                     val target = targetText?.let { entityReference(it, aliases) }
                     observeDescriptor(mutableEntities, actorText, evidence, aliases)
                     observeDescriptor(mutableEntities, targetText, evidence, aliases)
-                    if (blockStack.isEmpty()) snapshots += snapshot(
-                        source, sequence, "BEFORE_ACTION", activeController, rawTurn, playerTurnIndices, false, mutableEntities, evidence,
-                    )
+                    if (blockStack.isEmpty()) captureSnapshot(sequence, "BEFORE_ACTION", false, evidence)
                     outputEvents += CanonicalEvent(
                         id, outputEvents.size + 1, sequence, kind, actor, target,
                         blockStack.lastOrNull(), rawTurn, activeController,
@@ -126,13 +134,11 @@ object PowerEvidenceReducer {
                     if (blockStack.isEmpty()) diagnostics += "Unmatched BLOCK_END at source line $line"
                     else {
                         blockStack.removeLast()
-                        if (blockStack.isEmpty()) snapshots += snapshot(
-                            source, sequence, "AFTER_OUTER_ACTION", activeController, rawTurn, playerTurnIndices, false, mutableEntities, evidence,
-                        )
+                        if (blockStack.isEmpty()) captureSnapshot(sequence, "AFTER_OUTER_ACTION", false, evidence)
                     }
                 }
-                tagName == "CURRENT_PLAYER" && tagValue == "1" -> snapshots +=
-                    snapshot(source, sequence, "TURN_SIGNAL", activeController, rawTurn, playerTurnIndices, blockStack.isNotEmpty(), mutableEntities, evidence)
+                tagName == "CURRENT_PLAYER" && tagValue == "1" ->
+                    captureSnapshot(sequence, "TURN_SIGNAL", blockStack.isNotEmpty(), evidence)
             }
             if (body.startsWith("SHOW_ENTITY")) {
                 val id = event.string("entity_id") ?: entityReference(body, aliases)
@@ -143,9 +149,7 @@ object PowerEvidenceReducer {
             }
         }
         if (blockStack.isNotEmpty()) diagnostics += "${blockStack.size} unterminated block(s); final snapshot is unresolved"
-        if (lastEvidence != null) snapshots += snapshot(
-            source, Int.MAX_VALUE, "LAST_VALID", activeController, rawTurn, playerTurnIndices, blockStack.isNotEmpty(), mutableEntities, lastEvidence,
-        )
+        if (lastEvidence != null) captureSnapshot(Int.MAX_VALUE, "LAST_VALID", blockStack.isNotEmpty(), lastEvidence)
 
         val choices = match["choices"]?.jsonArray.orEmpty().map { choice(source, it.jsonObject) }
         val endedEvidence = match["events"]?.jsonArray.orEmpty().asSequence().map { it.jsonObject }.lastOrNull { event ->
@@ -184,17 +188,11 @@ object PowerEvidenceReducer {
 
     private fun snapshot(
         source: FusionSource, sequence: Int, phase: String, controller: Int?, turn: Int?, turnIndices: Map<Int, Int>, unresolved: Boolean,
-        entities: Map<String, MutableEntity>, evidence: EvidenceRef,
-    ) = FusionSnapshot(
-        id = "${source.id}:snapshot:${phase.lowercase()}:$sequence",
-        sequence = sequence,
-        phase = phase,
-        activeController = controller,
-        rawTurn = turn,
-        playerTurnIndices = turnIndices.toMap(),
-        unresolvedBlock = unresolved,
-        entityTags = entities.mapValues { it.value.tags.toMap() },
-        counters = entities.mapValues { (_, entity) ->
+        entities: Map<String, MutableEntity>, evidence: EvidenceRef, previous: SnapshotState?,
+    ): Pair<FusionSnapshot, SnapshotState> {
+        val current = SnapshotState(
+            entityTags = entities.mapValues { it.value.tags.toMap() },
+            counters = entities.mapValues { (_, entity) ->
             entity.tags.mapNotNull { (name, rawValue) ->
                 if (name !in snapshotCounters) return@mapNotNull null
                 val value = rawValue.toIntOrNull() ?: return@mapNotNull null
@@ -208,10 +206,38 @@ object PowerEvidenceReducer {
                 )
             }.toMap()
         }.filterValues { it.isNotEmpty() },
-        players = playerSnapshots(entities),
-        quests = questSnapshots(entities),
-        evidence = listOf(evidence),
-    )
+            players = playerSnapshots(entities),
+            quests = questSnapshots(entities),
+        )
+        val isFull = previous == null || phase == "TURN_SIGNAL" || phase == "LAST_VALID"
+        val snapshot = FusionSnapshot(
+            id = "${source.id}:snapshot:${phase.lowercase()}:$sequence",
+            sequence = sequence,
+            phase = phase,
+            stateMode = if (isFull) SnapshotStateMode.FULL else SnapshotStateMode.DELTA,
+            activeController = controller,
+            rawTurn = turn,
+            playerTurnIndices = turnIndices.toMap(),
+            unresolvedBlock = unresolved,
+            entityTags = if (isFull) current.entityTags else nestedDelta(current.entityTags, previous!!.entityTags),
+            counters = if (isFull) current.counters else nestedDelta(current.counters, previous!!.counters),
+            players = if (isFull) current.players else mapDelta(current.players, previous!!.players),
+            quests = if (isFull) current.quests else mapDelta(current.quests, previous!!.quests),
+            evidence = listOf(evidence),
+        )
+        return snapshot to current
+    }
+
+    private fun <K, V> mapDelta(current: Map<K, V>, previous: Map<K, V>): Map<K, V> =
+        current.filter { (key, value) -> previous[key] != value }
+
+    private fun <K1, K2, V> nestedDelta(
+        current: Map<K1, Map<K2, V>>,
+        previous: Map<K1, Map<K2, V>>,
+    ): Map<K1, Map<K2, V>> = current.mapNotNull { (outerKey, currentValues) ->
+        val changes = currentValues.filter { (key, value) -> previous[outerKey]?.get(key) != value }
+        if (changes.isEmpty()) null else outerKey to changes
+    }.toMap()
 
     private fun playerSnapshots(entities: Map<String, MutableEntity>): Map<Int, PlayerSnapshot> = entities.values.mapNotNull { player ->
         val controller = player.controller.value ?: player.tags["PLAYER_ID"]?.toIntOrNull() ?: return@mapNotNull null
@@ -361,6 +387,13 @@ object PowerEvidenceReducer {
             positions.toList(), controllers.toList(), visibility.toList(), entityAliases.toList(), links.toMap(),
         )
     }
+
+    private data class SnapshotState(
+        val entityTags: Map<String, Map<String, String>>,
+        val counters: Map<String, Map<String, Claim<Int>>>,
+        val players: Map<Int, PlayerSnapshot>,
+        val quests: Map<String, QuestSnapshot>,
+    )
 }
 
 private fun JsonObject.string(name: String): String? = this[name]?.jsonPrimitive?.contentOrNull
