@@ -49,3 +49,4 @@ The requested synced-Drive delivery was not performed because the environment re
 Physical-device behavior remains unverified until the user completes the checklist. After results are reviewed, surface the R4 goal and prerequisites explicitly; do not transition automatically.
 
 Five-hour usage was 32% at the final pre-commit check against the user-authorized 60% ceiling.
+The post-push live reading was 36%.
