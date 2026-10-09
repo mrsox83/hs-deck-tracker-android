@@ -16,7 +16,9 @@ Approved scope: offline mobile evidence fusion only. No merge, deployment, PC ad
 
 Current implementation checkpoint: the approved offline R0-R2 core is implemented and locally verified. Every accepted pairing characteristic and non-unknown typed claim is required to resolve to a known fused source and an exact source line or tracker JSON pointer; entity histories, canonical events, choice stages and snapshots are checked too.
 
-Real-fixture checkpoint: the exact Rafaam tracker/exporter pair passes deep assertions, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. The private corpus gate also pins and parses all 29 current tracker records and reduces all 48 source matches across 21 current exporter bundles, covering 21,018 canonical events and 29,674 compact snapshots. Unsupported higher-level game semantics remain deliberately unknown.
+Reconnect/session-rollover checkpoint: conservative two-session continuation is implemented for the HSC-004/HSC-009 evidence while remaining inside offline R0-R2. A stitch requires bounded clocks, the tracker endpoint, an incomplete non-truncated earlier source, an evidenced completed later source, a uniquely resumed open choice, both player/controller identities, stable entity identities and raw-turn continuity. The fused artifact retains both original sources, exact line/JSON-pointer evidence, parent lineage and an explicit gap diagnostic. Weak candidates remain unstitched.
+
+Real-fixture checkpoint: the exact Rafaam tracker/exporter pair passes deep assertions, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. The private corpus gate also pins and parses all 32 current tracker records and reduces all 48 source matches across 21 current exporter bundles, covering 21,018 canonical events and 29,674 compact snapshots. Unsupported higher-level game semantics remain deliberately unknown.
 
 Remote write authentication is proven for `feature/mobile-fusion-offline`. The isolated lifecycle and sparse-snapshot checkpoint supersedes the prior pause handoff. No merge or deployment was attempted.
 
@@ -28,21 +30,21 @@ Owner: next Codex session on `feature/mobile-fusion-offline`, after refreshing u
 - [x] Characterize dominant artifact sections and implement schema-compatible sparse snapshot deltas with full checkpoints, preserving provenance and defaulting legacy artifacts to full-state semantics.
 - [x] Re-run `:core:test`, `:core:realFusionFixtureTest`, and the isolated lifecycle gate; record the results and push the completed checkpoint.
 
-The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 112 tests, the expanded private fixture gate passed 5 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
+The exact Rafaam artifact now encodes to 11,033,664 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 532 ms with 73,551,360 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 70 ms and reported 82,988,544 bytes used afterward. The ordinary suite passed 114 tests, the expanded private fixture gate passed 6 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips. The private tracker inventory now pins 32 records.
 
-No further **new** R0-R2 implementation unit is assigned. The completed baseline, final audit and passing gates remain valid as of their recorded commit. An in-flight R2 unit is not silently cancelled by this status.
+No further **new** R0-R2 implementation unit is assigned. The in-flight reconnect unit has reached its tested, documented closeout boundary. R0-R2 is now closed to further discretionary hardening. The user authorized R3 with a separate test/debug app identity so the working tracker installation and data remain untouched. Stop for user participation only when the physical-device validation package and script are ready. HSC-009 Android journal work belongs to R3; R4-R6 remain separate phase decisions and must be surfaced rather than entered through an open-ended hardening loop.
 
 ## R2 closeout and R3 authorization gate — owner direction, 2026-10-09
 
 This section supersedes the earlier open-ended instruction to "continue evidence-driven R0-R2 hardening." **Do not abruptly halt work already in progress.** Finish and verify that bounded unit first. No recurring polish loop and no automatic phase transition.
 
-Owner: currently active R2 agent, then user for R3 decision.
+Owner: completed by the active R2 agent; R3 subsequently authorized by the user.
 
-- [ ] **Existing in-flight R2 task only:** at the next safe checkpoint, inspect the current branch/head, local uncommitted changes, agent task description, TODO, WORK_LOG and checkpoints. Identify the exact started unit and its acceptance criteria. Do not assume previously green tests cover changes since the last checkpoint.
-- [ ] Finish that unit to a coherent boundary, including any immediately necessary bug fixes or regressions introduced by the work. Preserve the four tracker patches, raw-fixture privacy, versioned schema and evidence/provenance rules. Do not start unrelated R2 enhancements while closing this work.
-- [ ] Run the tests appropriate to the touched code, including `:core:test` and the real-fixture/lifecycle gates when relevant; review failures and correct reproducible in-scope defects. Explicitly check compatibility and any changed artifact/stream behavior. Never mark DONE solely because implementation was written or tests previously passed.
-- [ ] Review the diff for unintended changes, document accepted results and remaining limitations in WORK_LOG and a checkpoint, update this task's status and exact branch/commit, and safely commit/push the verified checkpoint. If the task cannot be completed due to a real blocker, time/usage ceiling or failing gate, retain recoverable work, record the specific blocker and next repair step, leave the checkbox OPEN, and resume that same task before any R3 start. Do not mislabel an unverified or WIP commit as release-ready.
-- [ ] **Transition review:** once the in-flight unit is closed with its acceptance evidence (or explicitly reported blocked), present a concise R2 closeout and specific R3 proposal to the user. Ask for explicit R3 authorization; do not commence it on the agent's own initiative.
+- [x] **Existing in-flight R2 task only:** inspected the branch, local changes, task direction and active checkpoint; identified the reconnect/session-rollover acceptance criteria.
+- [x] Finished that bounded unit without starting unrelated R2 enhancements; preserved the four tracker patches, raw-fixture privacy, schema and provenance rules.
+- [x] Passed `:core:test`, the complete real-fixture gate and the isolated lifecycle gate after the final changes.
+- [x] Reviewed and documented the accepted results and limitations in WORK_LOG and `checkpoints/mobile-fusion-session-continuation.md`.
+- [x] **Transition review:** reported the closeout and specific R3 proposal; the user explicitly authorized R3 with a separate test/debug identity.
 
 Stop rule: after safe R2 closeout, **do not initiate further optional/offline hardening** merely to use available time or tokens. Only a concrete, reproducible defect that threatens R2 acceptance may trigger another bounded R2 fix; log its evidence and acceptance criterion. Defer unsupported gameplay semantics, speculative enhancements and QoL ideas to their proper project backlog. If uncertainty is material, ask the user to prioritize rather than invent another task.
 
@@ -50,6 +52,9 @@ Coordination: GitHub and Drive working copies do not update each other automatic
 
 Usage/schedule guard: the prior 02:50 Central 2026-10-09 continuation may be used to finish **the already-started bounded R2 task only**, not to open-endedly polish R2. Retain the previously authorized 02:00–07:00 five-hour ceiling of 95% and the one conditional seven-day reset credit (reread usage afterward; 90% ceiling). Respect hard usage ceilings; if reached, checkpoint recoverably and resume the unfinished unit instead of abruptly abandoning it.
 
-Owner: user/project decision.
+Owner: current Codex session on `feature/mobile-fusion-offline`.
 
-- [ ] Explicitly authorize R3 before any R3-R6 Android capture, UI, permissions, persistence, merge or deployment work begins.
+- [x] R3 authorized with a separate test/debug app identity; preserve the working installation and its data.
+- [ ] Implement the smallest durable-journal/outbox R3 checkpoint and complete automated interruption/recovery gates.
+- [ ] Alert the user when the R3 test APK and physical-device validation script are ready.
+- [ ] Stop and explicitly surface readiness before beginning R4, R5 or R6.

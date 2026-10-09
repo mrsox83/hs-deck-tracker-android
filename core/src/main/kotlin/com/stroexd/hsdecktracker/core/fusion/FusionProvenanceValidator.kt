@@ -16,10 +16,26 @@ object FusionProvenanceValidator {
             if (value.status != ClaimStatus.UNKNOWN) evidence(path, value.evidence)
         }
 
+        match.sources.forEachIndexed { index, source ->
+            if (source.type == SourceType.DERIVED_FUSION && source.parentSourceIds.isEmpty()) {
+                errors += "sources[$index] derived source has no parents"
+            }
+            source.parentSourceIds.forEach { parent ->
+                if (parent !in sourceIds) errors += "sources[$index] references unknown parent source $parent"
+            }
+        }
+
         if (match.pairing.status == PairingStatus.ACCEPTED) {
             val accepted = match.pairing.candidates.singleOrNull { it.powerSourceId == match.pairing.acceptedSourceId }
             if (accepted == null) errors += "pairing acceptedSourceId has no candidate"
             else evidence("pairing.accepted", accepted.evidence)
+        }
+        match.continuations.forEachIndexed { index, continuation ->
+            if (continuation.status == ContinuationStatus.ACCEPTED) {
+                if (continuation.earlierSourceId !in sourceIds) errors += "continuations[$index] references unknown earlier source ${continuation.earlierSourceId}"
+                if (continuation.laterSourceId !in sourceIds) errors += "continuations[$index] references unknown later source ${continuation.laterSourceId}"
+                evidence("continuations[$index]", continuation.evidence)
+            }
         }
         match.events.forEachIndexed { index, event -> evidence("events[$index]", event.evidence) }
         match.entities.forEach { (id, entity) ->

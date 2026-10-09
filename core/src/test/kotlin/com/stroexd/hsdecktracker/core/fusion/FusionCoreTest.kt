@@ -11,6 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import java.time.Instant
+import java.time.ZoneId
 import java.io.ByteArrayOutputStream
 import java.io.ByteArrayInputStream
 import java.util.zip.ZipEntry
@@ -339,6 +340,50 @@ class FusionCoreTest {
         val source = fused.sources.single { it.id == left.first.id }
         assertEquals(2, source.artifactAliases.size)
         assertEquals(reduced.first().events, fused.events)
+    }
+
+    @Test
+    fun `stitched continuation retains explicit parent evidence through codec`() {
+        val earlier = reducedPower().copy(completed = false, endedLogTime = null, endedEvidence = null)
+        val later = reducedPower().copy(source = reducedPower().source.copy(id = "power:later"))
+        val decision = PowerContinuationDecision(
+            ContinuationStatus.ACCEPTED,
+            earlier.source.id,
+            later.source.id,
+            listOf("synthetic continuation fixture"),
+            listOf(EvidenceRef(earlier.source.id, sourceLine = 1, rule = "test/1")),
+        )
+        val stitched = PowerContinuationStitcher.stitch(earlier, later, decision)
+        val pairing = PairingDecision(
+            PairingStatus.ACCEPTED,
+            stitched.source.id,
+            listOf(PairingCandidate(
+                stitched.source.id, 2, listOf("synthetic pairing"),
+                evidence = listOf(EvidenceRef(later.source.id, sourceLine = 20, rule = "test/1")),
+            )),
+            "synthetic pairing",
+        )
+        val fused = FusionCoordinator.assemble(tracker(), listOf(earlier, later, stitched), pairing)
+
+        assertEquals(SourceType.DERIVED_FUSION, fused.sources.single { it.id == stitched.source.id }.type)
+        assertEquals(decision, fused.continuations.single())
+        assertTrue(FusionProvenanceValidator.validate(fused).isEmpty())
+        assertEquals(fused, FusionArtifactCodec.decode(FusionArtifactCodec.encode(fused)))
+    }
+
+    @Test
+    fun `completed earlier segment is never accepted as a continuation`() {
+        val earlier = reducedPower()
+        val later = earlier.copy(source = earlier.source.copy(id = "power:later"))
+        val decision = PowerContinuationStitcher.evaluate(
+            earlier,
+            later,
+            tracker(),
+            ZoneId.of("America/Chicago"),
+        )
+
+        assertEquals(ContinuationStatus.REJECTED, decision.status)
+        assertTrue(decision.reasons.contains("earlier segment is already complete"))
     }
 
     private fun tracker(): TrackerEvidence {

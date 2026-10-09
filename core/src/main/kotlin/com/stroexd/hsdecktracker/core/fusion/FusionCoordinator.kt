@@ -24,6 +24,7 @@ object FusionCoordinator {
             choices = accepted?.choices.orEmpty(),
             snapshots = accepted?.snapshots.orEmpty(),
             diagnostics = accepted?.diagnostics.orEmpty(),
+            continuations = listOfNotNull(accepted?.continuation),
         )
     }
 

@@ -27,7 +27,7 @@ class RealFusionFixtureTest {
             assertEquals(tracker.record.id, tracker.source.matchAlias, name)
             assertTrue(matchIds.add(tracker.record.id), "Duplicate tracker match id ${tracker.record.id}")
         }
-        assertEquals(29, matchIds.size)
+        assertEquals(32, matchIds.size)
     }
 
     @Test
@@ -223,6 +223,56 @@ class RealFusionFixtureTest {
             right.matches.flatMap { it.first.contentSha256.filterKeys { key -> key.endsWith("/Power.log") }.values },
         )
     }
+
+    @Test
+    fun `reconnect sessions stitch one match with both source provenances`() {
+        val trackerBytes = Files.readAllBytes(fixtureDir.resolve(
+            "match_20261008T041335265Z_bb7a20f1d4ac2bb0787aceb75997fd0643cdece6d795dd3bfcfa661e75018739.json",
+        ))
+        val tracker = EvidenceAdapters.tracker(trackerBytes)
+        assertEquals(26, tracker.record.turns)
+        assertEquals(MatchResult.LOSS, tracker.record.result)
+
+        val bundle = EvidenceAdapters.exporterBundle(
+            Files.readAllBytes(fixtureDir.resolve("HS-export-20261007-231433-ae674730.zip")),
+        )
+        val segments = bundle.matches.associate { (source, document) ->
+            source.sessionAlias to PowerEvidenceReducer.reduce(source, document)
+        }
+        val earlier = segments.getValue("Hearthstone_2026_10_07_22_44_20")
+        val later = segments.getValue("Hearthstone_2026_10_07_23_04_47")
+        val decision = PowerContinuationStitcher.evaluate(
+            earlier, later, tracker, ZoneId.of("America/Chicago"),
+        )
+
+        assertEquals(ContinuationStatus.ACCEPTED, decision.status, decision.reasons.joinToString())
+        assertTrue(decision.evidence.all { it.sourceLine != null || it.jsonPointer != null })
+        assertTrue(decision.evidence.any { it.sourceId == tracker.source.id && it.jsonPointer == "/timestamp" })
+        val stitched = PowerContinuationStitcher.stitch(earlier, later, decision)
+        assertEquals(listOf(earlier.source.id, later.source.id), stitched.source.parentSourceIds)
+        assertTrue(stitched.completed)
+        assertFalse(stitched.sourceTruncated)
+        assertEquals(earlier.events.size + later.events.size, stitched.events.size)
+        assertEquals(1, stitched.choices.count { it.id.endsWith(":choice:16") })
+        val deathwingChoice = stitched.choices.single { it.id.endsWith(":choice:16") }
+        assertTrue(deathwingChoice.offered.entityRefs.any { it.contains("CATA_190t12") })
+        assertTrue(deathwingChoice.confirmed.entityRefs.single().contains("CATA_190t13"))
+        assertTrue(deathwingChoice.offered.evidence.any { it.sourceId == earlier.source.id })
+        assertTrue(deathwingChoice.confirmed.evidence.any { it.sourceId == later.source.id })
+        assertTrue(stitched.diagnostics.last().contains("source-session gap retained"))
+
+        val end = PowerClock.resolve(checkNotNull(later.source.sessionAlias), checkNotNull(later.endedLogTime), ZoneId.of("America/Chicago"))
+        val pairing = FusionPairing.decide(
+            tracker,
+            listOf(PowerPairingFacts.fromReduced(stitched, end, localController = 1)),
+            trackerCardIds = setOf("CATA_190h"),
+        )
+        assertEquals(PairingStatus.ACCEPTED, pairing.status)
+        val fused = FusionCoordinator.assemble(tracker, listOf(earlier, later, stitched), pairing)
+        assertTrue(FusionProvenanceValidator.validate(fused).isEmpty(), FusionProvenanceValidator.validate(fused).joinToString())
+        assertEquals(4, fused.sources.size)
+        assertEquals(stitched.events.size, fused.events.size)
+    }
 }
 
 private val exporterFixtureHashes = linkedMapOf(
@@ -279,4 +329,7 @@ private val trackerFixtureHashes = linkedMapOf(
     "match_20261009T005449590Z_31a8e7c5a64c2558e7988a674de1a9d932206c2accfe4d28425b73db39729188.json" to "4ea291f0ee609324141dafe9b1235c23cc73a978b74349944d4e6f165d4ba225",
     "match_20261009T010301103Z_58b614b7e3b4ffaefc09787ed947cf8d4c461c214cf89c937d2c4e62cbee8f6c.json" to "35b6ffc1f5a7cc58b65275a41909802575351e0b1708fae6037b68b769d0f2b2",
     "match_20261009T030231557Z_f141004466b38284d926fc8ba06e4c65f45c7c3d0f7ed332e9df0668e836ab44.json" to "624ea15ac21c1f2eb4533123fe988079c4c8b2c9f37b254b2600badeb2928e92",
+    "match_20261009T040708691Z_a8d928b9332ad7e73e3fe1d62655775e3c8bb61ae9aef0115250d930ea76e9b8.json" to "7ed151bc18c3d6c6ce022c5eb2d285e012b14f4d5234d5a373dd45d268ee4c84",
+    "match_20261009T041703315Z_9856cbe1c4718007ed449efa1b95678b01b5dbb4759baa9a5392627b25ba5fcc.json" to "8f65acf25a31309a76577925c39c150aaca4bf0f1c44bd21c2015eee52faeb17",
+    "match_20261009T065742999Z_bdeb272bbede79d84308d0c897e9b7b6a1cae8d2c1fbe2312448e2b0e1532639.json" to "e9e1de8a03ca6ae29f63de45a5908a6a1cab02c05c176e4f140b6b7d45914423",
 )
