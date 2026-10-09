@@ -173,3 +173,9 @@ The final cleanly rebuilt APK is 68,036,586 bytes with SHA-256 `9744f913f7c40aaf
 Live five-hour usage was 34% during the corrective checkpoint, below the user-authorized 60% ceiling.
 
 Final corrective validation used the compatible JDK 17/Android SDK 35 toolchain: `:core:test` and `:app:assembleFusionTest` completed with `BUILD SUCCESSFUL`. Packaged metadata was reread after that clean build and still reported the dedicated package, version, label and debuggable flag above. The final APK, checksum and revised checklist were then copied to both v2 delivery directories; the Drive APK was reread at 68,036,586 bytes and its SHA-256 matched `9744f913f7c40aaf7e4cbc1e2833a95cccb12e6eaf626f72be8df5a5ab8805d2`.
+
+## 2026-10-09 — R3 phone validation: isolation passed
+
+The user downloaded and installed the corrected v2 APK. Android installed it as a new app rather than offering the unsafe update path encountered with v1. On first open, **HS Deck Tracker Fusion Test** contained no historical decks or games from the working tracker. This confirms separate app-private storage on the device for the active `com.stroexd.hsdecktracker.fusiontest` identity.
+
+This is a passed installation/isolation gate, not complete R3 device acceptance. Confirmation that the original tracker still contains its expected data, active-match force-stop recovery, completed-match deduplication, evidence-import cancellation/retry and persisted fusion status remain pending. R4 has not started.
