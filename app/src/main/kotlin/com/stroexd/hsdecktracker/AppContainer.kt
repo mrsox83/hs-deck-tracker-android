@@ -15,6 +15,10 @@ import com.stroexd.hsdecktracker.core.data.DeckRepository
 import com.stroexd.hsdecktracker.core.data.GameLocales
 import com.stroexd.hsdecktracker.core.data.HttpClient
 import com.stroexd.hsdecktracker.core.data.MatchRepository
+import com.stroexd.hsdecktracker.core.data.CompletedMatchCommitter
+import com.stroexd.hsdecktracker.core.data.MatchOutboxRepository
+import com.stroexd.hsdecktracker.core.data.MatchOutboxState
+import com.stroexd.hsdecktracker.core.data.MatchTransferResult
 import com.stroexd.hsdecktracker.core.data.MetaRepository
 import com.stroexd.hsdecktracker.core.data.MetaState
 import com.stroexd.hsdecktracker.core.data.SettingsRepository
@@ -104,6 +108,14 @@ class AppContainer(context: Context) {
     val collection = CollectionRepository(dataDir)
     val matches = MatchRepository(dataDir)
     private val matchExporter = CompletedMatchExporter(context)
+    val matchOutbox = MatchOutboxRepository(dataDir)
+    private val completedMatchCommitter = CompletedMatchCommitter(matches, matchOutbox) { record ->
+        val folder = settings.value.matchExportFolder ?: error(appContext.getString(R.string.match_export_folder_missing))
+        when (matchExporter.export(record, folder)) {
+            CompletedMatchExporter.Result.WRITTEN -> MatchTransferResult.WRITTEN
+            CompletedMatchExporter.Result.ALREADY_PRESENT -> MatchTransferResult.ALREADY_PRESENT
+        }
+    }
     private val appContext = context.applicationContext
     val cards = CardRepository(cacheDir, http)
     val meta = MetaRepository(cacheDir, http)
@@ -148,6 +160,12 @@ class AppContainer(context: Context) {
         appScope.launch {
             combine(meta.state, cards.state) { metaState, cardState -> metaState.snapshots[GameFormat.STANDARD] to cardState.db }
                 .collect { (snapshot, db) -> followRotation(snapshot, db) }
+        }
+        appScope.launch {
+            val exportSettings = settings.value
+            completedMatchCommitter.recover(
+                transferEnabled = exportSettings.autoExportMatches && exportSettings.matchExportFolder != null,
+            )
         }
         tracker.deckCandidates = {
             decks.decks.value.sortedByDescending { it.updatedAt } + metaDecks().map { it.toDeck(0) }
@@ -200,40 +218,46 @@ class AppContainer(context: Context) {
 
     fun saveCompletedMatch(record: MatchRecord) {
         appScope.launch {
-            matches.add(record)
             val exportSettings = settings.value
-            val folder = exportSettings.matchExportFolder
-            if (exportSettings.autoExportMatches && folder != null) {
-                try {
-                    matchExporter.export(record, folder)
-                } catch (e: kotlinx.coroutines.CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    android.util.Log.w("MatchExport", "Completed match export failed", e)
-                    withContext(Dispatchers.Main) {
-                        android.widget.Toast.makeText(appContext, R.string.match_export_failed, android.widget.Toast.LENGTH_LONG).show()
-                    }
+            val result = completedMatchCommitter.commit(
+                record,
+                transferEnabled = exportSettings.autoExportMatches && exportSettings.matchExportFolder != null,
+            )
+            if (result.entry.state == MatchOutboxState.TRANSFER_FAILED) {
+                android.util.Log.w("MatchExport", "Completed match export failed: ${result.entry.lastError}")
+                withContext(Dispatchers.Main) {
+                    android.widget.Toast.makeText(appContext, R.string.match_export_failed, android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
     suspend fun exportSavedMatch(record: MatchRecord): CompletedMatchExporter.Result {
-        val folder = settings.value.matchExportFolder ?: error(appContext.getString(R.string.match_export_folder_missing))
-        return matchExporter.export(record, folder)
+        checkNotNull(settings.value.matchExportFolder) { appContext.getString(R.string.match_export_folder_missing) }
+        val result = completedMatchCommitter.commit(record, transferEnabled = true)
+        if (result.entry.state == MatchOutboxState.TRANSFER_FAILED) error(result.entry.lastError ?: "Match export failed")
+        return when (result.transferResult) {
+            MatchTransferResult.WRITTEN -> CompletedMatchExporter.Result.WRITTEN
+            MatchTransferResult.ALREADY_PRESENT, null -> CompletedMatchExporter.Result.ALREADY_PRESENT
+        }
     }
 
     suspend fun exportMissingMatches(records: List<MatchRecord> = matches.matches.value): MatchExportSummary {
-        val folder = settings.value.matchExportFolder ?: error(appContext.getString(R.string.match_export_folder_missing))
+        checkNotNull(settings.value.matchExportFolder) { appContext.getString(R.string.match_export_folder_missing) }
         var written = 0
         var alreadyPresent = 0
         var failed = 0
         records.forEach { record ->
-            runCatching { matchExporter.export(record, folder) }
+            runCatching {
+                completedMatchCommitter.commit(record, transferEnabled = true).let { result ->
+                    if (result.entry.state == MatchOutboxState.TRANSFER_FAILED) error(result.entry.lastError ?: "Match export failed")
+                    result.transferResult
+                }
+            }
                 .onSuccess { result ->
                     when (result) {
-                        CompletedMatchExporter.Result.WRITTEN -> written++
-                        CompletedMatchExporter.Result.ALREADY_PRESENT -> alreadyPresent++
+                        MatchTransferResult.WRITTEN -> written++
+                        MatchTransferResult.ALREADY_PRESENT, null -> alreadyPresent++
                     }
                 }
                 .onFailure { error ->

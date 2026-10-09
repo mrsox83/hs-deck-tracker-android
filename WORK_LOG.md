@@ -113,3 +113,15 @@ The paired tracker fixture is the 26-turn LOSS versus Death Knight record ending
 Refreshed the private tracker inventory from 29 to 32 records. Final combined gates passed: 114 ordinary tests, 6 private tests and 1 isolated lifecycle test, with zero failures, errors or skips. The isolated artifact measured 11,033,664 bytes; decode took 532 ms using 73,551,360 bytes after decode under a 536,870,912-byte maximum heap, and final-state materialization took 70 ms using 82,988,544 bytes afterward. Private evidence remains outside Git. No Android integration, merge or deployment was performed.
 
 The user then authorized R3 with a separate test/debug app identity, specifically preserving the working tracker installation and data. Codex will alert the user only when physical-device validation is ready and will explicitly surface the R4-R6 phase boundaries instead of continuing indefinite hardening.
+
+## 2026-10-09 — R3 checkpoint 1: completed-match journal/outbox
+
+Confirmed that the existing debug build already uses application ID `com.stroexd.hsdecktracker.debug`, version `1.5.0-debug`, a debug signature and a package-scoped file provider. It installs beside `com.stroexd.hsdecktracker` and receives separate app-private storage, satisfying the user's isolation choice without changing the production identity.
+
+Closed the crash gap between `matches.add(record)` and best-effort SAF export. A completed match is now durably staged in `match-outbox.json` before idempotent match persistence. The journal distinguishes STAGED, LOCALLY_COMMITTED, TRANSFER_PENDING, LOCALLY_EXPORTED, TRANSFER_FAILED and REMOTELY_VERIFIED; the current folder exporter never claims REMOTELY_VERIFIED. Startup recovery replays nonterminal entries, duplicate match IDs with different content are rejected, cancellation leaves a pending retry, and transfer failures retain attempts and the last error.
+
+Manual single-match and bulk recovery now use the same serialized committer, preserving WRITTEN versus ALREADY_PRESENT behavior and updating journal state. Automated tests simulate interruption before local commit, after commit/before status advancement, a pending transfer at restart, failed folder access, retry and duplicate suppression.
+
+Validation: 116 core tests passed with zero failures/errors/skips; the debug Kotlin variant compiled; and `:app:assembleDebug` succeeded after the final manual-recheck correction. The resulting 68,778,914-byte APK has SHA-256 `77bce0caed7e2046178749f4eb402f6fd7e0cbd87d768f737d5615eeaf705537`; packaged metadata and manifest both identify `com.stroexd.hsdecktracker.debug` and `android:debuggable=true`. This is a source/build checkpoint, not phone verification, and the user has not yet been asked to install it.
+
+Remaining R3 work is deliberately bounded: active-match draft recovery, post-match exporter-bundle import/fusion persistence, one visible status/retry flow, then automated failure gates and a scripted phone test. No R4 capture/bookmark, R5 Shizuku integration, R6 Drive integration, merge or deployment was started.
