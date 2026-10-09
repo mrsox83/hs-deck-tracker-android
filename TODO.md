@@ -79,11 +79,11 @@ R3 source/build work is complete at the isolated-phone-validation boundary. Phys
 
 The `.debug` package was not isolated from this phone's existing tracker installation, regardless of the source repository's production-ID assumption. Only the v2 `.fusiontest` package is active for device validation. R3 device acceptance is complete. Stop and explicitly surface R4 scope/prerequisites; do not begin R4 without user authorization.
 
-### R4 owner constraint — recorded, not authorized
+### R4 authorized scope — 2026-10-09
 
-Hearthstone locks the user's phone to landscape while open. If R4 is authorized, do not require an artificial portrait/landscape rotation test during gameplay. Retain dimension/inset-safe coordinate handling and test landscape startup, lock/unlock, capture stop/reconnect, and any fold or window-size change that can occur without leaving landscape. This note narrows the device test matrix; it does not authorize R4 implementation.
+The user explicitly authorized R4 after accepting the bounded staged plan below. Hearthstone locks the user's phone to landscape while open, so do not require an artificial portrait/landscape rotation test during gameplay. Retain dimension/inset-safe coordinate handling and test landscape startup, lock/unlock, capture stop/reconnect, and any fold or window-size change that can occur without leaving landscape.
 
-Prospective R4 capture decisions from the owner:
+R4 capture decisions from the owner:
 
 - Visual capture must use Hearthstone-only single-app MediaProjection; do not retain full-display frames or use Accessibility screenshots as a fallback.
 - Reuse the existing OCR frame stream and retain only explicit trigger/manual-bookmark keyframes.
@@ -91,4 +91,12 @@ Prospective R4 capture decisions from the owner:
 - Timestamp bookmarks must continue working when visual capture is unavailable or stopped.
 - Do not use an exact battery-percentage threshold as an acceptance gate. The owner will monitor practical battery impact and request reduced demand if needed; still reject obvious thermal escalation, gameplay stutter or runaway capture/storage.
 
-These are design constraints only. R4 remains unstarted until explicitly authorized.
+Implementation sequence:
+
+- [ ] **R4.1:** establish Hearthstone-only single-app capture, normalized/configurable regions, bounded trigger/manual-bookmark keyframes, lifecycle cleanup, and timestamp-only bookmark fallback. Do not add a rolling buffer.
+- [ ] **R4.2:** enable three pilot region groups in diagnostic/shadow mode: hero state (health/armor, portrait, hero power and weapon); turn/resources (active player, mana and hand count when reliable); event recovery (card-play area, history rail and reconnect/resume cues).
+- [ ] **R4.3:** validate each observation independently and promote fields individually through `experimental` -> `corroborating` -> `accepted`; ambiguous values remain unknown/inferred with confidence and evidence. No experimental recognizer may create an authoritative match event.
+- [ ] **R4.4:** close R4 after the pilot groups provide trustworthy bounded enrichment. Defer detailed board/minion state, secrets, deck counts and choice-panel recognition unless real missing-data evidence justifies a separately accepted addition.
+- [ ] Alert the user when physical-device validation is ready and again before moving to R5.
+
+Restart point: live five-hour usage was already 79% when authorization was received, above the owner's previously stated 60% ceiling. No R4 source implementation began in that window. Resume with R4.1 only after rereading the active usage window and the project protocol/plan.
