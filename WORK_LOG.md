@@ -159,3 +159,5 @@ The ready-to-test package is staged locally at `C:\Users\Xs_da\Documents\SoxCoac
 Five-hour usage began at 0%, was 28% after implementation, automated gates, private fixtures and APK packaging, and 32% at the final pre-commit check—below the user's 60% ceiling. R4 was not started. R3 is source-ready/tests-passed/APK-built, but not yet phone-verified, merged or deployed.
 
 The final live post-push usage reading was 36% of the five-hour window. The published checkpoint remained below the 60% ceiling.
+
+The user subsequently explicitly authorized the external synced-Drive copy. The APK, checksum and phone-validation README were copied to `H:\My Drive\HSReplay\Development\mobile-fusion-r3-device-validation`; the copied 68,824,434-byte APK was reread from Drive and its SHA-256 matched `321ea959e0a08b5a10dfd58e80bf3c3ca92f28950f5a024005e13c3dbe77a361`.

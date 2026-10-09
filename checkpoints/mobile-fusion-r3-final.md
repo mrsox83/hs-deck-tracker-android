@@ -44,7 +44,11 @@ Contents:
 - `mobile-fusion-r3-debug.apk.sha256`
 - `README-phone-validation.md`
 
-The requested synced-Drive delivery was not performed because the environment rejected the external upload without explicit authorization. The local package is complete.
+After the user explicitly authorized the external copy, the complete package was also delivered to:
+
+`H:\My Drive\HSReplay\Development\mobile-fusion-r3-device-validation`
+
+The copied APK was reread from Drive and matched the recorded SHA-256. The local package remains available as a second copy.
 
 Physical-device behavior remains unverified until the user completes the checklist. After results are reviewed, surface the R4 goal and prerequisites explicitly; do not transition automatically.
 
