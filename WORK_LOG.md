@@ -95,3 +95,9 @@ Refreshed the Drive inventory from 19 to 29 tracker records and from 11 to 21 ex
 The full exporter corpus produced 21,018 canonical events and 29,674 compact snapshots. Every canonical event retained exact same-source line evidence; every nonempty snapshot stream began and ended with `FULL` state; lazy materialization reproduced each final checkpoint. The expanded private gate passes 5 tests with zero failures, errors or skips. Raw fixtures remain outside Git, and no Android integration, merge or deployment was performed.
 
 Pinned the corpus distribution and warning profile: 4 schema-0.2, 2 schema-0.3 and 15 schema-0.4 bundles; 43 completed matches; 4 explicitly truncated suffixes; and one incomplete non-truncated suffix with two open blocks. Six unmatched block ends trace to the same selected inner source repeated through three wrappers. Direct source-event balance inspection confirmed that corresponding outer starts are absent from the selected evidence, so the diagnostics remain visible rather than being suppressed or guessed away.
+
+## 2026-10-09 — scheduled usage handoff
+
+At 01:30 Central, live usage was 78% of the active five-hour window and 93% of the seven-day window. The branch was clean and synchronized at `00186342bf921784fd16334bbc55a76c5774ea98`. No new implementation was started in the approximately 2% remaining before the normal 80% ceiling.
+
+Continuation is scheduled for 02:50 Central after the five-hour reset. Between 02:00 and 07:00 Central, the authorized five-hour ceiling is 95%. If the seven-day limit actually blocks work, the user explicitly authorized one full reset credit; after that reset, usage must be reread and the ceiling becomes 90% of the resulting five-hour window. Further reset credits require new authorization. Scope remains offline R0-R2 only, with completed checkpoints committed and pushed; no merge or deployment.
