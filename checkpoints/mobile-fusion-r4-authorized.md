@@ -23,6 +23,8 @@ Pixel acquisition is limited to Hearthstone-only single-app MediaProjection. Do 
 
 Landscape gameplay is expected on this phone. Keep coordinates dimension/inset aware and validate landscape startup, lock/unlock, capture stop/reconnect and applicable size/inset changes. Exact battery percentage is not an acceptance threshold; the user will monitor practical demand. Obvious thermal escalation, gameplay stutter and runaway capture/storage remain failures.
 
+After R4 source and device behavior stabilize, remind the owner that an optional Codex Security review may be useful before any public-release, merge/deployment or broader-distribution planning. The review is not authorized yet and must not block ordinary R4 implementation.
+
 ## Current state and restart point
 
 R3 is phone accepted. Source-ready, tests-passed, APK-built, phone-verified and pushed are recorded separately; it is not merged or deployed. The tracker patches remain preserved.
