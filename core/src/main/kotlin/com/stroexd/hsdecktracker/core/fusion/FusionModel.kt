@@ -30,7 +30,7 @@ data class Claim<T>(
 )
 
 @Serializable
-enum class SourceType { ANDROID_TRACKER_JSON, ANDROID_POWER_EVIDENCE, USER_ANNOTATION }
+enum class SourceType { ANDROID_TRACKER_JSON, ANDROID_POWER_EVIDENCE, DERIVED_FUSION, USER_ANNOTATION }
 
 @Serializable
 data class FusionSource(
@@ -183,6 +183,7 @@ data class ReducedPowerMatch(
     val choices: List<FusedChoice>,
     val snapshots: List<FusionSnapshot>,
     val diagnostics: List<String> = emptyList(),
+    val continuation: PowerContinuationDecision? = null,
 )
 
 @Serializable
@@ -219,4 +220,5 @@ data class FusedMatch(
     val snapshots: List<FusionSnapshot>,
     val unknownFields: Map<String, JsonElement> = emptyMap(),
     val diagnostics: List<String> = emptyList(),
+    val continuations: List<PowerContinuationDecision> = emptyList(),
 )

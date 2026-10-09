@@ -101,3 +101,15 @@ Pinned the corpus distribution and warning profile: 4 schema-0.2, 2 schema-0.3 a
 At 01:30 Central, live usage was 78% of the active five-hour window and 93% of the seven-day window. The branch was clean and synchronized at `00186342bf921784fd16334bbc55a76c5774ea98`. No new implementation was started in the approximately 2% remaining before the normal 80% ceiling.
 
 Continuation is scheduled for 02:50 Central after the five-hour reset. Between 02:00 and 07:00 Central, the authorized five-hour ceiling is 95%. If the seven-day limit actually blocks work, the user explicitly authorized one full reset credit; after that reset, usage must be reread and the ceiling becomes 90% of the resulting five-hour window. Further reset credits require new authorization. Scope remains offline R0-R2 only, with completed checkpoints committed and pushed; no merge or deployment.
+
+## 2026-10-09 — reconnect/session-rollover fusion
+
+Read the Shared Exchange protocol, canonical feedback backlog and active HS-FUSION plan before coding. Linked the work to HSC-004, HSC-009 and HSC-010 without changing other projects' plans. At the scheduled start, live usage was 10% of the five-hour window and 97% of the seven-day window; during validation it was 25% / 99%. The user then manually consumed one full reset. The verified post-reset values were 1% / 0%, and one reset credit remained.
+
+Implemented conservative offline stitching for the verified reconnect case. Session `Hearthstone_2026_10_07_22_44_20` ends incomplete/non-truncated with Deathwing choice 16 open; session `Hearthstone_2026_10_07_23_04_47` resumes the same entity/options, confirms Enthrall and reaches evidenced FINAL_GAMEOVER. Acceptance also requires bounded clocks, tracker endpoint agreement, both player/controller identities, at least three stable entity identities and raw-turn continuity. The derived source retains both parents and exact provenance, and the artifact records the source-session gap rather than pretending capture was continuous.
+
+The paired tracker fixture is the 26-turn LOSS versus Death Knight record ending `20261008T041335265Z`; the similarly named `20261007T224522751Z` record is a separate 13-turn WIN versus Priest and was not used. Duplicate wrappers for the later session still collapse through the existing inner-source identity.
+
+Refreshed the private tracker inventory from 29 to 32 records. Final combined gates passed: 114 ordinary tests, 6 private tests and 1 isolated lifecycle test, with zero failures, errors or skips. The isolated artifact measured 11,033,664 bytes; decode took 532 ms using 73,551,360 bytes after decode under a 536,870,912-byte maximum heap, and final-state materialization took 70 ms using 82,988,544 bytes afterward. Private evidence remains outside Git. No Android integration, merge or deployment was performed.
+
+The user then authorized R3 with a separate test/debug app identity, specifically preserving the working tracker installation and data. Codex will alert the user only when physical-device validation is ready and will explicitly surface the R4-R6 phase boundaries instead of continuing indefinite hardening.
