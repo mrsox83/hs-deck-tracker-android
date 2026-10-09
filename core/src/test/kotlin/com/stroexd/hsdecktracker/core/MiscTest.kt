@@ -21,6 +21,10 @@ import com.stroexd.hsdecktracker.core.data.Backup
 import com.stroexd.hsdecktracker.core.data.BackupData
 import com.stroexd.hsdecktracker.core.data.DeckRepository
 import com.stroexd.hsdecktracker.core.data.MatchRepository
+import com.stroexd.hsdecktracker.core.data.CompletedMatchCommitter
+import com.stroexd.hsdecktracker.core.data.MatchOutboxRepository
+import com.stroexd.hsdecktracker.core.data.MatchOutboxState
+import com.stroexd.hsdecktracker.core.data.MatchTransferResult
 import com.stroexd.hsdecktracker.core.deck.Deck
 import com.stroexd.hsdecktracker.core.deck.DeckAnalysis
 import com.stroexd.hsdecktracker.core.deck.DeckIssue
@@ -189,6 +193,69 @@ class MiscTest {
         val backup = BackupData(exportedAt = 5, decks = reloaded.decks.value, matches = matches.matches.value, settings = AppSettings(language = "enUS"))
         val restored = Backup.import(Backup.export(backup))
         assertEquals(backup, restored)
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun completedMatchJournalRecoversEveryCommitBoundaryWithoutDuplicates() = runTest {
+        val dir = Files.createTempDirectory("hs-outbox-boundaries").toFile()
+        val record = MatchRecord(id = "match-a", timestamp = 1, result = MatchResult.WIN)
+        val matches = MatchRepository(dir)
+        val outbox = MatchOutboxRepository(dir, clock = { 10L })
+
+        outbox.stage(record)
+        var exports = 0
+        CompletedMatchCommitter(matches, outbox) { exports++; MatchTransferResult.WRITTEN }.recover(transferEnabled = false)
+        assertEquals(listOf(record), MatchRepository(dir).matches.value)
+        assertEquals(MatchOutboxState.LOCALLY_COMMITTED, MatchOutboxRepository(dir).entries.value.single().state)
+
+        outbox.transition(record.id, MatchOutboxState.TRANSFER_PENDING)
+        CompletedMatchCommitter(MatchRepository(dir), MatchOutboxRepository(dir)) { exports++; MatchTransferResult.WRITTEN }
+            .recover(transferEnabled = true)
+        assertEquals(1, exports)
+        assertEquals(listOf(record), MatchRepository(dir).matches.value)
+        val exported = MatchOutboxRepository(dir).entries.value.single()
+        assertEquals(MatchOutboxState.LOCALLY_EXPORTED, exported.state)
+        assertEquals(2, exported.attempts)
+
+        CompletedMatchCommitter(MatchRepository(dir), MatchOutboxRepository(dir)) { exports++; MatchTransferResult.WRITTEN }
+            .recover(transferEnabled = true)
+        assertEquals(1, exports)
+        assertEquals(1, MatchRepository(dir).matches.value.size)
+
+        val rechecked = CompletedMatchCommitter(MatchRepository(dir), MatchOutboxRepository(dir)) {
+            exports++
+            MatchTransferResult.ALREADY_PRESENT
+        }.commit(record, transferEnabled = true)
+        assertEquals(2, exports)
+        assertEquals(MatchTransferResult.ALREADY_PRESENT, rechecked.transferResult)
+        assertEquals(3, rechecked.entry.attempts)
+        assertEquals(1, MatchRepository(dir).matches.value.size)
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun failedCompletedMatchTransferStaysRecoverableAndRetriesExactlyOnce() = runTest {
+        val dir = Files.createTempDirectory("hs-outbox-retry").toFile()
+        val record = MatchRecord(id = "match-b", timestamp = 2, result = MatchResult.LOSS)
+        val first = CompletedMatchCommitter(MatchRepository(dir), MatchOutboxRepository(dir)) {
+            error("folder unavailable")
+        }.commit(record, transferEnabled = true).entry
+
+        assertEquals(MatchOutboxState.TRANSFER_FAILED, first.state)
+        assertEquals(1, first.attempts)
+        assertEquals("folder unavailable", first.lastError)
+        assertEquals(listOf(record), MatchRepository(dir).matches.value)
+
+        var exports = 0
+        val recovered = CompletedMatchCommitter(MatchRepository(dir), MatchOutboxRepository(dir)) { exports++; MatchTransferResult.WRITTEN }
+            .recover(transferEnabled = true)
+            .single().entry
+        assertEquals(1, exports)
+        assertEquals(MatchOutboxState.LOCALLY_EXPORTED, recovered.state)
+        assertEquals(2, recovered.attempts)
+        assertEquals(null, recovered.lastError)
+        assertEquals(1, MatchRepository(dir).matches.value.size)
         dir.deleteRecursively()
     }
 }

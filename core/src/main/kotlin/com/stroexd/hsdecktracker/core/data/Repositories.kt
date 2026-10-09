@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import java.io.File
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class DeckRepository(dir: File, private val clock: () -> Long = System::currentTimeMillis) {
     private val store = JsonFileStore(File(dir, "decks.json"), ListSerializer(Deck.serializer()), emptyList())
@@ -141,6 +143,19 @@ class MatchRepository(dir: File) {
         store.update { it + record }
     }
 
+    suspend fun addIfAbsent(record: MatchRecord): Boolean {
+        var added = false
+        store.update { records ->
+            val existing = records.firstOrNull { it.id == record.id }
+            require(existing == null || existing == record) { "Match id ${record.id} already has different content" }
+            if (existing == null) {
+                added = true
+                records + record
+            } else records
+        }
+        return added
+    }
+
     suspend fun delete(id: String) {
         store.update { list -> list.filterNot { it.id == id } }
     }
@@ -151,6 +166,124 @@ class MatchRepository(dir: File) {
 
     suspend fun replaceAll(matches: List<MatchRecord>) {
         store.set(matches)
+    }
+}
+
+@Serializable
+enum class MatchOutboxState {
+    STAGED,
+    LOCALLY_COMMITTED,
+    TRANSFER_PENDING,
+    LOCALLY_EXPORTED,
+    TRANSFER_FAILED,
+    REMOTELY_VERIFIED,
+}
+
+@Serializable
+data class MatchOutboxEntry(
+    val match: MatchRecord,
+    val state: MatchOutboxState,
+    val attempts: Int = 0,
+    val lastError: String? = null,
+    val updatedAt: Long,
+)
+
+class MatchOutboxRepository(dir: File, private val clock: () -> Long = System::currentTimeMillis) {
+    private val store = JsonFileStore(
+        File(dir, "match-outbox.json"),
+        ListSerializer(MatchOutboxEntry.serializer()),
+        emptyList(),
+    )
+
+    val entries: StateFlow<List<MatchOutboxEntry>> = store.state
+
+    suspend fun stage(record: MatchRecord): MatchOutboxEntry {
+        var result: MatchOutboxEntry? = null
+        store.update { entries ->
+            val existing = entries.firstOrNull { it.match.id == record.id }
+            require(existing == null || existing.match == record) { "Match id ${record.id} already has different outbox content" }
+            if (existing != null) {
+                result = existing
+                entries
+            } else {
+                MatchOutboxEntry(record, MatchOutboxState.STAGED, updatedAt = clock()).also { entry ->
+                    result = entry
+                }.let(entries::plus)
+            }
+        }
+        return checkNotNull(result)
+    }
+
+    suspend fun transition(id: String, state: MatchOutboxState, error: String? = null): MatchOutboxEntry {
+        var result: MatchOutboxEntry? = null
+        store.update { entries -> entries.map { entry ->
+            if (entry.match.id != id) entry else entry.copy(
+                state = state,
+                attempts = entry.attempts + if (state == MatchOutboxState.TRANSFER_PENDING) 1 else 0,
+                lastError = error,
+                updatedAt = clock(),
+            ).also { result = it }
+        } }
+        return requireNotNull(result) { "Unknown outbox match $id" }
+    }
+
+    fun pending(): List<MatchOutboxEntry> = entries.value.filter {
+        it.state != MatchOutboxState.LOCALLY_EXPORTED && it.state != MatchOutboxState.REMOTELY_VERIFIED
+    }
+}
+
+enum class MatchTransferResult { WRITTEN, ALREADY_PRESENT }
+
+data class CompletedMatchCommitResult(
+    val entry: MatchOutboxEntry,
+    val transferResult: MatchTransferResult? = null,
+)
+
+class CompletedMatchCommitter(
+    private val matches: MatchRepository,
+    private val outbox: MatchOutboxRepository,
+    private val export: suspend (MatchRecord) -> MatchTransferResult,
+) {
+    private val mutex = Mutex()
+
+    suspend fun commit(record: MatchRecord, transferEnabled: Boolean): CompletedMatchCommitResult = mutex.withLock {
+        val staged = outbox.stage(record)
+        if (!transferEnabled && (staged.state == MatchOutboxState.LOCALLY_EXPORTED || staged.state == MatchOutboxState.REMOTELY_VERIFIED)) {
+            return@withLock CompletedMatchCommitResult(staged, MatchTransferResult.ALREADY_PRESENT)
+        }
+        matches.addIfAbsent(record)
+        outbox.transition(record.id, MatchOutboxState.LOCALLY_COMMITTED).let { committed ->
+            if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
+        }
+    }
+
+    suspend fun recover(transferEnabled: Boolean): List<CompletedMatchCommitResult> = mutex.withLock {
+        outbox.pending().map { entry ->
+            matches.addIfAbsent(entry.match)
+            val committed = outbox.transition(entry.match.id, MatchOutboxState.LOCALLY_COMMITTED)
+            if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
+        }
+    }
+
+    private suspend fun transfer(entry: MatchOutboxEntry): CompletedMatchCommitResult {
+        outbox.transition(entry.match.id, MatchOutboxState.TRANSFER_PENDING)
+        return try {
+            val result = export(entry.match)
+            CompletedMatchCommitResult(
+                outbox.transition(entry.match.id, MatchOutboxState.LOCALLY_EXPORTED),
+                result,
+            )
+        } catch (error: kotlinx.coroutines.CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            CompletedMatchCommitResult(
+                outbox.transition(
+                    entry.match.id,
+                    MatchOutboxState.TRANSFER_FAILED,
+                    error.message ?: error::class.simpleName ?: "Unknown transfer failure",
+                ),
+            )
+        }
     }
 }
 

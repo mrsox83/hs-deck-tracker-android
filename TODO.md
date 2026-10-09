@@ -55,6 +55,9 @@ Usage/schedule guard: the prior 02:50 Central 2026-10-09 continuation may be use
 Owner: current Codex session on `feature/mobile-fusion-offline`.
 
 - [x] R3 authorized with a separate test/debug app identity; preserve the working installation and its data.
-- [ ] Implement the smallest durable-journal/outbox R3 checkpoint and complete automated interruption/recovery gates.
+- [x] R3 checkpoint 1: confirm `com.stroexd.hsdecktracker.debug` isolation; journal completed matches before persistence/export; add an idempotent durable outbox and automated interruption/retry gates.
+- [ ] R3 checkpoint 2: persist and recover an active match draft without duplicating a completed match.
+- [ ] R3 checkpoint 3: import selected exporter bundles post-match and persist fusion/outbox status separately from tracker match status.
+- [ ] R3 checkpoint 4: expose one visible retry/status flow and complete automated storage/permission/interruption gates.
 - [ ] Alert the user when the R3 test APK and physical-device validation script are ready.
 - [ ] Stop and explicitly surface readiness before beginning R4, R5 or R6.
