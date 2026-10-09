@@ -53,6 +53,9 @@ object FusionProvenanceValidator {
             if (choice.submitted.entityRefs.isNotEmpty()) evidence("choices[$index].submitted", choice.submitted.evidence)
             if (choice.confirmed.entityRefs.isNotEmpty()) evidence("choices[$index].confirmed", choice.confirmed.evidence)
         }
+        if (match.snapshots.firstOrNull()?.stateMode == SnapshotStateMode.DELTA) {
+            errors += "snapshots[0] must contain FULL state"
+        }
         match.snapshots.forEachIndexed { index, snapshot ->
             evidence("snapshots[$index]", snapshot.evidence)
             snapshot.counters.forEach { (entity, counters) ->

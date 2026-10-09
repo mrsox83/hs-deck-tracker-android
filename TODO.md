@@ -28,7 +28,7 @@ Owner: next Codex session on `feature/mobile-fusion-offline`, after refreshing u
 - [x] Characterize dominant artifact sections and implement schema-compatible sparse snapshot deltas with full checkpoints, preserving provenance and defaulting legacy artifacts to full-state semantics.
 - [x] Re-run `:core:test`, `:core:realFusionFixtureTest`, and the isolated lifecycle gate; record the results and push the completed checkpoint.
 
-The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 111 tests, the private fixture gate passed 3 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
+The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 112 tests, the private fixture gate passed 3 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
 
 No further implementation unit is assigned inside R0-R2. Additional offline hardening should be selected deliberately from the deferred semantics in the final audit rather than expanding into Android integration.
 

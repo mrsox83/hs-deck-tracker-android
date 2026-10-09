@@ -206,6 +206,25 @@ class FusionCoreTest {
     }
 
     @Test
+    fun `snapshot streams reject a leading delta`() {
+        val power = reducedPower()
+        val leadingDelta = power.snapshots.first().copy(stateMode = SnapshotStateMode.DELTA)
+        val invalid = FusionCoordinator.assemble(
+            tracker(),
+            listOf(power.copy(snapshots = listOf(leadingDelta))),
+            evidencedDecision(power),
+        )
+
+        val materializeError = assertFailsWith<IllegalArgumentException> {
+            FusionSnapshotMaterializer.materialize(invalid.snapshots).first()
+        }
+        val encodeError = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.encode(invalid) }
+
+        assertEquals("Snapshot stream must begin with FULL state", materializeError.message)
+        assertTrue(encodeError.message.orEmpty().contains("snapshots[0] must contain FULL state"))
+    }
+
+    @Test
     fun `fused artifact codec rejects malformed json and invalid provenance`() {
         val malformed = assertFailsWith<FusionArtifactException> { FusionArtifactCodec.decode("{not-json") }
         assertEquals("Invalid fused artifact JSON", malformed.message)
