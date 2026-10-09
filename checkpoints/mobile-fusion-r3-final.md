@@ -93,3 +93,9 @@ The user played turn 1, stopped during the opponent turn, relaunched and continu
 The bundle is marked **FOR TESTING** through the companion `.testing.json` file and Shared Exchange routing note, excluding it from coaching. Tracker-side confirmation of exactly one completed match/no reopened draft and the evidence-import retry/status checks remain pending. R4 remains unstarted.
 
 Phone screenshots confirm one automatic completed tracker record with six turns and a 6:27 duration. Its timeline retains the pre-stop Start events and shows Turn 3 onward, but has no Turn 2 group. Since the UI renders only turns containing persisted timeline events, this is a bounded recognition gap rather than evidence that the draft restarted; the duration closely spans the complete two-fragment exporter interval. A subsequent app restart must still verify that the finished draft does not reopen. Diagnostics were off and cannot recover past OCR/screenshots; enable them only for a deliberate reproduction if the missing-turn gap needs deeper diagnosis.
+
+### R3 physical acceptance
+
+The on-device evidence-import flow is accepted. Picker cancellation made no success claim. Selecting `HS-export-20261009-155235-2708d9c1.zip` produced **Fused artifact saved locally**, and reopening the fusion-test app retained that result. This validates the real two-fragment continuation bundle against the recovered tracker match, local fused-artifact persistence and visible status persistence.
+
+R3 is now source-ready, tests-passed, fusion-test APK-built, phone-verified and pushed. It is not merged or deployed. The documented Turn 2 recognition gap is bounded to the intentional interruption and successfully enriched by fusion. Automated gates cover forced access/retry/interruption failures not manufactured again on the phone. R4 remains unstarted pending explicit authorization.
