@@ -181,3 +181,13 @@ The user downloaded and installed the corrected v2 APK. Android installed it as 
 At that point this was a passed new-app isolation check, not complete R3 device acceptance. Verification of the original tracker, active-match force-stop recovery, completed-match deduplication, evidence-import cancellation/retry and persisted fusion status were still pending. R4 had not started.
 
 The user then reopened the original tracker and confirmed its decks and match history remained present and active. The phone-verified isolation gate therefore passes in both directions: the fusion-test app did not inherit working data, and installing/opening it did not remove or replace the original tracker's data. Active-match recovery and later R3 phone gates remain pending.
+
+## 2026-10-09 — R3 phone validation: force-stop evidence
+
+The user played turn 1, force-stopped during the opponent turn, relaunched Hearthstone and continued the game. The newly uploaded `HS-export-20261009-155235-2708d9c1.zip` reports partial success: 2 of 3 sessions exported and two session-local matches decoded. Direct manifest and report inspection shows these are not two independent coaching games. `Hearthstone_2026_10_09_15_42_59` is an incomplete 931-event fragment ending at 15:45:10 without `FINAL_GAMEOVER`; `Hearthstone_2026_10_09_15_45_23` is the 5,631-event continuation that completes at 15:50:46. The adjacent timing, shared participants and turn progression are consistent with the user-described stop/relaunch boundary.
+
+The third selected session, `Hearthstone_2026_10_09_13_13_55`, is `READ_FAILED` because the exporter received a null `ParcelFileDescriptor`. It is retained as non-game failure evidence and is not treated as an empty or missing competitive match. The export warning is therefore expected and the saved ZIP is valid partial-success evidence.
+
+At the user's direction, the logical match and both fragments were marked **FOR TESTING** and excluded from coaching. A machine-readable `HS-export-20261009-155235-2708d9c1.testing.json` marker was placed beside the ZIP, and the canonical Shared Exchange `START_HERE.md` now routes the same exclusion. The two readable fragments must be counted once for validation and zero times for coaching; the failed session must not be counted as a game.
+
+This proves exporter-side continuity evidence, but it does not yet prove the fusion-test tracker's active journal UI recovered or deduplicated correctly. The user still needs to confirm that **HS Deck Tracker Fusion Test** shows exactly one completed match and no finished active draft reopens. Evidence-import cancellation/retry/status persistence also remains pending. R4 has not started.

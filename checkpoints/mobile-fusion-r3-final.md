@@ -85,3 +85,9 @@ The corrected v2 APK installed successfully as a new app. The user confirmed tha
 At that point, the remaining R3 device checks were to reopen the original tracker, exercise active-match force-stop recovery, finish/reopen without duplication, and test evidence-import cancellation/retry plus persisted status. R4 remained unstarted.
 
 The user subsequently reopened the original tracker and confirmed that its decks and match history remained present and active. The installation/data-isolation portion of R3 physical validation is complete. Remaining device work is active-match recovery, completion deduplication and evidence-import status/retry validation; R4 remains unstarted.
+
+### Force-stop/relaunch evidence
+
+The user played turn 1, stopped during the opponent turn, relaunched and continued. `HS-export-20261009-155235-2708d9c1.zip` contains an incomplete pre-stop fragment (`Hearthstone_2026_10_09_15_42_59`, source SHA-256 `4fc1dccd08cb4d01a4f5aaba8441cb888f0c2c885640164f1eafe33f0502dd7d`) and a completed post-relaunch fragment (`Hearthstone_2026_10_09_15_45_23`, source SHA-256 `4e82739d5fa44b9a70ff6e690836467ccbd298a81b2c06d8fd48703c9087194a`). They are one logical validation match. The additional `Hearthstone_2026_10_09_13_13_55` entry is a null-descriptor `READ_FAILED` record, not a decoded game.
+
+The bundle is marked **FOR TESTING** through the companion `.testing.json` file and Shared Exchange routing note, excluding it from coaching. Tracker-side confirmation of exactly one completed match/no reopened draft and the evidence-import retry/status checks remain pending. R4 remains unstarted.
