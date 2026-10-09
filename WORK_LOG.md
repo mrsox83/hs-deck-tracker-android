@@ -157,3 +157,5 @@ Final validation passed 123 ordinary core tests and 6 private-fixture tests. `:a
 The ready-to-test package is staged locally at `C:\Users\Xs_da\Documents\SoxCoachExporter\Matches\mobile-fusion-r3-device-validation`. An attempted copy to `H:\My Drive\HSReplay\Development\mobile-fusion-r3-device-validation` was rejected by the environment's external-sync safeguard because this turn did not explicitly authorize that upload; no Drive destination was created or modified. The local package contains the APK, checksum and numbered phone-validation README.
 
 Five-hour usage began at 0%, was 28% after implementation, automated gates, private fixtures and APK packaging, and 32% at the final pre-commit check—below the user's 60% ceiling. R4 was not started. R3 is source-ready/tests-passed/APK-built, but not yet phone-verified, merged or deployed.
+
+The final live post-push usage reading was 36% of the five-hour window. The published checkpoint remained below the 60% ceiling.
