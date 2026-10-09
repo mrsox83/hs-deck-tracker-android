@@ -72,9 +72,9 @@ R3 source/build work is complete at the isolated-phone-validation boundary. Phys
 - [x] Build and stage a corrected v2 APK and phone-validation checklist.
 - [x] Device isolation gate: v2 installed as a new app and opened with no historical decks or games from the working tracker; the original tracker retained its active decks and match history.
 - [x] Force-stop recovery gate: user played turn 1, stopped during the opponent turn, relaunched and continued; the tracker produced one completed six-turn/6:27 record whose original start duration survived, while the exporter ZIP preserves one incomplete pre-stop fragment and one completed post-relaunch fragment.
-- [ ] Confirm no finished active draft reopens after another force-stop/reopen of **HS Deck Tracker Fusion Test**.
+- [x] Confirm the completed record/fusion result survives force-stop/reopen without returning to the interrupted active draft.
 - [ ] Characterize the missing Turn 2 timeline row. Current evidence indicates a bounded OCR/capture gap: the UI emits only turn groups containing timeline events, while duration and pre-stop Start events persisted.
-- [ ] Complete evidence-import cancellation, retry and persisted-status phone checks.
-- [ ] Complete physical-device acceptance with the v2 APK. Android must offer **Install**, not **Update**.
+- [x] Complete phone evidence-import cancellation, successful local fusion and persisted-status checks. Cancellation correctly claims no success; the selected two-fragment ZIP reports **Fused artifact saved locally** and remains saved after reopen.
+- [x] Complete R3 physical-device acceptance with the v2 APK. Deterministic automated gates cover permission denial, unreadable input and retry; no additional manufactured phone failure is required.
 
-The `.debug` package was not isolated from this phone's existing tracker installation, regardless of the source repository's production-ID assumption. Only the v2 `.fusiontest` package is active for device validation. R4 remains blocked on reported R3 phone results and explicit authorization.
+The `.debug` package was not isolated from this phone's existing tracker installation, regardless of the source repository's production-ID assumption. Only the v2 `.fusiontest` package is active for device validation. R3 device acceptance is complete. Stop and explicitly surface R4 scope/prerequisites; do not begin R4 without user authorization.
