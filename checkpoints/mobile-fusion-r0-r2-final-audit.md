@@ -27,6 +27,8 @@ The R0-R2 range after that baseline changes only checkpoint/TODO/work-log docume
 
 The complete ordinary suite passed 112 tests, the expanded private fixture gate passed 5 tests, and the isolated lifecycle gate passed 1 test, with no failures, errors or skips. The private gate pins and parses all 29 current tracker records and reduces 48 source matches across all 21 current exporter bundles: 21,018 canonical events and 29,674 compact snapshots. The real 22,601-raw-event representative artifact passes provenance validation and direct-to-stream export; its 1,144 snapshots decode successfully in a fresh 512 MiB consumer.
 
+Corpus expectations also pin the 4/2/15 distribution of bundle schemas 0.2/0.3/0.4, 43 completed matches and 4 explicitly truncated matches. One incomplete non-truncated suffix remains unresolved. Six unmatched block-end warnings belong to one selected inner source repeated in three wrappers; the raw selected evidence lacks corresponding outer starts, so the reducer correctly retains diagnostics instead of inventing structure.
+
 The first isolated artifact measured 139,607,285 bytes and still exhausted a fresh 512 MiB consumer. Profiling showed snapshots consumed 95.62% of the file. Schema-compatible sparse deltas plus full first/turn/last checkpoints reduced the artifact to 11,033,645 bytes; isolated decoding completed in 540 ms with 71,857,664 bytes used after decode. Lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. Legacy artifacts default to `FULL` snapshot semantics, and lazy materialization restores full snapshot views without eagerly retaining another complete list.
 
 ## Deliberately deferred
