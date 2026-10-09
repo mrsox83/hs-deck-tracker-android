@@ -18,15 +18,19 @@ Current implementation checkpoint: the approved offline R0-R2 core is implemente
 
 Real-fixture checkpoint: the exact Rafaam tracker/exporter pair now passes a dedicated private-fixture gate, including wrapper/inner hashes, event and choice counts, separate Raze/Enthrall stages, action ordering, target-zero semantics, clock normalization and conservative pairing. Broader fixture coverage and remaining reducer semantics are still open.
 
-Remote write authentication is proven for `feature/mobile-fusion-offline`; `239ee23482217e2b068ea2a06658f1c2c1dfc236` is the last implementation checkpoint, followed only by the pause-handoff documentation commit. No merge or deployment was attempted.
+Remote write authentication is proven for `feature/mobile-fusion-offline`. The isolated lifecycle and sparse-snapshot checkpoint supersedes the prior pause handoff. No merge or deployment was attempted.
 
 ## Assigned for the next Codex window
 
 Owner: next Codex session on `feature/mobile-fusion-offline`, after refreshing usage and confirming the branch tip.
 
-- [ ] R0-R2 hardening: measure full real-artifact stream decoding in an isolated consumer lifecycle that does not retain the reducer/source graph; record output size, peak-memory conditions and pass/fail without increasing heap merely to hide the result.
-- [ ] If isolated decoding is still memory-heavy, characterize which artifact sections dominate size before proposing any schema-compatible compaction. Preserve provenance and do not implement Android integration as part of that measurement.
-- [ ] Re-run `:core:test` and `:core:realFusionFixtureTest`, then commit and push any completed checkpoint.
+- [x] R0-R2 hardening: measure full real-artifact stream decoding in an isolated consumer lifecycle that does not retain the reducer/source graph; record output size, memory conditions and pass/fail under an explicit 512 MiB heap.
+- [x] Characterize dominant artifact sections and implement schema-compatible sparse snapshot deltas with full checkpoints, preserving provenance and defaulting legacy artifacts to full-state semantics.
+- [x] Re-run `:core:test`, `:core:realFusionFixtureTest`, and the isolated lifecycle gate; record the results and push the completed checkpoint.
+
+The exact Rafaam artifact now encodes to 11,033,645 bytes instead of 139,607,285 bytes. A fresh isolated consumer decoded all 1,144 snapshots in 540 ms with 71,857,664 bytes used after decode under a 536,870,912-byte maximum heap; lazy reconstruction of the final full state took 78 ms and reported 81,294,848 bytes used afterward. The ordinary suite passed 111 tests, the private fixture gate passed 3 tests, and the isolated consumer gate passed 1 test, all without failures, errors or skips.
+
+No further implementation unit is assigned inside R0-R2. Additional offline hardening should be selected deliberately from the deferred semantics in the final audit rather than expanding into Android integration.
 
 Owner: user/project decision.
 

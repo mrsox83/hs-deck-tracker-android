@@ -150,10 +150,14 @@ data class QuestSnapshot(
 )
 
 @Serializable
+enum class SnapshotStateMode { FULL, DELTA }
+
+@Serializable
 data class FusionSnapshot(
     val id: String,
     val sequence: Int,
     val phase: String,
+    val stateMode: SnapshotStateMode = SnapshotStateMode.FULL,
     val activeController: Int? = null,
     val rawTurn: Int? = null,
     val playerTurnIndices: Map<Int, Int> = emptyMap(),

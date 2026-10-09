@@ -32,6 +32,8 @@ dependencies {
 
 tasks.test {
     exclude("**/RealFusionFixtureTest.class")
+    exclude("**/RealFusionArtifactEncodeTest.class")
+    exclude("**/RealFusionArtifactDecodeTest.class")
 }
 
 tasks.register<Test>("realFusionFixtureTest") {
@@ -44,5 +46,42 @@ tasks.register<Test>("realFusionFixtureTest") {
     doFirst {
         require(fixtureDir.isPresent) { "Pass -PhsFusionFixtureDir=<private fixture directory>" }
         systemProperty("hsFusionFixtureDir", fixtureDir.get())
+    }
+}
+
+val isolatedFusionArtifact = layout.buildDirectory.file("fusion-isolated/rafaam-fused.json")
+val isolatedFusionReport = layout.buildDirectory.file("fusion-isolated/decode-measurement.properties")
+
+tasks.register<Test>("realFusionArtifactEncodeTest") {
+    description = "Builds and streams the private Rafaam fused artifact in an isolated 512 MiB JVM"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealFusionArtifactEncodeTest.class")
+    maxHeapSize = "512m"
+    outputs.file(isolatedFusionArtifact)
+    outputs.upToDateWhen { false }
+    val fixtureDir = providers.gradleProperty("hsFusionFixtureDir")
+    doFirst {
+        require(fixtureDir.isPresent) { "Pass -PhsFusionFixtureDir=<private fixture directory>" }
+        systemProperty("hsFusionFixtureDir", fixtureDir.get())
+        systemProperty("hsFusionArtifactPath", isolatedFusionArtifact.get().asFile.absolutePath)
+    }
+}
+
+tasks.register<Test>("realFusionArtifactLifecycleTest") {
+    description = "Decodes and measures the private fused artifact in a fresh isolated 512 MiB JVM"
+    group = "verification"
+    dependsOn("realFusionArtifactEncodeTest")
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealFusionArtifactDecodeTest.class")
+    maxHeapSize = "512m"
+    inputs.file(isolatedFusionArtifact)
+    outputs.file(isolatedFusionReport)
+    outputs.upToDateWhen { false }
+    doFirst {
+        systemProperty("hsFusionArtifactPath", isolatedFusionArtifact.get().asFile.absolutePath)
+        systemProperty("hsFusionMeasurementPath", isolatedFusionReport.get().asFile.absolutePath)
     }
 }

@@ -41,10 +41,16 @@ class FusionCoreTest {
         assertEquals(listOf("[id=8 cardId=OPTION_A]"), reduced.choices.single().confirmed.entityRefs)
         assertEquals(1, reduced.snapshots.count { it.phase == "BEFORE_ACTION" })
         assertEquals(1, reduced.snapshots.count { it.phase == "AFTER_OUTER_ACTION" })
-        assertEquals(4, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").value)
-        assertEquals(6, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").evidence.single().sourceLine)
-        assertEquals(mapOf(2 to 1), reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.playerTurnIndices)
-        val player = reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.players.getValue(2)
+        assertEquals(SnapshotStateMode.FULL, reduced.snapshots.first().stateMode)
+        assertEquals(SnapshotStateMode.DELTA, reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.stateMode)
+        assertTrue(reduced.snapshots.filter { it.phase == "TURN_SIGNAL" }.all { it.stateMode == SnapshotStateMode.FULL })
+        assertEquals(SnapshotStateMode.FULL, reduced.snapshots.last().stateMode)
+        val afterAction = FusionSnapshotMaterializer.materialize(reduced.snapshots)
+            .first { it.phase == "AFTER_OUTER_ACTION" }
+        assertEquals(4, afterAction.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").value)
+        assertEquals(6, afterAction.counters.getValue("7").getValue("HERALD_COLOSSAL_AMOUNT").evidence.single().sourceLine)
+        assertEquals(mapOf(2 to 1), afterAction.playerTurnIndices)
+        val player = afterAction.players.getValue(2)
         assertEquals("9", player.heroEntityId.value)
         assertEquals(30, player.health.value)
         assertEquals(7, player.damage.value)
@@ -54,7 +60,7 @@ class FusionCoreTest {
         assertEquals(2, player.armor.value)
         assertEquals(4, player.heraldAmount.value)
         assertEquals(null, player.heraldThresholdReached.value)
-        val quest = reduced.snapshots.first { it.phase == "AFTER_OUTER_ACTION" }.quests.getValue("10")
+        val quest = afterAction.quests.getValue("10")
         assertEquals(3, quest.progress.value)
         assertEquals(3, quest.total.value)
         assertEquals(null, quest.completed.value)
@@ -183,6 +189,20 @@ class FusionCoreTest {
         assertEquals("Fused artifact schema is required", missing.message)
         assertEquals("Unsupported fused artifact schema: hs-fused-match/2", unsupported.message)
         assertEquals("Fused artifact schema must be a string", nonString.message)
+    }
+
+    @Test
+    fun `legacy artifacts without snapshot state mode decode as full snapshots`() {
+        val power = reducedPower()
+        val fullSnapshots = FusionSnapshotMaterializer.materialize(power.snapshots).toList()
+        val fused = FusionCoordinator.assemble(tracker(), listOf(power.copy(snapshots = fullSnapshots)), evidencedDecision(power))
+        val legacyJson = FusionArtifactCodec.encode(fused).replace(",\"stateMode\":\"FULL\"", "")
+
+        val decoded = FusionArtifactCodec.decode(legacyJson)
+
+        assertTrue(decoded.snapshots.isNotEmpty())
+        assertTrue(decoded.snapshots.all { it.stateMode == SnapshotStateMode.FULL })
+        assertEquals(fullSnapshots, decoded.snapshots)
     }
 
     @Test
