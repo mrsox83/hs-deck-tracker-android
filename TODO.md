@@ -78,3 +78,7 @@ R3 source/build work is complete at the isolated-phone-validation boundary. Phys
 - [x] Complete R3 physical-device acceptance with the v2 APK. Deterministic automated gates cover permission denial, unreadable input and retry; no additional manufactured phone failure is required.
 
 The `.debug` package was not isolated from this phone's existing tracker installation, regardless of the source repository's production-ID assumption. Only the v2 `.fusiontest` package is active for device validation. R3 device acceptance is complete. Stop and explicitly surface R4 scope/prerequisites; do not begin R4 without user authorization.
+
+### R4 owner constraint — recorded, not authorized
+
+Hearthstone locks the user's phone to landscape while open. If R4 is authorized, do not require an artificial portrait/landscape rotation test during gameplay. Retain dimension/inset-safe coordinate handling and test landscape startup, lock/unlock, capture stop/reconnect, and any fold or window-size change that can occur without leaving landscape. This note narrows the device test matrix; it does not authorize R4 implementation.
