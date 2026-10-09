@@ -84,6 +84,7 @@ import com.stroexd.hsdecktracker.core.cards.HsClass
 import com.stroexd.hsdecktracker.core.deck.DeckAnalysis
 import com.stroexd.hsdecktracker.core.meta.OpponentPredictor
 import com.stroexd.hsdecktracker.core.fusion.FusionImportState
+import com.stroexd.hsdecktracker.core.fusion.FusionBundleLoader
 import com.stroexd.hsdecktracker.core.stats.MatchExporter
 import com.stroexd.hsdecktracker.core.stats.MatchHistory
 import com.stroexd.hsdecktracker.core.stats.MatchQuery
@@ -482,7 +483,9 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
     val decks by container.decks.decks.collectAsStateWithLifecycle()
     val cardState by container.cards.state.collectAsStateWithLifecycle()
     val metaState by container.meta.state.collectAsStateWithLifecycle()
+    val fusionEntries by container.fusionImports.entries.collectAsStateWithLifecycle()
     val match = matches.firstOrNull { it.id == matchId }
+    val fusionEntry = fusionEntries.firstOrNull { it.matchId == matchId }
     val db = cardState.db
     var editing by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -491,21 +494,21 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
         val selectedMatch = match
         if (selectedMatch != null && uris.isNotEmpty()) {
             scope.launch {
-                runCatching {
+                try {
                     val bundles = withContext(Dispatchers.IO) {
-                        uris.map { uri ->
-                            checkNotNull(context.contentResolver.openInputStream(uri)) { "Cannot open selected bundle" }.use { it.readBytes() }
-                        }
+                        FusionBundleLoader.load(uris.map { uri -> { context.contentResolver.openInputStream(uri) } })
                     }
-                    container.importFusionBundles(selectedMatch, bundles)
-                }.onSuccess { result ->
+                    val result = container.importFusionBundles(selectedMatch, bundles)
                     val message = when (result.entry.state) {
                         FusionImportState.FUSED_LOCAL -> context.getString(R.string.fusion_import_success)
                         FusionImportState.PENDING_PAIRING -> context.getString(R.string.fusion_import_pending)
                         else -> context.getString(R.string.fusion_import_failed, result.entry.lastError.orEmpty())
                     }
                     android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
-                }.onFailure { error ->
+                } catch (error: kotlinx.coroutines.CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    container.recordFusionAccessFailure(selectedMatch.id, error)
                     android.widget.Toast.makeText(
                         context,
                         context.getString(R.string.fusion_import_failed, error.message.orEmpty()),
@@ -588,6 +591,39 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
                 MatchHeaderCard(match, onOpenDeck = deck?.let { d -> { navController.navigate(Routes.deck(d.id)) } })
+            }
+            fusionEntry?.let { entry ->
+                item {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        SectionHeader(stringResource(R.string.fusion_status))
+                        Text(
+                            when (entry.state) {
+                                FusionImportState.RECEIVED -> stringResource(R.string.fusion_state_received)
+                                FusionImportState.PROCESSING -> stringResource(R.string.fusion_state_processing)
+                                FusionImportState.PENDING_PAIRING -> stringResource(R.string.fusion_state_pending)
+                                FusionImportState.FUSED_LOCAL -> stringResource(R.string.fusion_state_local)
+                                FusionImportState.FAILED -> stringResource(R.string.fusion_state_failed)
+                            },
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        val detail = entry.lastError ?: entry.pairing?.reason
+                        if (!detail.isNullOrBlank()) {
+                            Text(
+                                detail,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (entry.state == FusionImportState.PENDING_PAIRING || entry.state == FusionImportState.FAILED) {
+                            FilledTonalButton(
+                                onClick = { importFusion.launch(arrayOf("application/zip", "application/octet-stream")) },
+                                modifier = Modifier.padding(top = 8.dp),
+                            ) {
+                                Text(stringResource(R.string.fusion_retry_select))
+                            }
+                        }
+                    }
+                }
             }
             if (match.notes.isNotBlank()) {
                 item {

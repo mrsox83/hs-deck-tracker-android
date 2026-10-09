@@ -58,6 +58,8 @@ Owner: current Codex session on `feature/mobile-fusion-offline`.
 - [x] R3 checkpoint 1: confirm `com.stroexd.hsdecktracker.debug` isolation; journal completed matches before persistence/export; add an idempotent durable outbox and automated interruption/retry gates.
 - [x] R3 checkpoint 2: persist and recover an active match draft without duplicating a completed match.
 - [x] R3 checkpoint 3: import selected exporter bundles post-match and persist fusion/outbox status separately from tracker match status.
-- [ ] R3 checkpoint 4: expose one visible retry/status flow and complete automated storage/permission/interruption gates.
-- [ ] Alert the user when the R3 test APK and physical-device validation script are ready.
+- [x] R3 checkpoint 4: expose one visible retry/status flow and complete automated storage/permission/interruption gates.
+- [x] Alert the user when the R3 test APK and physical-device validation script are ready.
 - [ ] Stop and explicitly surface readiness before beginning R4, R5 or R6.
+
+R3 source/build work is complete at the isolated-phone-validation boundary. Physical device acceptance remains pending and is not implied by the passing local gates. Do not begin R4 until the user reports the R3 phone results and explicitly authorizes the transition.

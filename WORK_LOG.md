@@ -145,3 +145,15 @@ Fusion status is stored separately in `fusion-outbox.json` with RECEIVED, PROCES
 Synthetic end-to-end tests cover a uniquely matched selected bundle, persisted and decodable fused output, a pending conservative pairing, malformed input, retry attempt accounting and reloading status from disk. The ordinary suite passes 120 tests. The six-test private fixture gate still passes against `H:\My Drive\HSReplay`, including all current pinned tracker/exporter evidence and reconnect continuation. The final debug APK assembles successfully at 69,962,773 bytes with SHA-256 `a313b414870030978027b6ee1c447477e42a03cfcfcb84a9367e453b2e7125d5`.
 
 Live five-hour usage was 52% when this checkpoint began and 74% after implementation, ordinary tests, Android build and private-fixture validation. The next bounded unit is checkpoint 4 only: visible persisted status/retry, interruption/permission gates, and the phone-validation script. The user has not yet been asked to install. R4 remains unstarted and will be surfaced explicitly after R3 device acceptance.
+
+## 2026-10-09 — R3 checkpoint 4: visible recovery and device package
+
+Added persisted fusion status to the saved-match detail screen. RECEIVED, PROCESSING, PENDING_PAIRING, FUSED_LOCAL and FAILED have distinct user-facing states; pending and failed imports offer **Select bundle again**. Restart converts abandoned RECEIVED/PROCESSING work to a visible retryable failure before a new import can begin. File-picker access failures are also retained without degrading an already completed FUSED_LOCAL artifact.
+
+Added deterministic gates for interrupted-status recovery, permission denial, missing document handles and atomic artifact replacement. A failed encode removes its `.tmp` staging file and leaves the prior valid fused artifact byte-for-byte intact. Import cancellation remains cancellation rather than being recorded as success.
+
+Final validation passed 123 ordinary core tests and 6 private-fixture tests. `:app:assembleDebug` passed. Packaged metadata independently reports `com.stroexd.hsdecktracker.debug`, version `1.5.0-debug` and `application-debuggable`. The 68,824,434-byte APK has SHA-256 `321ea959e0a08b5a10dfd58e80bf3c3ca92f28950f5a024005e13c3dbe77a361`.
+
+The ready-to-test package is staged locally at `C:\Users\Xs_da\Documents\SoxCoachExporter\Matches\mobile-fusion-r3-device-validation`. An attempted copy to `H:\My Drive\HSReplay\Development\mobile-fusion-r3-device-validation` was rejected by the environment's external-sync safeguard because this turn did not explicitly authorize that upload; no Drive destination was created or modified. The local package contains the APK, checksum and numbered phone-validation README.
+
+Five-hour usage began at 0%, was 28% after implementation, automated gates, private fixtures and APK packaging, and 32% at the final pre-commit check—below the user's 60% ceiling. R4 was not started. R3 is source-ready/tests-passed/APK-built, but not yet phone-verified, merged or deployed.
