@@ -1,5 +1,10 @@
 # Mobile fusion R4 authorization checkpoint
 
+## 2026-10-10 — v4 phone retest accepted
+
+The owner confirmed all requested narrow-toolbar checks passed on the v4 package built from `4b881be`: visible header controls, overflow actions, bookmark feedback and Close dismissal. The toolbar defect is closed. This report covers the layout-only script; remaining original mode/lifecycle/retained-evidence acceptance requires review before R4.2. Usage at recording: five-hour 7%, seven-day 56%. Source/build and this phone retest are verified; no merge or deployment.
+
+
 Date: 2026-10-09
 
 Repository: `mrsox83/hs-deck-tracker-android`
