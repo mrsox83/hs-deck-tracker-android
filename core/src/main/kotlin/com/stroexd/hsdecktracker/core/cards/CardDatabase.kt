@@ -12,6 +12,7 @@ class CardDatabase(
     private val byDbf: Map<Int, Card> = allCards.associateBy { it.dbfId }
     private val byCardId: Map<String, Card> = allCards.associateBy { it.id }
     private val byName: Map<String, List<Card>> = allCards.groupBy { normalizeForSearch(it.name) }
+    val recognitionCards: List<Card> = allCards.filter { it.isRecognitionCard }
 
     val deckCards: List<Card> = allCards
         .filter { it.isDeckCard }

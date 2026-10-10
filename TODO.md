@@ -1,5 +1,10 @@
 # Mobile fusion R0–R2
 
+## Owner-authorized catalog bug follow-up — 2026-10-10
+
+- [x] Full catalog lookup, separate constructed/collectible recognition and safe legacy-cache fallback implemented. Exact Example Death Knight Deck deck-code and live downloaded-catalog gates pass; 144 ordinary tests. R4 closeout remains in force; no R5 work.
+- [ ] Owner phone gate for v7: open online once, inspect existing Example Death Knight Deck deck for both resolved names, unchanged 30-card count and saved history. No re-import/reinstall or new match needed. Source/tests are not phone acceptance. See `checkpoints/mobile-fusion-card-catalog-fix.md`.
+
 Approved scope: offline mobile evidence fusion only. No merge, deployment, PC adapter, or R3–R6 Android integration.
 
 - [x] Verify shell execution and requested remote branch head.
