@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-10 — diagnostic share feedback
+
+Owner reports silent diagnostic sharing. Confirmed archives (8)/(9) arrived in Drive, 3,168,111 bytes each; latest has 37 evidence entries and 32 retained frames with region probes. Three new gameplay bookmarks are saved, including a visible ENEMY TURN and friendly health 15 in the last image; these do not establish semantic recognition acceptance. Test exclusion policy covers these uploads. Added visible status below Share diagnostics: prepared/menu-opened with instructions to check Drive, or no-data/error. No upload-success claim is made because the app only launches Android ACTION_SEND and cannot verify the receiving app's upload. Fresh active five-hour usage 4% / weekly 60%; reset unused. Build validation pending in this entry until final result below.
+
+All 32 uploaded keyframe hashes and byte sizes match metadata (3,163,496 total image bytes). APK assembly passed after clearing only locked generated app output. v3 package/signer independently verified, Drive copy hash matched; APK 68,087,446 bytes, SHA256 `53a6f6b0122da2ff09c0f0a0a60846732cf1505ac1a6ae8a740848cb24ecee1a`. Feedback UI phone verification remains pending; no new game is needed. R4.2 semantic calibration remains incomplete. No merge/deployment.
+
 ## 2026-10-10 — owner test-exclusion publication
 
 Owner classified the current uploaded R4 validation games as tests and requested shared coaching skip instructions. Published and reread a private `hs-coaching-exclusion/1` registry in HSReplay covering three current tracker exports and 15 diagnostic/tracker identity aliases, plus `HS-FUSION-R4-TEST-EXCLUSION.md` in Shared Exchange. IDs are not distinct-game counts. Preserve raw evidence; skip coaching advice, competitive aggregates and processed competitive-game counts. Earlier ordinary gameplay remains unchanged. Existing R3 exclusion stays in force. Historical coaching ledger reconciliation is requested, not claimed verified. Private identities/fixtures are outside Git.
