@@ -34,6 +34,7 @@ fun Context.startScreenRecognition(
     onStopped: () -> Unit = {},
 ): ScreenRecognizer {
     val container = appContainer
+    val session = container.onRecognitionStarted()
     var diagnostics: DiagnosticsRecorder? = null
     val recognizer = ScreenRecognizer(
         context = this,
@@ -43,6 +44,7 @@ fun Context.startScreenRecognition(
         cyrillic = { GameLocales.isCyrillic(container.gameLocale.value) },
         pacing = { container.capturePacing() },
         onFrame = { frame, bitmap, contentWidth, contentHeight, reused ->
+            if (container.isRecognitionSessionCurrent(session)) {
             // Follows the setting live, so recording can also be switched on in the middle of a game
             val recorder = if (container.settings.value.recordDiagnostics) {
                 diagnostics ?: DiagnosticsRecorder(DiagnosticsRecorder.root(this)).also { diagnostics = it }
@@ -55,13 +57,12 @@ fun Context.startScreenRecognition(
             val events = container.onScreenFrame(frame, notes, reused)
             container.onVisualFrame(frame, bitmap, contentWidth, contentHeight, events, matchIdBeforeFrame, reused)
             recorder?.let { runCatching { it.record(frame, events, notes.orEmpty(), bitmap) } }
+            }
         },
         onStopped = {
-            container.onRecognitionStopped()
-            onStopped()
+            if (container.onRecognitionStopped(session)) onStopped()
         },
     )
-    container.onRecognitionStarted()
     recognizer.start()
     return recognizer
 }

@@ -355,19 +355,30 @@ class AppContainer(context: Context) {
         tracker.selectDeckForCurrentGame(deck, cards.db)
     }
 
-    fun onRecognitionStarted() {
+    private val recognitionSessions = com.stroexd.hsdecktracker.core.vision.RecognitionSessionGate()
+
+    @Synchronized
+    fun onRecognitionStarted(): Long {
+        val session = recognitionSessions.start()
         visionTracker = null
         frameCount = 0
         ocrFrameCount = 0
         _recognition.value = RecognitionStatus(active = true, scan = _recognition.value.scan)
         checkForUpdates()
+        return session
     }
 
-    fun onRecognitionStopped() {
+    @Synchronized
+    fun isRecognitionSessionCurrent(session: Long): Boolean = recognitionSessions.isCurrent(session)
+
+    @Synchronized
+    fun onRecognitionStopped(session: Long): Boolean {
+        if (!recognitionSessions.stop(session)) return false
         visualEvidenceRecorder.failPending("Visual capture stopped before the bookmark frame arrived")
         visionTracker = null
         collectionScanner = null
         _recognition.update { it.copy(active = false, phase = VisionGameTracker.Phase.IDLE, scan = null) }
+        return true
     }
 
     fun startCollectionScan() {
