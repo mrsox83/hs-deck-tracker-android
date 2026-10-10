@@ -25,12 +25,19 @@ class VisualEvidenceRepositoryTest {
                 status = VisualEvidenceStatus.KEYFRAME_PENDING,
             ),
         )
-        repository.attachKeyframe("bookmark-1", VisualKeyframe("keyframes/a.jpg", "abc", 100, 50, 12))
+        repository.attachKeyframe("bookmark-1", VisualKeyframe("keyframes/a.jpg", "abc", 100, 50, 12,
+            regionPilotVersion = com.stroexd.hsdecktracker.core.vision.VisualRegionPilot.VERSION,
+            regionOcrReused = true,
+            regionProbes = com.stroexd.hsdecktracker.core.vision.VisualRegionPilot.probe(
+                com.stroexd.hsdecktracker.core.vision.OcrFrame(123L, emptyList())),
+        ))
 
         val restored = VisualEvidenceRepository(dir).entries.value.single()
         assertEquals(VisualEvidenceStatus.KEYFRAME_SAVED, restored.status)
         assertEquals("abc", restored.keyframe?.sha256)
         assertEquals("match-1", restored.matchId)
+        assertEquals(true, restored.keyframe?.regionOcrReused)
+        assertEquals(8, restored.keyframe?.regionProbes?.size)
 
         repository.clear()
         assertEquals(emptyList(), VisualEvidenceRepository(dir).entries.value)
