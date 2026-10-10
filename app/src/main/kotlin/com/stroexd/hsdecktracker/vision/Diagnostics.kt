@@ -60,21 +60,23 @@ class DiagnosticsRecorder(root: File) {
 
         fun root(context: Context) = File(context.filesDir, "diagnose")
 
-        fun hasData(context: Context): Boolean = root(context).walkTopDown().any { it.isFile }
+        private fun visualRoot(context: Context) = File(context.filesDir, "visual-evidence")
+        private fun visualMetadata(context: Context) = File(context.filesDir, "data/visual-evidence.json")
+
+        fun hasData(context: Context): Boolean = shareFiles(context).isNotEmpty()
 
         fun clear(context: Context) {
             root(context).deleteRecursively()
         }
 
         fun share(context: Context): Boolean {
-            val root = root(context)
-            val files = root.walkTopDown().filter { it.isFile }.toList()
+            val files = shareFiles(context)
             if (files.isEmpty()) return false
             val sharedDir = File(context.cacheDir, "shared").apply { mkdirs() }
             val zip = File(sharedDir, "hs-tracker-diagnostics.zip")
             ZipOutputStream(FileOutputStream(zip)).use { out ->
-                for (file in files) {
-                    out.putNextEntry(ZipEntry(file.relativeTo(root).path))
+                for ((name, file) in files) {
+                    out.putNextEntry(ZipEntry(name.replace('\\', '/')))
                     file.inputStream().use { it.copyTo(out) }
                     out.closeEntry()
                 }
@@ -89,6 +91,14 @@ class DiagnosticsRecorder(root: File) {
             }
             context.startActivity(Intent.createChooser(intent, text.getString(R.string.share_diagnostics)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             return true
+        }
+
+        private fun shareFiles(context: Context): List<Pair<String, File>> = buildList {
+            val diagnostics = root(context)
+            diagnostics.walkTopDown().filter { it.isFile }.forEach { add("diagnostics/${it.relativeTo(diagnostics).path}" to it) }
+            val visual = visualRoot(context)
+            visual.walkTopDown().filter { it.isFile }.forEach { add("visual-evidence/${it.relativeTo(visual).path}" to it) }
+            visualMetadata(context).takeIf { it.isFile }?.let { add("visual-evidence/visual-evidence.json" to it) }
         }
     }
 }

@@ -66,4 +66,8 @@ class VisualEvidenceRepository(dir: File) {
         } }
         require(found) { "Unknown visual evidence id $id" }
     }
+
+    suspend fun clear() {
+        store.set(emptyList())
+    }
 }

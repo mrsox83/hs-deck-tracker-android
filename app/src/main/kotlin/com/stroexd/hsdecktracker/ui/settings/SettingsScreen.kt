@@ -420,7 +420,10 @@ fun SettingsScreen(navController: NavHostController) {
                         }) { Text(stringResource(R.string.share_diagnostics)) }
                         TextButton(onClick = {
                             DiagnosticsRecorder.clear(context)
-                            scope.launch { snackbar.showSnackbar(context.getString(R.string.diagnostics_deleted)) }
+                            scope.launch {
+                                container.clearVisualEvidence()
+                                snackbar.showSnackbar(context.getString(R.string.diagnostics_deleted))
+                            }
                         }) { Text(stringResource(R.string.delete)) }
                     }
                 }

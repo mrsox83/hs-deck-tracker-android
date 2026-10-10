@@ -494,7 +494,7 @@
     <string name="record_diagnostics_hint">Saves recognized texts and some screenshots on the device for troubleshooting.</string>
     <string name="no_diagnostics">No diagnostics recorded yet</string>
     <string name="share_diagnostics">Share diagnostics</string>
-    <string name="diagnostics_deleted">Diagnostics deleted</string>
+    <string name="diagnostics_deleted">Diagnostics and retained visual evidence deleted</string>
     <string name="backup">Backup</string>
     <string name="create_backup">Create backup</string>
     <string name="restore">Restore</string>
