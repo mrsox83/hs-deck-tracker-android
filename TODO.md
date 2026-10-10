@@ -81,7 +81,7 @@ The `.debug` package was not isolated from this phone's existing tracker install
 
 ### R4 authorized scope — 2026-10-09
 
-The user explicitly authorized R4 after accepting the bounded staged plan below. Hearthstone locks the user's phone to landscape while open, so do not require an artificial portrait/landscape rotation test during gameplay. Retain dimension/inset-safe coordinate handling and test landscape startup, lock/unlock, capture stop/reconnect, and any fold or window-size change that can occur without leaving landscape.
+The user explicitly authorized R4 after accepting the bounded staged plan below. R4 device builds now use the fresh `com.stroexd.hsdecktracker.fusiontestr4` identity because the accepted R3 debug signing key is unavailable; this preserves both the working tracker and the installed R3 Fusion Test data. Hearthstone locks the user's phone to landscape while open, so do not require an artificial portrait/landscape rotation test during gameplay. Retain dimension/inset-safe coordinate handling and test landscape startup, lock/unlock, capture stop/reconnect, and any fold or window-size change that can occur without leaving landscape.
 
 R4 capture decisions from the owner:
 

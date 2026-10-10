@@ -52,8 +52,10 @@ android {
         }
         create("fusionTest") {
             initWith(getByName("debug"))
-            applicationIdSuffix = ".fusiontest"
-            versionNameSuffix = "-fusiontest"
+            // R4 uses a fresh identity because the accepted R3 debug signing key is no longer available.
+            // Keeping R3 installed is safer than uninstalling it or pretending a differently signed APK can update it.
+            applicationIdSuffix = ".fusiontestr4"
+            versionNameSuffix = "-fusiontestr4"
             matchingFallbacks += listOf("debug")
         }
     }
