@@ -413,11 +413,15 @@ fun SettingsScreen(navController: NavHostController) {
                         checked = settings.recordDiagnostics,
                         onChange = { v -> update { it.copy(recordDiagnostics = v) } },
                     )
+                    var diagnosticShareStatus by remember { mutableStateOf<String?>(null) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = {
-                            if (!DiagnosticsRecorder.share(context)) {
-                                scope.launch { snackbar.showSnackbar(context.getString(R.string.no_diagnostics)) }
-                            }
+                            diagnosticShareStatus = runCatching { DiagnosticsRecorder.share(context) }.fold(
+                                onSuccess = { shared -> context.getString(
+                                    if (shared) R.string.diagnostics_share_prepared else R.string.no_diagnostics,
+                                ) },
+                                onFailure = { context.getString(R.string.diagnostics_share_failed) },
+                            )
                         }) { Text(stringResource(R.string.share_diagnostics)) }
                         TextButton(onClick = {
                             DiagnosticsRecorder.clear(context)
@@ -426,6 +430,9 @@ fun SettingsScreen(navController: NavHostController) {
                                 snackbar.showSnackbar(context.getString(R.string.diagnostics_deleted))
                             }
                         }) { Text(stringResource(R.string.delete)) }
+                    }
+                    diagnosticShareStatus?.let {
+                        Text(it, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
