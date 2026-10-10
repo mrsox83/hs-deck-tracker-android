@@ -18,6 +18,7 @@ data class VisualKeyframe(
     val regionPilotVersion: String? = null,
     val regionOcrReused: Boolean = false,
     val regionProbes: List<com.stroexd.hsdecktracker.core.vision.RegionProbe> = emptyList(),
+    val fieldCandidates: List<com.stroexd.hsdecktracker.core.vision.DiagnosticFieldCandidate> = emptyList(),
 )
 
 @Serializable
