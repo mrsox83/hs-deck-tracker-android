@@ -15,7 +15,7 @@ data class RegionProbe(
 )
 
 object VisualRegionPilot {
-    const val VERSION = "landscape-pilot-1"
+    const val VERSION = "landscape-pilot-2"
     // Initial broad windows require device calibration; empty OCR does not mean an absent game object.
     val regions = listOf(
         PilotRegion("opponent_hero", "hero_state", NormalizedRegion(.30f, .02f, .70f, .30f)),
@@ -26,6 +26,8 @@ object VisualRegionPilot {
         PilotRegion("card_play", "event_recovery", NormalizedRegion(.12f, .20f, .78f, .80f)),
         PilotRegion("history_rail", "event_recovery", NormalizedRegion(.15f, .15f, .25f, .88f)),
         PilotRegion("resume_cues", "event_recovery", NormalizedRegion(.20f, .25f, .80f, .75f)),
+        PilotRegion("focused_hand", "event_recovery", NormalizedRegion(.15f, .68f, .84f, 1f)),
+        PilotRegion("vertical_resources", "turn_resources", NormalizedRegion(.84f, .72f, .91f, 1f)),
     )
 
     fun probe(frame: OcrFrame, configuration: List<PilotRegion> = regions): List<RegionProbe> =

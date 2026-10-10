@@ -45,9 +45,12 @@ tasks.register<Test>("realVisualFieldFixtureTest") {
     include("**/RealVisualFieldFixtureTest.class")
     outputs.upToDateWhen { false }
     val fixtureZip = providers.gradleProperty("hsVisualFixtureZip")
+    val expandedZip = providers.gradleProperty("hsVisualExpandedFixtureZip")
     doFirst {
         require(fixtureZip.isPresent) { "Pass -PhsVisualFixtureZip=<private labeled diagnostic ZIP>" }
         systemProperty("hsVisualFixtureZip", fixtureZip.get())
+        require(expandedZip.isPresent) { "Pass -PhsVisualExpandedFixtureZip=<labeled expanded-hand ZIP>" }
+        systemProperty("hsVisualExpandedFixtureZip", expandedZip.get())
     }
 }
 

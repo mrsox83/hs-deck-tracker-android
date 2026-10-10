@@ -15,6 +15,8 @@ enum class TimeRange { CURRENT_PATCH, LAST_3_DAYS, LAST_7_DAYS, LAST_14_DAYS }
 /** How optional visual recognition acquires pixels. */
 @Serializable
 enum class VisualCaptureMode {
+    /** Original automatic route selection. Legacy policies remain decodable for saved evidence/settings. */
+    AUTOMATIC_ROUTE,
     /** Let Android offer a single-app share when supported; the user can still decline capture. */
     PRIVACY_FIRST,
 
@@ -78,7 +80,7 @@ data class AppSettings(
     val autoExportMatches: Boolean = false,
     val matchExportFolder: String? = null,
     val backgroundTracking: Boolean = true,
-    val visualCaptureMode: VisualCaptureMode = VisualCaptureMode.PRIVACY_FIRST,
+    val visualCaptureMode: VisualCaptureMode = VisualCaptureMode.AUTOMATIC_ROUTE,
     val showOverlay: Boolean = true,
     val trackCollectionChanges: Boolean = true,
     val showRecognitionDebug: Boolean = false,

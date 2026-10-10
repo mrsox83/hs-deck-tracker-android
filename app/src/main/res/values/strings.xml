@@ -495,6 +495,7 @@
     <string name="record_diagnostics_hint">Saves recognized texts and some screenshots on the device for troubleshooting.</string>
     <string name="no_diagnostics">No diagnostics recorded yet</string>
     <string name="share_diagnostics">Share diagnostics</string>
+    <string name="capture_automatic_hint">Background tracking uses Accessibility screenshots when enabled. Otherwise, Tracker asks Android for screen-sharing permission. Shared screens may include notifications or other apps; choose Hearthstone alone in Android’s dialog when available.</string>
     <string name="diagnostics_share_prepared">Diagnostic ZIP prepared and share menu opened. Finish saving in Drive and check its upload status there. The tracker cannot confirm upload completion.</string>
     <string name="diagnostics_share_failed">Could not prepare or open the diagnostic share. No upload is confirmed. Please try again.</string>
     <string name="diagnostics_deleted">Diagnostics and retained visual evidence deleted</string>

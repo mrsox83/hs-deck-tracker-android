@@ -13,7 +13,6 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
 import com.stroexd.hsdecktracker.appContainer
-import com.stroexd.hsdecktracker.core.data.VisualCaptureMode
 import com.stroexd.hsdecktracker.vision.AccessibilityScreenshotSource
 import com.stroexd.hsdecktracker.vision.ScreenRecognizer
 import com.stroexd.hsdecktracker.vision.startScreenRecognition
@@ -65,9 +64,7 @@ class BackgroundTracker : AccessibilityService() {
 
     private fun startSession() {
         val container = appContainer
-        if (!isSupported || !container.settings.value.backgroundTracking ||
-            container.settings.value.visualCaptureMode != VisualCaptureMode.COMPATIBILITY
-        ) {
+        if (!isSupported || !container.settings.value.backgroundTracking) {
             stopSession()
             return
         }

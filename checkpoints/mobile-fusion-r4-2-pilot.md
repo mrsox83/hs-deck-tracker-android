@@ -1,5 +1,13 @@
 # R4.2 pilot foundation
 
+## Focused-hand and original capture flow — v5
+
+Source-ready: `landscape-pilot-2` has ten bounded regions, including focused hand and vertical resources. `landscape-fields-2` infers expanded hand from large lower-screen card text, withholds occluded friendly health and requires an intact mana pair. An adjacent counter remains untyped; incomplete OCR is unknown. Card-name support is retained without asserting play events. No rolling buffer or new capture loop.
+
+The owner's UX direction supersedes the radio-policy selector: existing enabled Background tracking uses Accessibility; otherwise the original Android screen-share consent flow applies. New evidence records AUTOMATIC_ROUTE and the producing pixel backend, not an unverified app/display consent scope. Legacy settings/evidence remain readable.
+
+Tests-passed: 133 ordinary tests and two required private replay cases across Diagnostic (9)/(10), zero failures/errors. Focused-hand health remains unknown; unobscured health remains 30 in the new clear-board cases. APK and publication details follow in WORK_LOG. Phone-verified is still pending for v5. Next owner gate is two convenient clear/focused-hand bookmarks plus routing confirmation; no repeat of accepted toolbar/lifecycle tests. R4.2 remains open and R4.3/R5 have not begun.
+
 Current bounded unit: experimental exact turn-label and tight health/mana candidates with source OCR support and explicit unknown reasons. User labeled the adjacent 12 in the middle gameplay bookmark as corpse count; merged OCR `1/7 12` remains rejected. Focused-hand capture is a useful next annotation for card-name recovery, not proof of card play. Field promotion remains R4.3 work and has not started.
 
 Verification: 132 ordinary tests and APK assembly passed; `:core:realVisualFieldFixtureTest -PhsVisualFixtureZip=<labeled private ZIP>` passed the saved opening-hand and three gameplay bookmark cases. Friendly health candidates 26/26/15 agree with labeled frame inspection; merged counters and unread opponent health remain null. Build v4 retains R4 package/signer, SHA256 `d650fecdd3842787419796c6f9e6af63233e230fa5e075f513193b455dde7b0a`. No general accuracy percentage or phone acceptance of the new readers is claimed.

@@ -356,10 +356,12 @@ class AppContainer(context: Context) {
     }
 
     private val recognitionSessions = com.stroexd.hsdecktracker.core.vision.RecognitionSessionGate()
+    @Volatile private var currentCaptureMethod: String? = null
 
     @Synchronized
-    fun onRecognitionStarted(): Long {
+    fun onRecognitionStarted(captureMethod: String): Long {
         val session = recognitionSessions.start()
+        currentCaptureMethod = captureMethod
         visionTracker = null
         frameCount = 0
         ocrFrameCount = 0
@@ -374,6 +376,7 @@ class AppContainer(context: Context) {
     @Synchronized
     fun onRecognitionStopped(session: Long): Boolean {
         if (!recognitionSessions.stop(session)) return false
+        currentCaptureMethod = null
         visualEvidenceRecorder.failPending("Visual capture stopped before the bookmark frame arrived")
         visionTracker = null
         collectionScanner = null
@@ -446,8 +449,8 @@ class AppContainer(context: Context) {
     fun recordVisualBookmark(): VisualEvidenceStatus {
         val observedAt = System.currentTimeMillis()
         val id = "bookmark-$observedAt-${UUID.randomUUID()}"
-        val mode = settings.value.visualCaptureMode
-        val captureActive = recognition.value.active && mode != VisualCaptureMode.TIMESTAMP_ONLY
+        val mode = VisualCaptureMode.AUTOMATIC_ROUTE
+        val captureActive = recognition.value.active
         val status = if (captureActive) VisualEvidenceStatus.KEYFRAME_PENDING else VisualEvidenceStatus.TIMESTAMP_ONLY
         val entry = VisualEvidenceEntry(
             id = id,
@@ -456,6 +459,7 @@ class AppContainer(context: Context) {
             reason = "manual_bookmark",
             requestedCaptureMode = mode,
             status = status,
+            captureMethod = if (captureActive) currentCaptureMethod else null,
         )
         appScope.launch {
             visualEvidence.add(entry)
@@ -487,6 +491,7 @@ class AppContainer(context: Context) {
                 else -> null
             }
         }
+        val producingCaptureMethod = currentCaptureMethod
         visualEvidenceRecorder.onFrame(bitmap, contentWidth, contentHeight, frame.timestamp, frame, ocrReused, reason) { result ->
             val id = "trigger-${frame.timestamp}-${UUID.randomUUID()}"
             val matchId = matchIdBeforeFrame ?: tracker.state.value?.draftId
@@ -498,7 +503,8 @@ class AppContainer(context: Context) {
                             observedAt = frame.timestamp,
                             matchId = matchId,
                             reason = requireNotNull(reason),
-                            requestedCaptureMode = settings.value.visualCaptureMode,
+                            requestedCaptureMode = VisualCaptureMode.AUTOMATIC_ROUTE,
+                            captureMethod = producingCaptureMethod,
                             status = VisualEvidenceStatus.KEYFRAME_SAVED,
                             keyframe = keyframe,
                         ),

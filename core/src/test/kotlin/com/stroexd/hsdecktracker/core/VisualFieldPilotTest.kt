@@ -32,4 +32,15 @@ class VisualFieldPilotTest {
         assertEquals(listOf(mana), result.getValue("friendly_mana").support)
         assertEquals("experimental", result.getValue("friendly_mana").stage)
     }
+    @Test fun `expanded hand routes resources separately and never invents missing mana numerator`() {
+        val result = read(turn, health,
+            OcrLine("Chillfallen Baron", .50f, .88f, .58f, .92f),
+            OcrLine("The Coin", .65f, .90f, .72f, .94f),
+            OcrLine("2", .87f, .84f, .88f, .88f),
+            OcrLine("0", .87f, .94f, .88f, .98f))
+        assertEquals("expanded_hand_candidate", result.getValue("hand_layout").value)
+        assertNull(result.getValue("friendly_health").value)
+        assertNull(result.getValue("friendly_mana").value)
+        assertEquals("0", result.getValue("friendly_adjacent_counter").value)
+    }
 }
