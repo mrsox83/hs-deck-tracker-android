@@ -167,6 +167,7 @@ class AppContainer(context: Context) {
     val recognition: StateFlow<RecognitionStatus> = _recognition.asStateFlow()
 
     private var nameIndex: CardNameIndex? = null
+    private var collectionNameIndex: CardNameIndex? = null
     private var nameIndexSources: Pair<CardDatabase, CardDatabase>? = null
     private var visionTracker: VisionGameTracker? = null
 
@@ -415,14 +416,14 @@ class AppContainer(context: Context) {
     fun onScreenFrame(frame: OcrFrame, notes: MutableList<String>? = null, reused: Boolean = false): List<GameEvent> {
         val index = currentNameIndex() ?: return emptyList()
         if (_recognition.value.scan != null) {
-            scanFrame(index, frame, notes)
+            scanFrame(frame, notes)
             return emptyList()
         }
         val vision = visionTracker ?: VisionGameTracker(index, contextProvider = ::recognitionContext).also { visionTracker = it }
         vision.decisionLog = notes?.let { list -> { note: String -> list += note } }
         val events = vision.onFrame(frame)
         events.forEach { onGameEvent(it) }
-        if (vision.phase == VisionGameTracker.Phase.IDLE || vision.phase == VisionGameTracker.Phase.ENDED) watchMenus(index, frame, notes)
+        if (vision.phase == VisionGameTracker.Phase.IDLE || vision.phase == VisionGameTracker.Phase.ENDED) watchMenus(frame, notes)
         followClientLanguage(vision.gameLocale)
         frameCount++
         if (!reused) ocrFrameCount++
@@ -514,9 +515,9 @@ class AppContainer(context: Context) {
         }
     }
 
-    private fun watchMenus(index: CardNameIndex, frame: OcrFrame, notes: MutableList<String>?) {
+    private fun watchMenus(frame: OcrFrame, notes: MutableList<String>?) {
         if (!settings.value.trackCollectionChanges) return
-        val watcher = collectionWatcher ?: CollectionWatcher(index).also { collectionWatcher = it }
+        val watcher = collectionWatcher ?: CollectionWatcher(currentCollectionNameIndex()).also { collectionWatcher = it }
         watcher.decisionLog = notes?.let { list -> { note: String -> list += "menu: $note" } }
         watcher.onFrame(frame).forEach { event -> appScope.launch { applyCollectionEvent(event) } }
     }
@@ -564,8 +565,8 @@ class AppContainer(context: Context) {
         _collectionActivity.value = null
     }
 
-    private fun scanFrame(index: CardNameIndex, frame: OcrFrame, notes: MutableList<String>?) {
-        val scanner = collectionScanner ?: CollectionScanner(index).also { collectionScanner = it }
+    private fun scanFrame(frame: OcrFrame, notes: MutableList<String>?) {
+        val scanner = collectionScanner ?: CollectionScanner(currentCollectionNameIndex()).also { collectionScanner = it }
         val progress = synchronized(scanner) {
             scanner.decisionLog = notes?.let { list -> { note: String -> list += note } }
             if (!scanner.onFrame(frame)) return
@@ -606,14 +607,20 @@ class AppContainer(context: Context) {
         // Never swap the index mid-game, the game state would be lost
         if (sources != nameIndexSources && (nameIndex == null || !gameRunning)) {
             nameIndex = CardNameIndex(
-                primary.deckCards.map { it.dbfId to it.name } + english.deckCards.map { it.dbfId to it.name },
+                primary.recognitionCards.map { it.dbfId to it.name } + english.recognitionCards.map { it.dbfId to it.name },
             )
             nameIndexSources = sources
+            collectionNameIndex = null
             visionTracker = null
             collectionWatcher = null
         }
         return nameIndex
     }
+
+    /** Menu/collection OCR must not confuse generated cards with collectible printings. */
+    private fun currentCollectionNameIndex(): CardNameIndex = collectionNameIndex ?: CardNameIndex(
+        cards.db.deckCards.map { it.dbfId to it.name } + cardsEnglish.db.deckCards.map { it.dbfId to it.name },
+    ).also { collectionNameIndex = it }
 
     private companion object {
         const val STATUS_EVERY_FRAMES = 20

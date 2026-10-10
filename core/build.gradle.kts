@@ -35,6 +35,21 @@ tasks.test {
     exclude("**/RealFusionArtifactEncodeTest.class")
     exclude("**/RealFusionArtifactDecodeTest.class")
     exclude("**/RealVisualFieldFixtureTest.class")
+    exclude("**/RealCardCatalogFixtureTest.class")
+}
+
+tasks.register<Test>("realCardCatalogFixtureTest") {
+    description = "Parses a downloaded full card catalog and resolves the owner's exact deck"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealCardCatalogFixtureTest.class")
+    outputs.upToDateWhen { false }
+    val catalog = providers.gradleProperty("hsFullCardCatalog")
+    doFirst {
+        require(catalog.isPresent) { "Pass -PhsFullCardCatalog=<downloaded full catalog JSON>" }
+        systemProperty("hsFullCardCatalog", catalog.get())
+    }
 }
 
 tasks.register<Test>("realVisualFieldFixtureTest") {

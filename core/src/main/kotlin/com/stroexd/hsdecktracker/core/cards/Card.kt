@@ -44,14 +44,17 @@ data class Card(
     val maxCopies: Int get() = rarityType.maxCopies
 
     val isDeckCard: Boolean
-        get() = collectible &&
-            cardType in CardType.deckTypes &&
+        get() = collectible && isRecognitionCard
+
+    /** Includes generated/associated constructed cards without adding them to deck-builder lists. */
+    val isRecognitionCard: Boolean
+        get() = cardType in CardType.deckTypes &&
             set !in CardSets.nonConstructedSets &&
             !set.startsWith("BATTLEGROUNDS") &&
             !set.startsWith("LETTUCE")
 
     val isCraftable: Boolean
-        get() = rarityType in Rarity.collectible && set !in CardSets.freeSets && howToEarn == null
+        get() = collectible && rarityType in Rarity.collectible && set !in CardSets.freeSets && howToEarn == null
 
     val craftCost: Int get() = if (isCraftable) rarityType.craftCost else 0
 

@@ -146,7 +146,7 @@ object CraftingCalculator {
             val card = db.byDbfId(id)
             // Meta deck lists carry cards that can't be collected (HSReplay ships them for a third of the decks);
             // they are nothing to own or craft, so they never count as missing
-            if (card == null) {
+            if (card == null || !card.collectible) {
                 owned += need
                 continue
             }

@@ -127,15 +127,18 @@ class CardRepository(
     private val mutex = Mutex()
     private var version: String? = null
     private var lastCheck = 0L
+    private var fullCatalogCached = false
 
-    private fun cacheFile(locale: String) = File(dir, "cards_$locale.json")
-    private fun versionFile(locale: String) = File(dir, "cards_$locale.version")
+    // Separate profile forces one full-catalog refresh even when the game build did not change.
+    // Keep the old collectible-only cache as an offline fallback, never delete user data.
+    private fun cacheFile(locale: String) = File(dir, "cards_full_$locale.json")
+    private fun versionFile(locale: String) = File(dir, "cards_full_$locale.version")
     private fun setNamesFile(locale: String) = File(dir, "sets_$locale.json")
 
     suspend fun load(locale: String, forceRefresh: Boolean = false) = mutex.withLock {
         if (_state.value.locale != locale || _state.value.db.isEmpty) loadCached(locale)
         val current = _state.value
-        if (forceRefresh || current.locale != locale || current.db.isEmpty) {
+        if (forceRefresh || !fullCatalogCached || current.locale != locale || current.db.isEmpty) {
             lastCheck = clock()
             download(locale, latestVersion(locale))
         } else {
@@ -156,7 +159,7 @@ class CardRepository(
         val outdated = if (latest != null) latest != version else clock() - (_state.value.lastUpdated ?: 0L) > MAX_AGE_MILLIS
         val db = _state.value.db
         when {
-            outdated -> download(locale, latest)
+            outdated || !fullCatalogCached -> download(locale, latest)
             // The strings sometimes name a new set a little later than the cards arrive
             withSetNames && db.sets.any { !db.hasSetName(it) } -> fetchSetNames(locale, db)?.let { names ->
                 saveSetNames(locale, names)
@@ -171,10 +174,16 @@ class CardRepository(
     }.getOrNull()
 
     private suspend fun loadCached(locale: String) = withContext(Dispatchers.IO) {
-        val file = cacheFile(locale)
-        val cached = if (file.exists()) runCatching { CardDatabase.parse(file.readText(), locale) }.getOrNull() else null
-        if (cached == null || cached.isEmpty) return@withContext
-        version = versionFile(locale).takeIf { it.exists() }?.readText()?.trim()?.ifEmpty { null }
+        fullCatalogCached = false
+        val fullFile = cacheFile(locale)
+        val legacyFile = File(dir, "cards_$locale.json")
+        val (file, cached) = sequenceOf(fullFile, legacyFile).mapNotNull { file ->
+            if (!file.exists()) null else runCatching { CardDatabase.parse(file.readText(), locale) }
+                .getOrNull()?.takeUnless { it.isEmpty }?.let { file to it }
+        }.firstOrNull() ?: return@withContext
+        fullCatalogCached = file == fullFile
+        val savedVersion = if (fullCatalogCached) versionFile(locale) else File(dir, "cards_$locale.version")
+        version = savedVersion.takeIf { it.exists() }?.readText()?.trim()?.ifEmpty { null }
         _state.value = CardDataState(db = cached.withSetNames(cachedSetNames(locale)), lastUpdated = file.lastModified(), locale = locale)
     }
 
@@ -192,6 +201,7 @@ class CardRepository(
                 versionFile(locale).writeText(latest.orEmpty())
             }
             version = latest
+            fullCatalogCached = true
             _state.value = CardDataState(db = parsed.withSetNames(names), loading = false, lastUpdated = clock(), locale = locale)
         } catch (e: CancellationException) {
             throw e
@@ -225,7 +235,7 @@ class CardRepository(
     }
 
     companion object {
-        const val CARDS_URL = "https://api.hearthstonejson.com/v1/latest/%s/cards.collectible.json"
+        const val CARDS_URL = "https://api.hearthstonejson.com/v1/latest/%s/cards.json"
         const val STRINGS_URL = "https://raw.githubusercontent.com/HearthSim/hsdata/master/Strings/%s/GLOBAL.txt"
         private const val CHECK_INTERVAL_MILLIS = 6L * 60 * 60 * 1000
         private const val MAX_AGE_MILLIS = 3L * 24 * 60 * 60 * 1000
