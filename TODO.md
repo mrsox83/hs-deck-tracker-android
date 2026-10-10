@@ -1,5 +1,18 @@
 # Mobile fusion R0–R2
 
+## R5 authorized — post-match collection, 2026-10-10
+
+This section supersedes historical R5-not-authorized statements below. Owner approved the reviewed R5 plan with the existing 90% five-hour ceiling. R6, continuous tailing, merge and deployment remain excluded.
+
+- [x] Inventory the pinned exporter v0.4 source and restricted read-only reader; record provenance and independent lifecycle requirements in `checkpoints/mobile-fusion-r5-post-match.md`.
+- [x] Implement and test bounded snapshot primitive; publish foundation checkpoint (remote publication recorded in session handoff).
+- [ ] HS-FUSION: wire restricted Shizuku permission/binder/death handling independently of capture/Accessibility; foreground manual operation first.
+- [ ] HS-FUSION: reuse reviewed exporter parsing/bundle contracts, retain raw evidence privately, journal collection/recovery and feed the existing conservative importer. Never assign a historical match merely because it is newest.
+- [ ] HS-FUSION: add optional user-triggered Collect logs and fuse, explicit local/failed/pending states and companion fallback. Preserve folder destinations and tracker data.
+- [ ] Alert owner when isolated APK is ready; phone-test Shizuku permission and manual collection before enabling automatic retrieval.
+- [ ] Verify five-match deduplication, interruption/retry and honest missing/truncated/rotated source handling. Saved locally and Drive arrival remain separate facts.
+- [ ] Only after manual acceptance: bounded automatic post-match collection using journal/outbox. Surface R6 separately before entering it.
+
 ## Owner-authorized catalog bug follow-up — 2026-10-10
 
 - [x] Full catalog lookup, separate constructed/collectible recognition and safe legacy-cache fallback implemented. Exact warm dead deck-code and live downloaded-catalog gates pass; 144 ordinary tests. R4 closeout remains in force; no R5 work.
