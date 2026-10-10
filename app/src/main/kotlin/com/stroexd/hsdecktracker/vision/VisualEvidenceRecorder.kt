@@ -57,7 +57,8 @@ class VisualEvidenceRecorder(private val root: File) {
         val manual = synchronized(this) { buildList { while (pending.isNotEmpty()) add(pending.removeFirst()) } }
         fun evidence(label: String) = save(bitmap, contentWidth, contentHeight, observedAt, label).map {
             it.copy(regionPilotVersion = VisualRegionPilot.VERSION, regionOcrReused = ocrReused,
-                regionProbes = VisualRegionPilot.probe(ocrFrame))
+                regionProbes = VisualRegionPilot.probe(ocrFrame),
+                fieldCandidates = com.stroexd.hsdecktracker.core.vision.VisualFieldPilot.read(ocrFrame, ocrReused))
         }
         manual.forEach { request -> request.onSaved(evidence(request.id)) }
 

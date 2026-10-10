@@ -1,5 +1,9 @@
 # R4.2 pilot foundation
 
+Current bounded unit: experimental exact turn-label and tight health/mana candidates with source OCR support and explicit unknown reasons. User labeled the adjacent 12 in the middle gameplay bookmark as corpse count; merged OCR `1/7 12` remains rejected. Focused-hand capture is a useful next annotation for card-name recovery, not proof of card play. Field promotion remains R4.3 work and has not started.
+
+Verification: 132 ordinary tests and APK assembly passed; `:core:realVisualFieldFixtureTest -PhsVisualFixtureZip=<labeled private ZIP>` passed the saved opening-hand and three gameplay bookmark cases. Friendly health candidates 26/26/15 agree with labeled frame inspection; merged counters and unread opponent health remain null. Build v4 retains R4 package/signer, SHA256 `d650fecdd3842787419796c6f9e6af63233e230fa5e075f513193b455dde7b0a`. No general accuracy percentage or phone acceptance of the new readers is claimed.
+
 Phone v1 evidence: archives (5)/(6) contain only five timestamp bookmarks despite owner-confirmed consent. No region-calibration acceptance. A generation guard addresses a discovered asynchronous recognizer replacement race; source fix is not proof it caused this phone result. Retest one bookmark on v2 and inspect the actual frame/probes before repeating gameplay labeling.
 
 R4.1 accepted from the owner's phone results and uploaded Diagnostic archives, including empty post-delete evidence. Active package remains `com.stroexd.hsdecktracker.fusiontestr4`. Original tracker and R3 data remain isolated.

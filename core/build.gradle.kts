@@ -34,6 +34,21 @@ tasks.test {
     exclude("**/RealFusionFixtureTest.class")
     exclude("**/RealFusionArtifactEncodeTest.class")
     exclude("**/RealFusionArtifactDecodeTest.class")
+    exclude("**/RealVisualFieldFixtureTest.class")
+}
+
+tasks.register<Test>("realVisualFieldFixtureTest") {
+    description = "Replays labeled private R4 diagnostic keyframes from -PhsVisualFixtureZip"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealVisualFieldFixtureTest.class")
+    outputs.upToDateWhen { false }
+    val fixtureZip = providers.gradleProperty("hsVisualFixtureZip")
+    doFirst {
+        require(fixtureZip.isPresent) { "Pass -PhsVisualFixtureZip=<private labeled diagnostic ZIP>" }
+        systemProperty("hsVisualFixtureZip", fixtureZip.get())
+    }
 }
 
 tasks.register<Test>("realFusionFixtureTest") {
