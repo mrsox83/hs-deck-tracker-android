@@ -32,6 +32,18 @@ class RealVisualFieldFixtureTest {
                     k.regionProbes.flatMap { it.lines }.distinct(), k.width.toFloat() / k.height),
                     k.regionOcrReused).associateBy { it.field }
                 assertEquals(expected[index], result.getValue("friendly_mana").value, "Bookmark ${index + 1}")
+                val candidate = result.getValue("friendly_mana")
+                val captureTime = k.regionProbes.first().observedAt
+                val humanLabel = listOf("0/2", "1/1", "1/1", "2/2", "1/2", "0/6", "10/10", "3/10", null)[index]
+                val annotation = humanLabel?.let {
+                    VisualFieldReview(k.sha256, captureTime, "friendly_mana", it,
+                        VisualReviewKind.HUMAN_IMAGE_LABEL, k.sha256, "/human-image-labels/bookmark-${index + 1}",
+                        "HS-FUSION labeled image review")
+                }
+                val assessment = VisualFieldValidation.assess(k.sha256, captureTime, candidate,
+                    k.regionOcrReused, listOfNotNull(annotation))
+                assertEquals(if (expected[index] == null) "experimental" else "corroborating", assessment.stage)
+                assertEquals(expected[index], assessment.value)
                 if (index in 5..7) assertEquals(listOf("8", "11", "16")[index - 5],
                     result.getValue("friendly_adjacent_counter").value)
                 assertEquals("experimental", result.getValue("friendly_mana").stage)
