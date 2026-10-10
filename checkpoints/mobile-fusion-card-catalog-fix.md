@@ -1,5 +1,9 @@
 # Owner-authorized card catalog fix — 2026-10-10
 
+## Phone acceptance
+
+After installing v7, owner explicitly confirmed both names resolved, the deck remained at 30 cards and saved history stayed intact (“Yes, all good”). The bounded catalog fix is phone-accepted. No claim of general OCR accuracy, measured performance or unrelated v6 field-assessment acceptance. Implementation eb43342 was pushed and independently remote-verified. No merge/deployment/R5.
+
 Separate bounded bug fix after R4 closeout, not discretionary R4 expansion or R5 work. Owner supplied exact “Example Death Knight Deck” Death Knight deck export and authorized the fix. Starting remote-verified tip 15d3efe, branch feature/mobile-fusion-offline; preserve the four tracker patches and all existing data.
 
 Root cause: CardRepository fetched cards.collectible.json. Deck imports explicitly contain Bwonsamdi (120187 / TIME_619t) and What Befell Zandalar (120188 / TIME_619t2), which exist in full HearthstoneJSON but have no collectible flag. Filtering the lookup catalog made the imported IDs unknown. Removing them from the deck would corrupt its exported content.
