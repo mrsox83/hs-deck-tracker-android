@@ -12,6 +12,32 @@ import kotlin.test.assertNull
 
 /** Requires the labeled private calibration archive; never silently skips a missing fixture. */
 class RealVisualFieldFixtureTest {
+    @Test fun `v5 stacked resources replay only complete fresh pairs`() {
+        ZipFile(requireNotNull(System.getProperty("hsVisualResourceFixtureZip"))).use { zip ->
+            val records = Json { ignoreUnknownKeys = true }.decodeFromString(
+                ListSerializer(VisualEvidenceEntry.serializer()),
+                zip.getInputStream(requireNotNull(zip.getEntry("visual-evidence/visual-evidence.json")))
+                    .bufferedReader().use { it.readText() },
+            )
+            val bookmarks = records.filter { it.reason == "manual_bookmark" &&
+                it.requestedCaptureMode == com.stroexd.hsdecktracker.core.data.VisualCaptureMode.AUTOMATIC_ROUTE }
+                .sortedBy { it.observedAt }
+            assertEquals(9, bookmarks.size)
+            val expected = listOf(null, null, null, null, "1/2", null, "10/10", "3/10", null)
+            bookmarks.forEachIndexed { index, entry ->
+                val k = requireNotNull(entry.keyframe)
+                assertNotNull(zip.getEntry("visual-evidence/${k.relativePath}"))
+                assertEquals("media_projection", entry.captureMethod)
+                val result = VisualFieldPilot.read(OcrFrame(entry.observedAt,
+                    k.regionProbes.flatMap { it.lines }.distinct(), k.width.toFloat() / k.height),
+                    k.regionOcrReused).associateBy { it.field }
+                assertEquals(expected[index], result.getValue("friendly_mana").value, "Bookmark ${index + 1}")
+                if (index in 5..7) assertEquals(listOf("8", "11", "16")[index - 5],
+                    result.getValue("friendly_adjacent_counter").value)
+                assertEquals("experimental", result.getValue("friendly_mana").stage)
+            }
+        }
+    }
     @Test fun `focused hand hides health and incomplete vertical resources remain unknown`() {
         ZipFile(requireNotNull(System.getProperty("hsVisualExpandedFixtureZip"))).use { zip ->
             val metadata = requireNotNull(zip.getEntry("visual-evidence/visual-evidence.json"))
