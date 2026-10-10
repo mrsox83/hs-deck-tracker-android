@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-10 — owner-approved R4 limited closeout
+
+Owner approved R4.4 closeout as corroborating-only enrichment. No new source change or repeated build/test run: existing 141 ordinary/three private gates and verified v6 APK remain evidence. Reconciled R4 TODO items with explicit deferrals and unverified Settings/Accessibility/v6 phone observations; did not mark these phone-passed. `checkpoints/mobile-fusion-r4-closeout.md` states finite release scope, independent-acceptance limits, assignments and a post-match-only R5 proposal (not authorized/started). All current real fields remain experimental or human-corroborated; no real accepted events. Working tracker/R3/R4 data and upload destinations untouched. Live usage 35% five-hour / 65% weekly, ceiling 90%, reset unused. Reminder: optional Codex Security review before broader distribution/merge/deployment, not installed/run here. No merge/deployment.
+
 ## 2026-10-10 — R4.3 frame-scoped validation unit
 
 Owner authorized R4.3 with 90% five-hour ceiling. Live start usage 30% five-hour / 65% weekly, reset unused. Verified clean local/remote 32c98e2 and four tracker ancestors. Implemented a pure per-frame assessment API with exact image hash/capture-time/field binding and source references. Human image review can corroborate; accepted requires a distinct independent non-visual source as well. Visual descendants/aliases cannot add independence, disagreement remains conflict/null, incoming accepted stage is ignored, unsupported rules/values and reused/unknown candidates cannot promote. Layout/untyped counters stay experimental. No log capture, source pairing, authoritative event or automatic promotion added.
