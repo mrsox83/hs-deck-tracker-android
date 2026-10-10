@@ -1,5 +1,10 @@
 # Mobile fusion work log
 
+## 2026-10-10 — remaining R4.1 acceptance review
+
+Owner authorized continuation with an 80% five-hour ceiling. Fresh live usage was 8% five-hour / 57% seven-day; no reset consumed. Shared protocol and active plan were read; shared directory contains no new exchange note. Clean local and independently verified remote tip matched `508e8fa`. No uploaded tracker diagnostics ZIP was found in HSReplay. The latest owner result accepts only the v4 toolbar script. Remaining mode/lifecycle/retained-evidence checks are not established, so the staged R4.2 gate remains open. Added `checkpoints/mobile-fusion-r4-1-remaining-phone-checks.md` with one bounded completion script using the installed v4 package; no rebuild or repeated toolbar test is needed. No implementation, merge or deployment performed.
+
+
 ## 2026-10-10 — v4 toolbar phone acceptance
 
 The owner reports every requested v4 layout retest passed: visible Minimize/More actions/Close, Bookmark and Open app in overflow, successful bookmark feedback, and Close dismissal. This accepts the narrow-toolbar fix at source commit `4b881be`. No additional build or test was required for this documentation-only checkpoint. Original R4.1 lifecycle/mode/retained-evidence checks remain subject to evidence review; this layout-only report does not establish those results. R4.2 remains unstarted. Live usage: five-hour 7%, seven-day 56%; reset credit unused. No merge or deployment.
