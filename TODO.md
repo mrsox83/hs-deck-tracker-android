@@ -94,7 +94,8 @@ R4 capture decisions from the owner:
 
 Implementation sequence:
 
-- [ ] **R4.1:** audit and extend the existing screen-share/OCR pipeline; add the explicit privacy/capability selector and disclosure; establish normalized/configurable regions, bounded trigger/manual-bookmark keyframes, lifecycle cleanup, and timestamp-only bookmark fallback. Do not create a second capture engine or add a rolling buffer.
+- [x] **R4.1 source/build:** audited and extended the existing screen-share/OCR pipeline; added the explicit privacy/capability selector and disclosure, normalized regions, bounded trigger/manual-bookmark keyframes, lifecycle cleanup, and timestamp-only bookmark fallback. No second capture engine or rolling buffer was added.
+- [ ] **R4.1 phone acceptance:** install the new Fusion Test APK and verify privacy-first Hearthstone selection, informed compatibility mode, timestamp-only mode, manual bookmarks, landscape startup, lock/unlock, capture stop/reconnect, and bounded evidence behavior. Do not begin R4.2 until this result is reviewed.
 - [ ] **R4.2:** enable three pilot region groups in diagnostic/shadow mode: hero state (health/armor, portrait, hero power and weapon); turn/resources (active player, mana and hand count when reliable); event recovery (card-play area, history rail and reconnect/resume cues).
 - [ ] **R4.3:** validate each observation independently and promote fields individually through `experimental` -> `corroborating` -> `accepted`; ambiguous values remain unknown/inferred with confidence and evidence. No experimental recognizer may create an authoritative match event.
 - [ ] **R4.4:** close R4 after the pilot groups provide trustworthy bounded enrichment. Defer detailed board/minion state, secrets, deck counts and choice-panel recognition unless real missing-data evidence justifies a separately accepted addition.

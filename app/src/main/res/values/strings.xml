@@ -479,6 +479,13 @@
     <string name="stop">Stop</string>
     <string name="grant_overlay_permission">Grant \"Display over other apps\" permission</string>
     <string name="automatic_recognition">Automatic recognition</string>
+    <string name="capture_mode">Visual capture mode (applies next tracking session)</string>
+    <string name="capture_mode_privacy">Privacy first</string>
+    <string name="capture_mode_privacy_hint">Android chooses what to share. On Android 14 and newer, choose Hearthstone only. On older Android versions, the system may offer only the whole display.</string>
+    <string name="capture_mode_compatibility">Compatibility</string>
+    <string name="capture_mode_compatibility_hint">Uses background screenshots when enabled, otherwise shares the whole display. Notifications or other apps may be processed while visible.</string>
+    <string name="capture_mode_timestamp_only">No visual capture</string>
+    <string name="capture_mode_timestamp_only_hint">Does not read screen pixels. The overlay and timestamp bookmarks remain available, but automatic recognition is off.</string>
     <string name="recognition_status_active">Active · %1$s</string>
     <string name="recognition_status_off">Recognition off</string>
     <string name="auto_record">Save games automatically</string>
@@ -501,6 +508,9 @@
     <string name="notification_overlay_active">Overlay active</string>
     <string name="minimize">Minimize</string>
     <string name="open_app">Open app</string>
+    <string name="bookmark">Bookmark this moment</string>
+    <string name="bookmark_saved_timestamp">Timestamp bookmark saved</string>
+    <string name="bookmark_saved_with_frame">Bookmark saved; the next capture frame will be attached</string>
     <string name="recognition_debug">%1$s · frame %2$d: %3$s</string>
     <string name="shortcut_play_long">Start Hearthstone with tracker</string>
     <string name="diagnostics_subject">HS Deck Tracker – diagnostics</string>

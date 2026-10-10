@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
+import android.media.projection.MediaProjectionConfig
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -27,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.stroexd.hsdecktracker.R
 import com.stroexd.hsdecktracker.appContainer
+import com.stroexd.hsdecktracker.core.data.VisualCaptureMode
 import com.stroexd.hsdecktracker.ui.toast
 
 object OverlayLauncher {
@@ -78,7 +80,7 @@ fun rememberBackgroundTrackerEnabled(): Boolean {
 @Composable
 fun rememberBackgroundTracking(): Boolean {
     val settings by LocalContext.current.appContainer.settings.settings.collectAsStateWithLifecycle()
-    return rememberBackgroundTrackerEnabled() && settings.backgroundTracking
+    return rememberBackgroundTrackerEnabled() && settings.backgroundTracking && settings.visualCaptureMode == VisualCaptureMode.COMPATIBILITY
 }
 
 @Composable
@@ -86,6 +88,8 @@ fun rememberTrackingStarter(launchGame: Boolean = true): () -> Unit {
     val context = LocalContext.current
     val currentLaunchGame by rememberUpdatedState(launchGame)
     val background by rememberUpdatedState(rememberBackgroundTracking())
+    val settings by context.appContainer.settings.settings.collectAsStateWithLifecycle()
+    val captureMode by rememberUpdatedState(settings.visualCaptureMode)
     var waitingForOverlayPermission by remember { mutableStateOf(false) }
 
     val captureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -107,7 +111,14 @@ fun rememberTrackingStarter(launchGame: Boolean = true): () -> Unit {
                 if (currentLaunchGame) OverlayLauncher.launchHearthstone(context)
             } else {
                 val manager = context.getSystemService(MediaProjectionManager::class.java)
-                captureLauncher.launch(manager.createScreenCaptureIntent())
+                val intent = when {
+                    Build.VERSION.SDK_INT < 34 -> manager.createScreenCaptureIntent()
+                    captureMode == VisualCaptureMode.COMPATIBILITY -> manager.createScreenCaptureIntent(
+                        MediaProjectionConfig.createConfigForDefaultDisplay(),
+                    )
+                    else -> manager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForUserChoice())
+                }
+                captureLauncher.launch(intent)
             }
         }
     }
@@ -140,7 +151,13 @@ fun rememberTrackingStarter(launchGame: Boolean = true): () -> Unit {
 
     return remember(context, proceed) {
         {
-            if (background) {
+            val scanNeedsCapture = context.appContainer.recognition.value.scan != null
+            if (captureMode == VisualCaptureMode.TIMESTAMP_ONLY && !scanNeedsCapture) {
+                OverlayLauncher.start(context)
+                if (currentLaunchGame && !OverlayLauncher.launchHearthstone(context)) {
+                    context.toast(context.getString(R.string.hearthstone_not_installed))
+                }
+            } else if (background) {
                 if (!OverlayLauncher.launchHearthstone(context)) context.toast(context.getString(R.string.hearthstone_not_installed))
             } else if (!OverlayLauncher.canDrawOverlays(context)) {
                 waitingForOverlayPermission = true

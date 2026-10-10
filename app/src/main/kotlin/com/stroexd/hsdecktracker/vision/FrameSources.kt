@@ -58,6 +58,7 @@ class MediaProjectionSource(private val context: Context, private val projection
     private var reattached = false
     private var timeouts = 0
     private var bitmap: Bitmap? = null
+    private var densityDpi = 0
     private val timeout = Runnable { onTimeout() }
 
     override fun start(handler: Handler, onStopped: () -> Unit) {
@@ -65,28 +66,60 @@ class MediaProjectionSource(private val context: Context, private val projection
         projection.registerCallback(
             object : MediaProjection.Callback() {
                 override fun onStop() = onStopped()
+
+                override fun onCapturedContentResize(width: Int, height: Int) {
+                    if (Build.VERSION.SDK_INT >= 34) resize(width, height)
+                }
             },
             handler,
         )
         val (realWidth, realHeight) = realDisplaySize(context)
-        val landscapeWidth = max(realWidth, realHeight)
-        val landscapeHeight = min(realWidth, realHeight)
-        val scale = min(1f, MAX_WIDTH.toFloat() / landscapeWidth)
-        val width = ((landscapeWidth * scale).toInt() / 2) * 2
-        val height = ((landscapeHeight * scale).toInt() / 2) * 2
-        val imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2)
-        imageReader.setOnImageAvailableListener({ onImageAvailable(it) }, handler)
-        reader = imageReader
+        val (width, height) = scaledSize(realWidth, realHeight)
+        densityDpi = context.resources.displayMetrics.densityDpi
+        val imageReader = newReader(width, height)
         virtualDisplay = projection.createVirtualDisplay(
             "hs-deck-tracker",
             width,
             height,
-            context.resources.displayMetrics.densityDpi,
+            densityDpi,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
             imageReader.surface,
             null,
             handler,
         )
+    }
+
+    private fun newReader(width: Int, height: Int): ImageReader =
+        ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2).also { imageReader ->
+            imageReader.setOnImageAvailableListener({ onImageAvailable(it) }, handler)
+            reader = imageReader
+        }
+
+    private fun resize(contentWidth: Int, contentHeight: Int) {
+        if (contentWidth <= 0 || contentHeight <= 0) return
+        val (width, height) = scaledSize(contentWidth, contentHeight)
+        val old = reader ?: return
+        if (old.width == width && old.height == height) return
+        handler.removeCallbacks(timeout)
+        pending?.also { callback ->
+            pending = null
+            callback(null)
+        }
+        val next = newReader(width, height)
+        virtualDisplay?.apply {
+            surface = null
+            resize(width, height, densityDpi)
+            if (!detachBetweenFrames) surface = next.surface
+        }
+        runCatching { old.close() }
+        bitmap = null
+    }
+
+    private fun scaledSize(contentWidth: Int, contentHeight: Int): Pair<Int, Int> {
+        val scale = min(1f, MAX_WIDTH.toFloat() / max(contentWidth, contentHeight))
+        val width = max(2, ((contentWidth * scale).toInt() / 2) * 2)
+        val height = max(2, ((contentHeight * scale).toInt() / 2) * 2)
+        return width to height
     }
 
     override fun capture(onCapture: (Capture?) -> Unit) {
