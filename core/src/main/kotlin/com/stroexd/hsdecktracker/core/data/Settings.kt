@@ -12,6 +12,19 @@ enum class RankRange { BRONZE_THROUGH_GOLD, DIAMOND_THROUGH_LEGEND, LEGEND_ONLY,
 
 enum class TimeRange { CURRENT_PATCH, LAST_3_DAYS, LAST_7_DAYS, LAST_14_DAYS }
 
+/** How optional visual recognition acquires pixels. */
+@Serializable
+enum class VisualCaptureMode {
+    /** Let Android offer a single-app share when supported; the user can still decline capture. */
+    PRIVACY_FIRST,
+
+    /** Use the existing background screenshot path, or whole-display screen sharing when it is unavailable. */
+    COMPATIBILITY,
+
+    /** Keep the overlay and timestamp bookmarks available without acquiring pixels. */
+    TIMESTAMP_ONLY,
+}
+
 /** Hearthstone client languages with their own names. */
 object GameLocales {
     const val AUTO = "auto"
@@ -65,6 +78,7 @@ data class AppSettings(
     val autoExportMatches: Boolean = false,
     val matchExportFolder: String? = null,
     val backgroundTracking: Boolean = true,
+    val visualCaptureMode: VisualCaptureMode = VisualCaptureMode.PRIVACY_FIRST,
     val showOverlay: Boolean = true,
     val trackCollectionChanges: Boolean = true,
     val showRecognitionDebug: Boolean = false,

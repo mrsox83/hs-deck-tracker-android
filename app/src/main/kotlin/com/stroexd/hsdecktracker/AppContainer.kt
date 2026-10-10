@@ -23,6 +23,10 @@ import com.stroexd.hsdecktracker.core.data.MatchTransferResult
 import com.stroexd.hsdecktracker.core.data.MetaRepository
 import com.stroexd.hsdecktracker.core.data.MetaState
 import com.stroexd.hsdecktracker.core.data.SettingsRepository
+import com.stroexd.hsdecktracker.core.data.VisualCaptureMode
+import com.stroexd.hsdecktracker.core.data.VisualEvidenceEntry
+import com.stroexd.hsdecktracker.core.data.VisualEvidenceRepository
+import com.stroexd.hsdecktracker.core.data.VisualEvidenceStatus
 import com.stroexd.hsdecktracker.core.deck.Deck
 import com.stroexd.hsdecktracker.core.meta.DeckPrediction
 import com.stroexd.hsdecktracker.core.meta.FormatDetection
@@ -44,6 +48,8 @@ import com.stroexd.hsdecktracker.core.vision.CollectionWatcher
 import com.stroexd.hsdecktracker.core.vision.OcrFrame
 import com.stroexd.hsdecktracker.core.vision.VisionGameTracker
 import com.stroexd.hsdecktracker.vision.CapturePacing
+import com.stroexd.hsdecktracker.vision.VisualEvidenceRecorder
+import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -63,6 +69,7 @@ import okhttp3.OkHttpClient
 import java.io.File
 import java.time.ZoneId
 import java.util.Locale
+import java.util.UUID
 
 data class RecognitionStatus(
     val active: Boolean = false,
@@ -117,6 +124,8 @@ class AppContainer(context: Context) {
     val http = HttpClient(okHttpClient)
 
     val settings = SettingsRepository(dataDir)
+    val visualEvidence = VisualEvidenceRepository(dataDir)
+    private val visualEvidenceRecorder = VisualEvidenceRecorder(File(context.filesDir, "visual-evidence"))
     val decks = DeckRepository(dataDir)
     val collection = CollectionRepository(dataDir)
     val matches = MatchRepository(dataDir)
@@ -355,6 +364,7 @@ class AppContainer(context: Context) {
     }
 
     fun onRecognitionStopped() {
+        visualEvidenceRecorder.failPending("Visual capture stopped before the bookmark frame arrived")
         visionTracker = null
         collectionScanner = null
         _recognition.update { it.copy(active = false, phase = VisionGameTracker.Phase.IDLE, scan = null) }
@@ -414,6 +424,71 @@ class AppContainer(context: Context) {
             )
         }
         return events
+    }
+
+    /** A timestamp always persists; when capture is active, the next frame is attached without any rolling buffer. */
+    fun recordVisualBookmark(): VisualEvidenceStatus {
+        val observedAt = System.currentTimeMillis()
+        val id = "bookmark-$observedAt-${UUID.randomUUID()}"
+        val mode = settings.value.visualCaptureMode
+        val captureActive = recognition.value.active && mode != VisualCaptureMode.TIMESTAMP_ONLY
+        val status = if (captureActive) VisualEvidenceStatus.KEYFRAME_PENDING else VisualEvidenceStatus.TIMESTAMP_ONLY
+        val entry = VisualEvidenceEntry(
+            id = id,
+            observedAt = observedAt,
+            matchId = tracker.state.value?.draftId,
+            reason = "manual_bookmark",
+            requestedCaptureMode = mode,
+            status = status,
+        )
+        appScope.launch {
+            visualEvidence.add(entry)
+            if (captureActive) {
+                visualEvidenceRecorder.requestManual(id) { result ->
+                    result.onSuccess { keyframe -> appScope.launch { visualEvidence.attachKeyframe(id, keyframe) } }
+                        .onFailure { error -> appScope.launch { visualEvidence.markFailed(id, error.message ?: "Keyframe failed") } }
+                }
+            }
+        }
+        return status
+    }
+
+    /** Called from the existing recognition worker; only named trigger frames are written. */
+    fun onVisualFrame(
+        frame: OcrFrame,
+        bitmap: Bitmap,
+        contentWidth: Int,
+        contentHeight: Int,
+        events: List<GameEvent>,
+        matchIdBeforeFrame: String?,
+    ) {
+        val reason = events.firstNotNullOfOrNull { event ->
+            when (event) {
+                GameEvent.GameStarted -> "game_started"
+                is GameEvent.TurnChanged -> "turn_${event.turn}"
+                is GameEvent.GameEnded -> "game_${event.result.name.lowercase()}"
+                else -> null
+            }
+        }
+        visualEvidenceRecorder.onFrame(bitmap, contentWidth, contentHeight, frame.timestamp, reason) { result ->
+            val id = "trigger-${frame.timestamp}-${UUID.randomUUID()}"
+            val matchId = matchIdBeforeFrame ?: tracker.state.value?.draftId
+            result.onSuccess { keyframe ->
+                appScope.launch {
+                    visualEvidence.add(
+                        VisualEvidenceEntry(
+                            id = id,
+                            observedAt = frame.timestamp,
+                            matchId = matchId,
+                            reason = requireNotNull(reason),
+                            requestedCaptureMode = settings.value.visualCaptureMode,
+                            status = VisualEvidenceStatus.KEYFRAME_SAVED,
+                            keyframe = keyframe,
+                        ),
+                    )
+                }
+            }
+        }
     }
 
     private fun watchMenus(index: CardNameIndex, frame: OcrFrame, notes: MutableList<String>?) {

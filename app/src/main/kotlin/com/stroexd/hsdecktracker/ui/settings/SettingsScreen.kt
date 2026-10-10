@@ -74,6 +74,7 @@ import com.stroexd.hsdecktracker.core.data.GameLocales
 import com.stroexd.hsdecktracker.core.data.MetaSourceType
 import com.stroexd.hsdecktracker.core.data.RankRange
 import com.stroexd.hsdecktracker.core.data.TimeRange
+import com.stroexd.hsdecktracker.core.data.VisualCaptureMode
 import com.stroexd.hsdecktracker.core.util.formatNumber
 import com.stroexd.hsdecktracker.core.vision.OverlaySide
 import com.stroexd.hsdecktracker.overlay.BackgroundTracker
@@ -341,6 +342,11 @@ fun SettingsScreen(navController: NavHostController) {
             }
             item {
                 SettingsCard(stringResource(R.string.automatic_recognition)) {
+                    CaptureModePicker(
+                        selected = settings.visualCaptureMode,
+                        onSelect = { mode -> update { it.copy(visualCaptureMode = mode) } },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                     if (BackgroundTracker.isSupported) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
@@ -516,6 +522,41 @@ private fun AppUpdateSettings(enabled: Boolean, onEnabledChange: (Boolean) -> Un
 }
 
 private fun localeName(code: String): String = GameLocales.all.firstOrNull { it.first == code }?.second ?: code
+
+@Composable
+private fun CaptureModePicker(selected: VisualCaptureMode, onSelect: (VisualCaptureMode) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val title = when (selected) {
+        VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy)
+        VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility)
+        VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only)
+    }
+    val description = when (selected) {
+        VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy_hint)
+        VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility_hint)
+        VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only_hint)
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.capture_mode), fontWeight = FontWeight.Medium)
+        Box {
+            OutlinedButton(onClick = { expanded = true }) { Text(title) }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                VisualCaptureMode.entries.forEach { mode ->
+                    val label = when (mode) {
+                        VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy)
+                        VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility)
+                        VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only)
+                    }
+                    DropdownMenuItem(text = { Text(label) }, onClick = {
+                        expanded = false
+                        onSelect(mode)
+                    })
+                }
+            }
+        }
+        Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 
 @Composable
 private fun LanguagePicker(selected: String, onSelect: (String) -> Unit) {

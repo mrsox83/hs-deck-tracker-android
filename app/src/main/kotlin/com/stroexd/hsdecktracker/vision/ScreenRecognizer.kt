@@ -42,7 +42,7 @@ fun Context.startScreenRecognition(
         maskProvider = maskProvider,
         cyrillic = { GameLocales.isCyrillic(container.gameLocale.value) },
         pacing = { container.capturePacing() },
-        onFrame = { frame, bitmap, reused ->
+        onFrame = { frame, bitmap, contentWidth, contentHeight, reused ->
             // Follows the setting live, so recording can also be switched on in the middle of a game
             val recorder = if (container.settings.value.recordDiagnostics) {
                 diagnostics ?: DiagnosticsRecorder(DiagnosticsRecorder.root(this)).also { diagnostics = it }
@@ -51,7 +51,9 @@ fun Context.startScreenRecognition(
             }
             diagnostics = recorder
             val notes = recorder?.let { mutableListOf<String>() }
+            val matchIdBeforeFrame = container.tracker.state.value?.draftId
             val events = container.onScreenFrame(frame, notes, reused)
+            container.onVisualFrame(frame, bitmap, contentWidth, contentHeight, events, matchIdBeforeFrame)
             recorder?.let { runCatching { it.record(frame, events, notes.orEmpty(), bitmap) } }
         },
         onStopped = {
@@ -76,7 +78,7 @@ class ScreenRecognizer(
     private val maskProvider: () -> Rect?,
     private val cyrillic: () -> Boolean,
     private val pacing: () -> CapturePacing,
-    private val onFrame: (frame: OcrFrame, bitmap: Bitmap, reused: Boolean) -> Unit,
+    private val onFrame: (frame: OcrFrame, bitmap: Bitmap, contentWidth: Int, contentHeight: Int, reused: Boolean) -> Unit,
     private val onStopped: () -> Unit,
 ) {
     private val thread = HandlerThread("hs-screen-capture").apply { start() }
@@ -167,7 +169,7 @@ class ScreenRecognizer(
         if (previousLines != null && previousPrint != null && now - lastOcrAt < pacing().maxReuseMillis && isSimilar(print, previousPrint)) {
             val frame = OcrFrame(System.currentTimeMillis(), previousLines, aspect)
             listenerExecutor.execute {
-                runCatching { onFrame(frame, bitmap, true) }
+                runCatching { onFrame(frame, bitmap, width, height, true) }
                 handler.post { scheduleNext() }
             }
             return
@@ -175,7 +177,7 @@ class ScreenRecognizer(
         if (cyrillic() && !paddleFailed) {
             listenerExecutor.execute {
                 val frame = paddle()?.let { reader -> runCatching { readCyrillic(reader, capture, aspect, mask) }.getOrNull() }
-                if (frame != null) runCatching { onFrame(frame, bitmap, false) }
+                if (frame != null) runCatching { onFrame(frame, bitmap, width, height, false) }
                 handler.post {
                     if (frame != null) {
                         lastLines = frame.lines
@@ -190,7 +192,7 @@ class ScreenRecognizer(
         recognizer.process(InputImage.fromBitmap(bitmap, 0))
             .addOnSuccessListener(listenerExecutor) { text ->
                 val frame = toFrame(text, width, height, aspect, mask)
-                runCatching { onFrame(frame, bitmap, false) }
+                runCatching { onFrame(frame, bitmap, width, height, false) }
                 handler.post {
                     lastLines = frame.lines
                     lastPrint = print

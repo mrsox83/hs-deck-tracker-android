@@ -30,3 +30,13 @@ After R4 source and device behavior stabilize, remind the owner that an optional
 R3 is phone accepted. Source-ready, tests-passed, APK-built, phone-verified and pushed are recorded separately; it is not merged or deployed. The tracker patches remain preserved.
 
 At authorization, live Codex usage was 79% of the five-hour window and 36% of the seven-day window. This exceeded the owner's prior 60% five-hour ceiling, so no R4 implementation began. Resume at R4.1 after rereading live usage, `START_HERE.md`, the shared backlog and the active project plan/checkpoints. Read and verify local/remote state again before editing.
+
+The scheduled R4.1 continuation began after the reset at 0% five-hour usage and 39% seven-day usage, with an 80% five-hour ceiling. No reset credit was consumed.
+
+## R4.1 source/build result
+
+R4.1 now reuses the tracker's existing screen-share/accessibility sources and recognition loop. It adds an explicit **Privacy first / Compatibility / No visual capture** selector with disclosure, Android 14 user-choice capture, captured-content resize handling, normalized regions, timestamp-only bookmarks, bounded next-frame manual evidence and named automatic trigger keyframes. It adds no parallel capture engine, rolling buffer or unrestricted recording. Evidence metadata calls the setting a requested policy so it does not overclaim what the Android consent dialog granted.
+
+Ordinary core tests and `:app:assembleFusionTest` passed. The resulting 68,072,154-byte APK retains package `com.stroexd.hsdecktracker.fusiontest`, version `1.5.0-fusiontest` and label **HS Deck Tracker Fusion Test**; SHA-256 is `27e68d7e54196c192838f99d14b1067e1ee11c6ca1f52078ad04d7094b124e19`. Live usage at this checkpoint was 43% five-hour and 46% seven-day, below the authorized 80% ceiling; the reset credit remains unused.
+
+Source-ready, tests-passed and APK-built are true. Phone-verified, merged and deployed are false. Stop before R4.2. Physical-device validation is now required for the privacy-first Hearthstone selection, compatibility disclosure/path, timestamp-only mode, manual bookmarks, landscape startup, lock/unlock, capture stop/reconnect and bounded evidence behavior.

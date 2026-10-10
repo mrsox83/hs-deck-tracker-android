@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
@@ -56,6 +57,7 @@ import com.stroexd.hsdecktracker.MainActivity
 import com.stroexd.hsdecktracker.R
 import com.stroexd.hsdecktracker.appContainer
 import com.stroexd.hsdecktracker.core.collection.ReceivedStatus
+import com.stroexd.hsdecktracker.core.data.VisualEvidenceStatus
 import com.stroexd.hsdecktracker.core.util.formatNumber
 import com.stroexd.hsdecktracker.core.vision.VisionGameTracker
 import com.stroexd.hsdecktracker.ui.label
@@ -140,6 +142,17 @@ internal fun OverlayContent(
             ) {
                 RecognitionDot(container)
                 Spacer(Modifier.weight(1f))
+                IconButton(onClick = {
+                    val status = container.recordVisualBookmark()
+                    context.toast(
+                        context.getString(
+                            if (status == VisualEvidenceStatus.KEYFRAME_PENDING) R.string.bookmark_saved_with_frame
+                            else R.string.bookmark_saved_timestamp,
+                        ),
+                    )
+                }, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Filled.BookmarkAdd, contentDescription = stringResource(R.string.bookmark), modifier = Modifier.size(16.dp))
+                }
                 IconButton(onClick = { collapsed = true }, modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.minimize), modifier = Modifier.size(16.dp))
                 }
