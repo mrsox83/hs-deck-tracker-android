@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-10 — owner test-exclusion publication
+
+Owner classified the current uploaded R4 validation games as tests and requested shared coaching skip instructions. Published and reread a private `hs-coaching-exclusion/1` registry in HSReplay covering three current tracker exports and 15 diagnostic/tracker identity aliases, plus `HS-FUSION-R4-TEST-EXCLUSION.md` in Shared Exchange. IDs are not distinct-game counts. Preserve raw evidence; skip coaching advice, competitive aggregates and processed competitive-game counts. Earlier ordinary gameplay remains unchanged. Existing R3 exclusion stays in force. Historical coaching ledger reconciliation is requested, not claimed verified. Private identities/fixtures are outside Git.
+
+Diagnostic (7) confirms the corrected phone bookmark reached KEYFRAME_SAVED with experimental region metadata; three actual frames are present. The latest bookmark is an opening-hand screen, so health/mana calibration is not accepted. R4.2 remains open.
+
 ## 2026-10-10 — R4.2 phone capture evidence blocked
 
 The owner supplied four gameplay anchors (turn-one empty board/card play, opponent Coin/hero power; friendly health 30, opponent health drops two). Diagnostic archives (5) and (6), 517 bytes each, contain five identical timestamp-only bookmarks in requested Privacy First policy, no keyframes or region probes. Owner confirms Android consent was shown. Upload succeeds; this is a capture-state evidence gap, not a missing Drive upload. Do not accept pilot calibration from these files.
