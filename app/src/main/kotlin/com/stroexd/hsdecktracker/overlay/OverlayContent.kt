@@ -22,9 +22,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.BookmarkAdd
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +88,7 @@ internal fun OverlayContent(
     val metaState by container.meta.state.collectAsStateWithLifecycle()
     val decks by container.decks.decks.collectAsStateWithLifecycle()
     var collapsed by remember { mutableStateOf(false) }
+    var actionsExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(state?.startedAt) {
         if (state != null) collapsed = false
@@ -142,27 +146,40 @@ internal fun OverlayContent(
             ) {
                 RecognitionDot(container)
                 Spacer(Modifier.weight(1f))
-                IconButton(onClick = {
-                    val status = container.recordVisualBookmark()
-                    context.toast(
-                        context.getString(
-                            if (status == VisualEvidenceStatus.KEYFRAME_PENDING) R.string.bookmark_saved_with_frame
-                            else R.string.bookmark_saved_timestamp,
-                        ),
-                    )
-                }, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Filled.BookmarkAdd, contentDescription = stringResource(R.string.bookmark), modifier = Modifier.size(16.dp))
-                }
                 IconButton(onClick = { collapsed = true }, modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.minimize), modifier = Modifier.size(16.dp))
                 }
-                IconButton(onClick = {
-                    val intent = Intent(context, MainActivity::class.java)
-                        .putExtra(MainActivity.EXTRA_OPEN_TRACKER, true)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                    context.startActivity(intent)
-                }, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Filled.OpenInFull, contentDescription = stringResource(R.string.open_app), modifier = Modifier.size(14.dp))
+                Box {
+                    IconButton(onClick = { actionsExpanded = true }, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.more_actions), modifier = Modifier.size(16.dp))
+                    }
+                    DropdownMenu(expanded = actionsExpanded, onDismissRequest = { actionsExpanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.bookmark)) },
+                            leadingIcon = { Icon(Icons.Filled.BookmarkAdd, contentDescription = null) },
+                            onClick = {
+                                actionsExpanded = false
+                                val status = container.recordVisualBookmark()
+                                context.toast(
+                                    context.getString(
+                                        if (status == VisualEvidenceStatus.KEYFRAME_PENDING) R.string.bookmark_saved_with_frame
+                                        else R.string.bookmark_saved_timestamp,
+                                    ),
+                                )
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.open_app)) },
+                            leadingIcon = { Icon(Icons.Filled.OpenInFull, contentDescription = null) },
+                            onClick = {
+                                actionsExpanded = false
+                                val intent = Intent(context, MainActivity::class.java)
+                                    .putExtra(MainActivity.EXTRA_OPEN_TRACKER, true)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                context.startActivity(intent)
+                            },
+                        )
+                    }
                 }
                 IconButton(onClick = onClose, modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close), modifier = Modifier.size(16.dp))
