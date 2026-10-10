@@ -1,5 +1,10 @@
 # Mobile fusion work log
 
+## 2026-10-10 — v4 toolbar phone acceptance
+
+The owner reports every requested v4 layout retest passed: visible Minimize/More actions/Close, Bookmark and Open app in overflow, successful bookmark feedback, and Close dismissal. This accepts the narrow-toolbar fix at source commit `4b881be`. No additional build or test was required for this documentation-only checkpoint. Original R4.1 lifecycle/mode/retained-evidence checks remain subject to evidence review; this layout-only report does not establish those results. R4.2 remains unstarted. Live usage: five-hour 7%, seven-day 56%; reset credit unused. No merge or deployment.
+
+
 ## 2026-10-07 — preflight
 
 User approved continuation of R0–R2 using the attached implementation plan. The attachment's stale approval-pending wording is not a new approval requirement. No implementation changes have been made.

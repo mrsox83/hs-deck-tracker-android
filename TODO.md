@@ -99,7 +99,8 @@ Implementation sequence:
   - [x] Privacy-first single-app capture becomes available after explicitly selecting Privacy First; the revised always-visible choice UI is preferred over the original dropdown.
   - [x] Deck-tracking overlay persists during the phone test.
   - [x] Source/build fix for the narrow-overlay header: Close remains the final pinned action; Bookmark and Open App moved into a three-dot overflow without shrinking touch targets. Fusion R4 Test APK rebuilt.
-  - [ ] Phone-verify the v4 narrow-overlay package: Minimize, More actions and Close visible; overflow exposes Bookmark/Open App; Bookmark works; Close dismisses normally.
+  - [x] Phone-verify the v4 narrow-overlay package: user reports all requested checks passed; Minimize, More actions and Close visible; overflow exposes Bookmark/Open App; Bookmark works; Close dismisses normally.
+  - [ ] Review remaining original R4.1 acceptance evidence: timestamp-only/compatibility behavior, lock/unlock, capture stop/reconnect and bounded retained evidence. The v4 layout-only pass does not independently verify these checks.
 - [ ] **R4.2:** enable three pilot region groups in diagnostic/shadow mode: hero state (health/armor, portrait, hero power and weapon); turn/resources (active player, mana and hand count when reliable); event recovery (card-play area, history rail and reconnect/resume cues).
 - [ ] **R4.3:** validate each observation independently and promote fields individually through `experimental` -> `corroborating` -> `accepted`; ambiguous values remain unknown/inferred with confidence and evidence. No experimental recognizer may create an authoritative match event.
 - [ ] **R4.4:** close R4 after the pilot groups provide trustworthy bounded enrichment. Defer detailed board/minion state, secrets, deck counts and choice-panel recognition unless real missing-data evidence justifies a separately accepted addition.
