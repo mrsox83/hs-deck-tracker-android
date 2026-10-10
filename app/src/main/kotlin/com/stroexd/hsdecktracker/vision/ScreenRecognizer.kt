@@ -34,7 +34,11 @@ fun Context.startScreenRecognition(
     onStopped: () -> Unit = {},
 ): ScreenRecognizer {
     val container = appContainer
-    val session = container.onRecognitionStarted()
+    val session = container.onRecognitionStarted(when (source) {
+        is MediaProjectionSource -> "media_projection"
+        is AccessibilityScreenshotSource -> "accessibility_screenshot"
+        else -> "unknown_frame_source"
+    })
     var diagnostics: DiagnosticsRecorder? = null
     val recognizer = ScreenRecognizer(
         context = this,

@@ -32,6 +32,8 @@ data class VisualEvidenceEntry(
     val status: VisualEvidenceStatus,
     val keyframe: VisualKeyframe? = null,
     val error: String? = null,
+    /** Backend that delivered pixels, not proof of the Android-selected app/display scope. */
+    val captureMethod: String? = null,
 )
 
 class VisualEvidenceRepository(dir: File) {

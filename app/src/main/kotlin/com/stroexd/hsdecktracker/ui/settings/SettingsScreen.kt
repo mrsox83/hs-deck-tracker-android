@@ -37,7 +37,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
@@ -75,7 +74,6 @@ import com.stroexd.hsdecktracker.core.data.GameLocales
 import com.stroexd.hsdecktracker.core.data.MetaSourceType
 import com.stroexd.hsdecktracker.core.data.RankRange
 import com.stroexd.hsdecktracker.core.data.TimeRange
-import com.stroexd.hsdecktracker.core.data.VisualCaptureMode
 import com.stroexd.hsdecktracker.core.util.formatNumber
 import com.stroexd.hsdecktracker.core.vision.OverlaySide
 import com.stroexd.hsdecktracker.overlay.BackgroundTracker
@@ -343,11 +341,7 @@ fun SettingsScreen(navController: NavHostController) {
             }
             item {
                 SettingsCard(stringResource(R.string.automatic_recognition)) {
-                    CaptureModePicker(
-                        selected = settings.visualCaptureMode,
-                        onSelect = { mode -> update { it.copy(visualCaptureMode = mode) } },
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                    Text(stringResource(R.string.capture_automatic_hint), style = MaterialTheme.typography.bodySmall)
                     if (BackgroundTracker.isSupported) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
@@ -533,44 +527,6 @@ private fun AppUpdateSettings(enabled: Boolean, onEnabledChange: (Boolean) -> Un
 }
 
 private fun localeName(code: String): String = GameLocales.all.firstOrNull { it.first == code }?.second ?: code
-
-@Composable
-private fun CaptureModePicker(selected: VisualCaptureMode, onSelect: (VisualCaptureMode) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.capture_mode), fontWeight = FontWeight.Medium)
-        Text(
-            stringResource(R.string.capture_mode_recommendation),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        VisualCaptureMode.entries.forEach { mode ->
-            val label = when (mode) {
-                VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy)
-                VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility)
-                VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only)
-            }
-            val description = when (mode) {
-                VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy_hint)
-                VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility_hint)
-                VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only_hint)
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { onSelect(mode) }.padding(vertical = 4.dp),
-                verticalAlignment = Alignment.Top,
-            ) {
-                RadioButton(selected = selected == mode, onClick = { onSelect(mode) })
-                Column(Modifier.padding(top = 10.dp)) {
-                    Text(label, fontWeight = FontWeight.Medium)
-                    Text(
-                        description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun LanguagePicker(selected: String, onSelect: (String) -> Unit) {

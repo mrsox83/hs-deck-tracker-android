@@ -37,7 +37,7 @@ class VisualEvidenceRepositoryTest {
         assertEquals("abc", restored.keyframe?.sha256)
         assertEquals("match-1", restored.matchId)
         assertEquals(true, restored.keyframe?.regionOcrReused)
-        assertEquals(8, restored.keyframe?.regionProbes?.size)
+        assertEquals(10, restored.keyframe?.regionProbes?.size)
 
         repository.clear()
         assertEquals(emptyList(), VisualEvidenceRepository(dir).entries.value)
