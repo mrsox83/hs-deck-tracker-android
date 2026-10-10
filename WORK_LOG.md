@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-10 — v7 catalog phone acceptance
+
+Owner explicitly confirms both previously unknown card names resolved, warm dead remains 30 cards and saved history is intact. Marked only the bounded catalog phone gate passed; implementation eb43342 remains source/tests/APK verified and pushed. No general OCR/performance or unrelated assessment acceptance claimed. No new build, source change, installation/data mutation, R5, merge or deployment.
+
 ## 2026-10-10 — owner-authorized full card catalog bug fix
 
 Owner supplied exact warm dead export and authorized the fix. Verified clean remote/local 15d3efe. Switched lookup download to full cards.json; separate full cache profile forces same-build upgrade while preserving old files as offline fallback. Constructed recognition includes non-collectibles; collection/menu recognition and deck-builder lists remain collectible-only. Non-collectibles add no crafting requirements. Exact 30-card code preserves both IDs/counts and round-trips; full downloaded catalog resolves all imported cards (36,022 total, 7,406 deck-builder, 14,010 constructed recognition entries; SHA256 e8ea569a7ca1790c2258ed57c60798d808ffb057acb7bb73663c00ea174dae65). 144 ordinary tests and one required full-catalog gate passed. Fixed a test constructor error; a generated test-class output lock then required verified core-build-only cleanup. No source/fixtures/data removed. APK build pending below; full-catalog phone behavior/performance remains unverified. Last live usage 40% five-hour / 66% weekly, ceiling 90%, reset unused. Separate bounded catalog authorization, not reopened general R4 work or R5.
