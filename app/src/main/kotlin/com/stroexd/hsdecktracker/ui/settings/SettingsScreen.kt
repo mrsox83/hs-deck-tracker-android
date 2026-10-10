@@ -37,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
@@ -528,36 +529,39 @@ private fun localeName(code: String): String = GameLocales.all.firstOrNull { it.
 
 @Composable
 private fun CaptureModePicker(selected: VisualCaptureMode, onSelect: (VisualCaptureMode) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    val title = when (selected) {
-        VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy)
-        VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility)
-        VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only)
-    }
-    val description = when (selected) {
-        VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy_hint)
-        VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility_hint)
-        VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only_hint)
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.capture_mode), fontWeight = FontWeight.Medium)
-        Box {
-            OutlinedButton(onClick = { expanded = true }) { Text(title) }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                VisualCaptureMode.entries.forEach { mode ->
-                    val label = when (mode) {
-                        VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy)
-                        VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility)
-                        VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only)
-                    }
-                    DropdownMenuItem(text = { Text(label) }, onClick = {
-                        expanded = false
-                        onSelect(mode)
-                    })
+        Text(
+            stringResource(R.string.capture_mode_recommendation),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        VisualCaptureMode.entries.forEach { mode ->
+            val label = when (mode) {
+                VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy)
+                VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility)
+                VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only)
+            }
+            val description = when (mode) {
+                VisualCaptureMode.PRIVACY_FIRST -> stringResource(R.string.capture_mode_privacy_hint)
+                VisualCaptureMode.COMPATIBILITY -> stringResource(R.string.capture_mode_compatibility_hint)
+                VisualCaptureMode.TIMESTAMP_ONLY -> stringResource(R.string.capture_mode_timestamp_only_hint)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { onSelect(mode) }.padding(vertical = 4.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                RadioButton(selected = selected == mode, onClick = { onSelect(mode) })
+                Column(Modifier.padding(top = 10.dp)) {
+                    Text(label, fontWeight = FontWeight.Medium)
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
-        Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
