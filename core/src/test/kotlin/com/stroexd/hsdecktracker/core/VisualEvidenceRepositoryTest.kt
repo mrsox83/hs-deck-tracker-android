@@ -31,5 +31,8 @@ class VisualEvidenceRepositoryTest {
         assertEquals(VisualEvidenceStatus.KEYFRAME_SAVED, restored.status)
         assertEquals("abc", restored.keyframe?.sha256)
         assertEquals("match-1", restored.matchId)
+
+        repository.clear()
+        assertEquals(emptyList(), VisualEvidenceRepository(dir).entries.value)
     }
 }

@@ -33,6 +33,14 @@ class VisualEvidenceRecorder(private val root: File) {
         while (pending.isNotEmpty()) pending.removeFirst().onSaved(Result.failure(IllegalStateException(message)))
     }
 
+    @Synchronized
+    fun clear() {
+        failPending("Visual evidence was deleted")
+        root.deleteRecursively()
+        lastAutomaticReason = null
+        lastAutomaticAt = 0L
+    }
+
     /** Called on the recognizer worker. Manual requests and at most one named automatic trigger use this frame. */
     fun onFrame(
         bitmap: Bitmap,

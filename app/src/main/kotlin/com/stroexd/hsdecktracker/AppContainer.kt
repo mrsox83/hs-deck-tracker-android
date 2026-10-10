@@ -426,6 +426,11 @@ class AppContainer(context: Context) {
         return events
     }
 
+    suspend fun clearVisualEvidence() {
+        visualEvidenceRecorder.clear()
+        visualEvidence.clear()
+    }
+
     /** A timestamp always persists; when capture is active, the next frame is attached without any rolling buffer. */
     fun recordVisualBookmark(): VisualEvidenceStatus {
         val observedAt = System.currentTimeMillis()
