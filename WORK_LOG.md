@@ -1,5 +1,13 @@
 # Mobile fusion work log
 
+## 2026-10-10 — R5 authorization and bounded snapshot foundation
+
+Owner approved the reviewed post-match-only R5 plan at the previously set 90% five-hour ceiling. Start usage 50% five-hour / 68% weekly; refreshed 55%/68%, then 56%/69%, reset unused. Clean local/remote d352119 verified on feature/mobile-fusion-offline. Read shared protocol/inventory and R5 proposal; pinned v0.4 exporter source hash matches R0. No installed companion build identity is inferred from source availability. No HS-EXPORTER/HS-COACHING plans changed.
+
+Added pure bounded log snapshot primitive: validate path-free session name and known 1..16 MiB descriptor size, copy only observed prefix, hash exact bytes, close stream on success/failure/cancellation, reject stalled/short reads and defensively expose bytes. Content identity is independent of rotating session names, but this primitive does not itself deduplicate logical matches or certify source completeness/stability. Same-descriptor size/stream binding remains Android caller responsibility. Equal-length in-place writes remain undetectable and explicitly documented.
+
+Core regression run passed after the known Windows generated-output lock: removed only the resolved core/build/test-results/test directory, no source/data/fixtures. Exact count recorded in checkpoint. This is source/tests foundation only: no Shizuku wiring, parsing integration, new APK, phone gate or automatic retrieval yet. Next assigned unit is restricted reader/permission lifecycle and manual collection through existing importer; companion remains fallback. No R6, continuous tailing, merge or deployment.
+
 ## 2026-10-10 — v7 catalog phone acceptance
 
 Owner explicitly confirms both previously unknown card names resolved, Example Death Knight Deck remains 30 cards and saved history is intact. Marked only the bounded catalog phone gate passed; implementation eb43342 remains source/tests/APK verified and pushed. No general OCR/performance or unrelated assessment acceptance claimed. No new build, source change, installation/data mutation, R5, merge or deployment.
