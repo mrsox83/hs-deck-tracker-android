@@ -10,7 +10,7 @@ data class DiagnosticFieldCandidate(
     val reason: String,
     val region: NormalizedRegion,
     val support: List<OcrLine> = emptyList(),
-    val ruleVersion: String = "landscape-fields-2",
+    val ruleVersion: String = "landscape-fields-3",
     val stage: String = "experimental",
 )
 
@@ -21,6 +21,8 @@ object VisualFieldPilot {
     private val friendlyMana = NormalizedRegion(.735f, .75f, .825f, .85f)
     private val handWindow = NormalizedRegion(.15f, .85f, .80f, .95f)
     private val verticalMana = NormalizedRegion(.84f, .76f, .91f, .90f)
+    private val verticalAvailable = NormalizedRegion(.84f, .77f, .90f, .83f)
+    private val verticalMaximum = NormalizedRegion(.84f, .83f, .90f, .89f)
     private val verticalCorpses = NormalizedRegion(.84f, .90f, .91f, 1f)
     private val normalCorpses = NormalizedRegion(.80f, .75f, .84f, .86f)
 
@@ -65,10 +67,21 @@ object VisualFieldPilot {
         }
         val manaRegion = if (expanded) verticalMana else friendlyMana
         val manaLines = lines(manaRegion)
-        val manaMatch = manaLines.singleOrNull()?.text?.trim()?.let { Regex("([0-9]{1,2})/([0-9]{1,2})").matchEntire(it) }
-        val manaValue = manaMatch?.let {
-            val current = it.groupValues[1].toInt()
-            val total = it.groupValues[2].toInt()
+        // Expanded hand stacks numerator and denominator above the separate corpse counter.
+        // Require each entire OCR box inside its slot; never concatenate arbitrary nearby digits.
+        fun slot(region: NormalizedRegion): OcrLine? = manaLines.singleOrNull {
+            it.left >= region.left && it.right <= region.right &&
+                it.top >= region.top && it.bottom <= region.bottom
+        }?.takeIf { it.text.matches(Regex("[0-9]{1,2}")) }
+        val available = if (expanded) slot(verticalAvailable) else null
+        val maximum = if (expanded) slot(verticalMaximum) else null
+        val manaMatch = if (!expanded) manaLines.singleOrNull()?.text?.trim()?.let {
+            Regex("([0-9]{1,2})/([0-9]{1,2})").matchEntire(it)
+        } else null
+        val pair = if (expanded && manaLines.size == 2 && available != null && maximum != null) {
+            available.text.toInt() to maximum.text.toInt()
+        } else manaMatch?.let { it.groupValues[1].toInt() to it.groupValues[2].toInt() }
+        val manaValue = pair?.let { (current, total) ->
             if (current <= total && total <= 20) "$current/$total" else null
         }
         val corpseRegion = if (expanded) verticalCorpses else normalCorpses
@@ -77,7 +90,9 @@ object VisualFieldPilot {
         return listOf(turn, layout, health("friendly_health", friendlyHealth), health("opponent_health", opponentHealth),
             DiagnosticFieldCandidate("friendly_mana",
                 value = if (gate == null) manaValue else null,
-                reason = gate ?: if (manaValue != null) "exact_resource_pair" else "missing_or_merged_resource_text",
+                reason = gate ?: if (manaValue != null) {
+                    if (expanded) "positioned_resource_pair" else "exact_resource_pair"
+                } else "missing_or_merged_resource_text",
                 region = manaRegion, support = manaLines),
             DiagnosticFieldCandidate("friendly_adjacent_counter",
                 value = if (gate == null) corpseValue else null,

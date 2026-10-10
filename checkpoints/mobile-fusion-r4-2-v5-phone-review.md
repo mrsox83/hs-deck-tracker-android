@@ -1,5 +1,9 @@
 # R4.2 v5 phone evidence review
 
+## Positioned mana follow-up
+
+Owner confirmed both resource layouts. `landscape-fields-3` now reads the focused-hand numerator and denominator from distinct fully contained OCR slots above the adjacent counter; normal layout retains the exact same-line pair. Required private replay across all three archives passes: new Bookmark 5 = 1/2, 7 = 10/10, 8 = 3/10; every other new bookmark remains unknown due missing/reused/unanchored OCR. Synthetic zero/full/partial and negative cases pass. 135 ordinary tests and three private tests passed. Source-ready/tests-passed only for this follow-up; no new APK/phone acceptance. Cost types remain deferred. Next transition review is bounded R4.3 validation of existing candidates, not more speculative R4.2 readers.
+
 Diagnostic (11), 8,948,694 bytes, arrived in the existing private Drive Diagnostic directory. Its 100 entries include 50 AUTOMATIC_ROUTE records and nine new manual bookmarks, all KEYFRAME_SAVED with media_projection backend and landscape-pilot-2 metadata. All 95 retained image SHA256 values and byte sizes match. Raw evidence and extracted previews remain outside Git. These are owner-classified testing games, excluded from coaching by the shared R4 policy.
 
 Visual review in bookmark order:
