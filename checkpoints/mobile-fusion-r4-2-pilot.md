@@ -1,5 +1,7 @@
 # R4.2 pilot foundation
 
+Phone v1 evidence: archives (5)/(6) contain only five timestamp bookmarks despite owner-confirmed consent. No region-calibration acceptance. A generation guard addresses a discovered asynchronous recognizer replacement race; source fix is not proof it caused this phone result. Retest one bookmark on v2 and inspect the actual frame/probes before repeating gameplay labeling.
+
 R4.1 accepted from the owner's phone results and uploaded Diagnostic archives, including empty post-delete evidence. Active package remains `com.stroexd.hsdecktracker.fusiontestr4`. Original tracker and R3 data remain isolated.
 
 The pilot attaches eight configurable normalized windows across hero state, turn/resources and event recovery to existing manual/automatic retained frames. It stores at most 32 positioned OCR candidates per window, marks every probe experimental and records OCR reuse. Windows are broad initial calibration hypotheses, not validated hero/health/mana/card recognition. An empty window is unknown. Overlapping windows share one source and cannot corroborate each other. No authoritative events or additional continuous capture are produced.

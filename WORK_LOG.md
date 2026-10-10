@@ -1,5 +1,14 @@
 # Mobile fusion work log
 
+## 2026-10-10 — R4.2 phone capture evidence blocked
+
+The owner supplied four gameplay anchors (turn-one empty board/card play, opponent Coin/hero power; friendly health 30, opponent health drops two). Diagnostic archives (5) and (6), 517 bytes each, contain five identical timestamp-only bookmarks in requested Privacy First policy, no keyframes or region probes. Owner confirms Android consent was shown. Upload succeeds; this is a capture-state evidence gap, not a missing Drive upload. Do not accept pilot calibration from these files.
+
+Source inspection found a concrete replacement race: OverlayService stops the previous recognizer asynchronously, starts its successor, then the previous callback unconditionally clears shared recognition.active and the service reference. Added generation-scoped recognition start/stop and stale-frame suppression so outdated callbacks cannot clear the current session. A regression test exercises old-stop/new-session ordering. This is a candidate cause of the phone symptoms; actual device cause remains unproven until a retained frame is returned. Next phone retest is one bookmark, not another full match sequence. Fresh usage at diagnosis: 27% five-hour, 60% weekly, below owner ceiling 90%; reset unused.
+
+Final core tests and APK assembly passed. v2 APK is 68,212,793 bytes, SHA256 `d22b022130b600d7e697f0c23a5fe03d064390a6c2a4989a93f1af71b9c0edd1`; package and signer match the existing R4 test channel. Local/Drive v2 delivery hash verified. Phone verification pending; R4.2 remains open. No merge/deployment.
+
+
 ## 2026-10-10 — R4.1 accepted; R4.2 diagnostic foundation
 
 Owner authorized proceeding with a 90% five-hour ceiling. Live usage at start: 16% five-hour, 58% seven-day; reset unused. Phone reports establish sleep/wake continuation and stop/restart with fresh Android consent and delayed ongoing-game recognition. Diagnostic uploads in Development/Diagnostic establish Privacy First, Compatibility and timestamp-only metadata. Latest pre-delete archive has 132 keyframes totaling 14,475,869 bytes, maximum width 1280; post-delete archive (4) is 190 bytes containing only `visual-evidence/visual-evidence.json` with `[]`. R4.1 acceptance is complete. These records do not prove seamless match identity recovery or visual semantic accuracy.
