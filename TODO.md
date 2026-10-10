@@ -94,6 +94,8 @@ R4 capture decisions from the owner:
 
 Implementation sequence:
 
+- [ ] Owner UX direction for the next otherwise-needed build: remove Privacy First / Compatibility / No visual capture radio choices and restore original automatic route selection (enabled Background tracking uses Accessibility; otherwise Tracker invokes Android screen-share consent). Preserve R4 evidence, lifecycle fixes and isolated identity. No APK build solely for this UI change. Timestamp bookmarks still persist when capture is unavailable; retain truthful source/policy metadata rather than silently reusing obsolete mode labels.
+
 - [x] **R4.1 source/build:** audited and extended the existing screen-share/OCR pipeline; added the explicit privacy/capability selector and disclosure, normalized regions, bounded trigger/manual-bookmark keyframes, lifecycle cleanup, and timestamp-only bookmark fallback. No second capture engine or rolling buffer was added.
 - [x] **R4.1 phone acceptance:** reviewed privacy-first selection, Compatibility and timestamp-only evidence, manual bookmarks, landscape overlay, sleep/wake continuation, stop/restart with fresh consent, bounded keyframes and post-delete empty export. Recognition after restart has a user-observed delay; seamless match continuity is not claimed.
   - [x] Privacy-first single-app capture becomes available after explicitly selecting Privacy First; the revised always-visible choice UI is preferred over the original dropdown.

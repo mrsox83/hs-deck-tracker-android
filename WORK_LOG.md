@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-10 — next-build capture UX direction
+
+Owner requests removing the three capture-policy radio choices and returning to the original tracker flow, bundled into the next otherwise-needed build. Inspected baseline `d3bc0fb` OverlayLauncher and SettingsScreen: supported/enabled Background tracking routes to the Accessibility service automatically; otherwise Tracker requests overlay/notification permissions as needed and launches the normal Android MediaProjection consent dialog. Existing active recognition is reused; capture cancellation leaves an overlay without automatic recognition. This direction supersedes the radio-choice UX requirement. Recorded in TODO; no capture code or APK changed in this checkpoint. Preserve bounded R4 evidence and accurate source metadata during the later change.
+
 ## 2026-10-10 — conservative R4.2 field reader unit
 
 Owner authorized continued R4 work, with focused/enlarged-hand bookmarks proposed for the next phone capture. Fresh usage: 7% five-hour, 61% weekly; current ceiling 90%, reset unused. Shared protocol refreshed; clean branch and remote tip `41ed989` verified. Existing diagnostic (9) supports tighter friendly-health geometry: OCR 26 in two gameplay bookmarks and 15 in the final bookmark, while neighboring minion numbers occupy a different vertical range. The owner directly confirms the 12 beside mana in the shown middle bookmark is the corpse count. This is a frame-specific human label, not authority to infer every nearby number as corpses.
