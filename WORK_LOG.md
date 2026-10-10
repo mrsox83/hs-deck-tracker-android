@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-10 — v5 phone resource evidence review
+
+Owner supplied clear-board/focused-hand and full/partial/empty mana plus corpse-counter bookmarks. Diagnostic (11) is present, 8,948,694 bytes; 100 entries, 50 new AUTOMATIC_ROUTE records, nine new saved manual bookmarks, all media_projection/landscape-pilot-2. All 95 image hashes and sizes verified. Reviewed every new image: expanded-hand cue and conservative occlusion/reuse/menu rejection hold; opponent-health candidates 30/30/15 and adjacent counters 8/11/16 match images. Mana remains unknown despite visually readable 0/2, 1/1, 2/2, 1/2, 0/6, 10/10 and 3/10: stacked digits require a separately tested geometry-aware rule, not relaxed concatenation. Focused-hand cost silhouettes and explicit corpse-cost card text are useful future evidence; health/corpse cost classification is not implemented or accepted. See `checkpoints/mobile-fusion-r4-2-v5-phone-review.md` for exact labels/limits. Private evidence outside Git; shared test exclusion remains in force. No code/APK change, R4.3/R5, merge or deployment in this review. Last live usage 25% five-hour / 64% weekly, ceiling 90%; reset unused.
+
 ## 2026-10-10 — focused-hand layout and automatic routing unit
 
 Owner authorized continuation. Fresh five-hour usage 15%, weekly 62%; ceiling 90%, reset unused. Implemented the previously requested original capture flow alongside the next substantive R4 unit: removed the radio selector, restored enabled Background tracking/Accessibility preference and normal Android capture consent otherwise. Legacy stored settings/evidence remain decodable but no longer gate route choice. New evidence policy is AUTOMATIC_ROUTE and records the backend that produced pixels (not a claim of single-app/display consent scope). Timestamp fallback survives unavailable/declined capture. Isolated app identity and lifecycle generation guard retained.
