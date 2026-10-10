@@ -1,5 +1,13 @@
 # Mobile fusion work log
 
+## 2026-10-10 — clear-board, focused-hand and play bookmark review
+
+Diagnostic (10) arrived (4,358,981 bytes), containing 50 evidence records/45 saved images and seven new saved manual bookmarks. Visual inspection establishes: clear board with friendly health 30/opponent health 40; enlarged hand covers friendly hero and relocates resources to a right-side vertical panel; pre-Coin hand includes Coin; later frame lacks Coin in hand and a following frame includes its history icon; played Chillfallen Baron is visibly enlarged near the board center, followed by the spawned minion. These are bounded image observations, not new authoritative match events. Coin play animation was not captured; owner reports tapping can skip animations, including accidentally while bookmarking. Absence of that animation does not establish absence of play. Two bookmarks are near-simultaneous and do not provide independent corroboration.
+
+New on-phone field metadata is present. Clear-board friendly health candidate 30 and exact turn affordance are supported; focused-hand health remains unknown because card text/occlusion enters the health area. Mana remains unknown rather than parsing the relocated vertical panel or merged `O/20` text (zero-versus-letter plus adjacent corpse counter). Opponent health 40 is visually readable but absent from OCR; do not invent the missing numeric claim. R4.2 remains open. Next bounded unit: focused-hand/normal layout discrimination, source-separated mana/corpse candidates only where OCR supports them, and enlarged-hand card-name evidence. Bundle the already requested capture UX simplification into the next otherwise-needed implementation APK; no build for this review.
+
+Extended the private coaching exclusion registry with this test match alias and verified its Drive copy. Raw diagnostic files remain preserved and outside Git.
+
 ## 2026-10-10 — next-build capture UX direction
 
 Owner requests removing the three capture-policy radio choices and returning to the original tracker flow, bundled into the next otherwise-needed build. Inspected baseline `d3bc0fb` OverlayLauncher and SettingsScreen: supported/enabled Background tracking routes to the Accessibility service automatically; otherwise Tracker requests overlay/notification permissions as needed and launches the normal Android MediaProjection consent dialog. Existing active recognition is reused; capture cancellation leaves an overlay without automatic recognition. This direction supersedes the radio-choice UX requirement. Recorded in TODO; no capture code or APK changed in this checkpoint. Preserve bounded R4 evidence and accurate source metadata during the later change.
