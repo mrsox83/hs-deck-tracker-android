@@ -55,6 +55,7 @@ android {
             // R4 uses a fresh identity because the accepted R3 debug signing key is no longer available.
             // Keeping R3 installed is safer than uninstalling it or pretending a differently signed APK can update it.
             applicationIdSuffix = ".fusiontestr4"
+            resValue("string", "background_tracker_label", "HS Deck Tracker Fusion R4 Test – background tracking")
             versionNameSuffix = "-fusiontestr4"
             matchingFallbacks += listOf("debug")
         }

@@ -1,5 +1,14 @@
 # Mobile fusion work log
 
+## 2026-10-10 — R4.1 accepted; R4.2 diagnostic foundation
+
+Owner authorized proceeding with a 90% five-hour ceiling. Live usage at start: 16% five-hour, 58% seven-day; reset unused. Phone reports establish sleep/wake continuation and stop/restart with fresh Android consent and delayed ongoing-game recognition. Diagnostic uploads in Development/Diagnostic establish Privacy First, Compatibility and timestamp-only metadata. Latest pre-delete archive has 132 keyframes totaling 14,475,869 bytes, maximum width 1280; post-delete archive (4) is 190 bytes containing only `visual-evidence/visual-evidence.json` with `[]`. R4.1 acceptance is complete. These records do not prove seamless match identity recovery or visual semantic accuracy.
+
+R4.2 begins with versioned, configurable broad landscape pilot regions attached only to existing retained trigger/manual keyframes. Each probe stores bounded positioned OCR candidates marked experimental, including empty windows; it never writes match events or interprets text as health/mana/card facts. Region geometry requires device calibration, and overlapping regions remain descendants of the same OCR frame rather than independent evidence. No extra capture loop or continuous retention. The R4 Accessibility service label now explicitly identifies Fusion R4 Test. The owner's reported “video” deletion wording was checked: current source already says “retained visual evidence,” so no speculative wording change was made.
+
+Final `:core:test` (128 tests, zero failures/errors) and `:app:assembleFusionTest` passed. Recurring Windows locks in generated test/resource output required scoped removal of generated binary/app build directories; no source was deleted. APK identity and signer match the installed R4 channel, and packaged resources contain the distinct Accessibility label. APK: 68,212,390 bytes; SHA256 `b495478e204643d4113c39c11ee57166747468473a48aa53de3a12e906c13ac0`. Current usage 22% five-hour / 59% weekly, below 90%; reset unused. Source/tests/APK verified; new pilot phone calibration pending. R4.2 remains incomplete; no R4.3 promotion, merge or deployment.
+
+
 ## 2026-10-10 — remaining R4.1 acceptance review
 
 Owner authorized continuation with an 80% five-hour ceiling. Fresh live usage was 8% five-hour / 57% seven-day; no reset consumed. Shared protocol and active plan were read; shared directory contains no new exchange note. Clean local and independently verified remote tip matched `508e8fa`. No uploaded tracker diagnostics ZIP was found in HSReplay. The latest owner result accepts only the v4 toolbar script. Remaining mode/lifecycle/retained-evidence checks are not established, so the staged R4.2 gate remains open. Added `checkpoints/mobile-fusion-r4-1-remaining-phone-checks.md` with one bounded completion script using the installed v4 package; no rebuild or repeated toolbar test is needed. No implementation, merge or deployment performed.

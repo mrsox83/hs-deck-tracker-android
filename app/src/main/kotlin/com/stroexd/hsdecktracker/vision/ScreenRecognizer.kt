@@ -53,7 +53,7 @@ fun Context.startScreenRecognition(
             val notes = recorder?.let { mutableListOf<String>() }
             val matchIdBeforeFrame = container.tracker.state.value?.draftId
             val events = container.onScreenFrame(frame, notes, reused)
-            container.onVisualFrame(frame, bitmap, contentWidth, contentHeight, events, matchIdBeforeFrame)
+            container.onVisualFrame(frame, bitmap, contentWidth, contentHeight, events, matchIdBeforeFrame, reused)
             recorder?.let { runCatching { it.record(frame, events, notes.orEmpty(), bitmap) } }
         },
         onStopped = {

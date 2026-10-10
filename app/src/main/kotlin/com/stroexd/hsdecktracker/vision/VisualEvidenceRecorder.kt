@@ -2,6 +2,8 @@ package com.stroexd.hsdecktracker.vision
 
 import android.graphics.Bitmap
 import com.stroexd.hsdecktracker.core.data.VisualKeyframe
+import com.stroexd.hsdecktracker.core.vision.OcrFrame
+import com.stroexd.hsdecktracker.core.vision.VisualRegionPilot
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
@@ -47,14 +49,20 @@ class VisualEvidenceRecorder(private val root: File) {
         contentWidth: Int,
         contentHeight: Int,
         observedAt: Long,
+        ocrFrame: OcrFrame,
+        ocrReused: Boolean,
         automaticReason: String?,
         onAutomatic: (Result<VisualKeyframe>) -> Unit,
     ) {
         val manual = synchronized(this) { buildList { while (pending.isNotEmpty()) add(pending.removeFirst()) } }
-        manual.forEach { request -> request.onSaved(save(bitmap, contentWidth, contentHeight, observedAt, request.id)) }
+        fun evidence(label: String) = save(bitmap, contentWidth, contentHeight, observedAt, label).map {
+            it.copy(regionPilotVersion = VisualRegionPilot.VERSION, regionOcrReused = ocrReused,
+                regionProbes = VisualRegionPilot.probe(ocrFrame))
+        }
+        manual.forEach { request -> request.onSaved(evidence(request.id)) }
 
         if (automaticReason != null && acceptAutomatic(automaticReason, observedAt)) {
-            onAutomatic(save(bitmap, contentWidth, contentHeight, observedAt, "auto-$automaticReason"))
+            onAutomatic(evidence("auto-$automaticReason"))
         }
     }
 

@@ -466,6 +466,7 @@ class AppContainer(context: Context) {
         contentHeight: Int,
         events: List<GameEvent>,
         matchIdBeforeFrame: String?,
+        ocrReused: Boolean,
     ) {
         val reason = events.firstNotNullOfOrNull { event ->
             when (event) {
@@ -475,7 +476,7 @@ class AppContainer(context: Context) {
                 else -> null
             }
         }
-        visualEvidenceRecorder.onFrame(bitmap, contentWidth, contentHeight, frame.timestamp, reason) { result ->
+        visualEvidenceRecorder.onFrame(bitmap, contentWidth, contentHeight, frame.timestamp, frame, ocrReused, reason) { result ->
             val id = "trigger-${frame.timestamp}-${UUID.randomUUID()}"
             val matchId = matchIdBeforeFrame ?: tracker.state.value?.draftId
             result.onSuccess { keyframe ->
