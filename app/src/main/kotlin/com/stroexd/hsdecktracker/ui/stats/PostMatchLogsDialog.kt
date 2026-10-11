@@ -1,6 +1,8 @@
 package com.stroexd.hsdecktracker.ui.stats
 
 import androidx.compose.foundation.layout.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -18,6 +20,13 @@ import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.logs.PostMatchLogClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import com.stroexd.hsdecktracker.overlay.OverlayLauncher
+import com.stroexd.hsdecktracker.ui.toast
+import java.io.File
 import java.text.DateFormat
 import java.util.Date
 
@@ -36,9 +45,69 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
     var busy by remember { mutableStateOf(false) }
     var confirmedFinished by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("No collection started.") }
+    var pendingExport by remember { mutableStateOf<File?>(null) }
+    var choosingExport by remember { mutableStateOf(false) }
+    val saveEvidence = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+        choosingExport = false
+        val source = pendingExport
+        pendingExport = null
+        if (uri == null) {
+            busy = false
+            message = "Export cancelled. Private evidence remains saved locally; nothing was exported."
+            context.toast("Export cancelled")
+        } else if (source != null) {
+            scope.launch {
+                try {
+                    val copied = withContext(Dispatchers.IO) {
+                        val job = currentCoroutineContext()
+                        val output = context.contentResolver.openOutputStream(uri, "w")
+                            ?: error("Selected destination could not be opened")
+                        output.use { destination ->
+                            source.inputStream().use { input ->
+                                val buffer = ByteArray(64 * 1024)
+                                var count = 0L
+                                while (true) {
+                                    job.ensureActive()
+                                    val read = input.read(buffer)
+                                    if (read < 0) break
+                                    destination.write(buffer, 0, read)
+                                    count += read
+                                }
+                                destination.flush()
+                                count
+                            }
+                        }
+                    }
+                    message = "Export written to selected provider: $copied bytes. Drive sync/cloud arrival is not verified. Private originals retained. Close/reopen to reconnect the reader."
+                    context.toast("Fusion evidence written to selected destination")
+                } catch (error: CancellationException) { throw error
+                } catch (error: Exception) {
+                    message = "Export not completed: ${error.message}. Destination may be partial; private originals retained."
+                    context.toast("Fusion evidence export failed; see dialog")
+                } finally { busy = false }
+            }
+        } else { busy = false; message = "Export not completed: source unavailable. Private originals retained." }
+    }
+    fun exportEvidence(prepare: suspend () -> File) {
+        if (busy) return
+        busy = true
+        scope.launch {
+            try {
+                pendingExport = prepare()
+                choosingExport = true
+                saveEvidence.launch("fusion-test-${match.id}-${pendingExport!!.name}")
+            } catch (error: CancellationException) { throw error
+            } catch (error: Exception) {
+                choosingExport = false
+                pendingExport = null
+                busy = false
+                message = "Export not started: ${error.message}. Private originals retained."
+            }
+        }
+    }
     DisposableEffect(client, owner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) { client.close(); onDismiss() }
+            if (event == Lifecycle.Event.ON_STOP) { client.close(); if (!choosingExport) onDismiss() }
         }
         owner.lifecycle.addObserver(observer)
         onDispose { owner.lifecycle.removeObserver(observer); client.close() }
@@ -63,6 +132,11 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 Text("Selected game: ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(Date(match.timestamp))} (phone local time)")
                 Text("${match.playerClass} vs ${match.opponentClass} • ${match.result} • ${match.deckName}")
                 Text("Session times below come from folder names; their timezone and game contents are not verified. Choose manually, not by a suggested match.")
+                TextButton(enabled = !busy, onClick = {
+                    container.tracker.stop()
+                    OverlayLauncher.stop(context)
+                    message = "Tracking stop requested. Confirm the finished-match checkbox separately; no collection started."
+                }) { Text("Stop tracking") }
                 Row {
                     Checkbox(confirmedFinished, { confirmedFinished = it }, enabled = !busy)
                     Text("I have finished the match and stopped active tracking.")
@@ -70,6 +144,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 Text("Reader: ${availability.name.lowercase().replace('_', ' ')}")
                 readerError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 if (availability == PostMatchLogClient.Availability.STOPPED) Text("Start Shizuku first, then return here. The companion exporter remains available as fallback.")
+                if (availability == PostMatchLogClient.Availability.CLOSED) Text("Reader closed while choosing the export destination. Close and reopen this dialog to connect again. Retained export/retry does not need a reader connection.")
                 if (availability == PostMatchLogClient.Availability.NEEDS_PERMISSION) {
                     TextButton(enabled = !busy, onClick = {
                         try { client.requestPermission() } catch (error: Exception) { message = error.message.orEmpty() }
@@ -99,6 +174,9 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     Text("Retained collection: ${retained.logs.size} raw log(s), ${retained.readFailures.size} read failure(s). ${retained.state.name.lowercase()}")
                     retained.readFailures.forEach { (session, error) -> Text("$session: $error") }
                     retained.error?.let { Text(it) }
+                    TextButton(enabled = !busy && retained.logs.isNotEmpty(), onClick = {
+                        exportEvidence { container.postMatchCollections.buildBundle(retained.id) }
+                    }) { Text("Export retained logs bundle") }
                     TextButton(enabled = !busy && confirmedFinished && retained.logs.isNotEmpty(), onClick = {
                         runOperation {
                             val result = container.retryCollectedLogs(match, retained.id)
@@ -107,6 +185,10 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         }
                     }) { Text("Retry fusion from retained logs (no Shizuku read)") }
                 }
+                TextButton(enabled = !busy, onClick = {
+                    exportEvidence { withContext(Dispatchers.IO) { container.fusionImports.artifactForExport(match.id) } }
+                }) { Text("Export fused artifact (JSON)") }
+                Text("Export uses Android's file picker: select Drive or a local folder. Evidence may contain account names. These validation exports are TESTS, excluded from coaching. Keep this dialog open until the result appears.")
                 Text(message)
                 Text("Use Import fusion bundle for the companion-exporter fallback. Local retention is not Drive upload confirmation.")
             }

@@ -43,6 +43,20 @@ class FusionImportRepository(
 
     val entries: StateFlow<List<FusionImportEntry>> = store.state
 
+    /** Only the current match-owned published artifact; never accept an arbitrary journal path. */
+    fun artifactForExport(matchId: String): File {
+        val entry = store.value.firstOrNull { it.matchId == matchId && it.state == FusionImportState.FUSED_LOCAL }
+            ?: error("This match has no fused artifact saved locally")
+        val name = requireNotNull(entry.artifactFile) { "Fused artifact filename missing" }
+        require(name == "$matchId.json" && File(name).name == name && !name.contains('/') && !name.contains('\\')) {
+            "Invalid fused artifact filename"
+        }
+        val directory = File(dir, "fused-matches").canonicalFile
+        return File(directory, name).canonicalFile.also {
+            require(it.parentFile == directory && it.isFile && it.length() > 0) { "Fused artifact missing" }
+        }
+    }
+
     suspend fun recoverInterrupted(): Int {
         var recovered = 0
         store.update { entries -> entries.map { entry ->

@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-11 — owner-authorized manual-v2 evidence export
+
+User reported private storage inaccessible and authorized a new build. Added explicit CreateDocument export of retained raw/decoded bundle and existing match-owned fused JSON, privacy/test disclosure and cancel/failure/provider-write feedback; private originals kept. Picker transition closes reader safely but retains dialog for result. Stop tracking above checkbox and prepared toolbar/date/retry improvements bundled. Automatic discovery remains queued; collectionOFF/no R6, merge or deployment. 167 ordinary and one private reconnect test pass; APK facts in checkpoints/mobile-fusion-r5-export.md. Device/provider acceptance remains pending. Initial generated test output lock avoided by fresh output directory, no deletion. Latest sampled five-hour8%/weekly3%, ceiling90%, reset unused.
+
 ## 2026-10-11 — owner-approved R5 queue additions
 
 Queued Stop tracking above the fusion finished-match checkbox for the next needed build; existing stop action, separate confirmation/no collection side effect. Owner also approved queuing conservative automatic candidate discovery to remove routine session-file selection burden: bounded user-triggered scan, unique evidence-based selection, readable ambiguity summaries and manual fallback. Missing/conflicting/truncated evidence remains explicit; nearest timestamp alone is insufficient. Define scan resource/cancellation limits and finite regression acceptance before coding. This turn only updates the queue; no implementation, build, phone acceptance or full R5 completion. Existing HSC-004/HSC-009 context; no canonical DONE claim, continuous tail, automatic collection, R6, merge or deployment.
