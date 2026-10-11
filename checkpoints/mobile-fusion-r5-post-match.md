@@ -1,4 +1,6 @@
-# R5 post-match collection — authorized foundation
+# R5 post-match collection — manual-v1 device checkpoint
+
+Implementation pushed and independently remote-verified: f78430c5d0011af577bc059189a8e1904aec62fa on feature/mobile-fusion-offline. Source-ready/tests-passed/APK-built/staged: yes. Phone-verified: no. Automatic collection: off. Merged/deployed: no. Final sampled usage73% five-hour /71% weekly, below90% ceiling; no reset. Stop for first manual phone gate; do not consume the remaining window on unsolicited polishing or automatic retrieval.
 
 ## Manual integration in progress — reboot recovery
 
