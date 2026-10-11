@@ -1,0 +1,7 @@
+# HS-FUSION — R5 preparation while five-game reports are pending
+
+2026-10-11. Existing HSC-004/HSC-009; origin/target HS-FUSION. Owner resumed bounded preparation, superseding the pause only for this unit. Source ready: readable session dates with selected-game context, exact aliases retained, and explicit already-fused preservation versus new fusion feedback. No guessed selection/timezone, new permission, schema change or companion app edit.
+
+Evidence: feature/mobile-fusion-offline, checkpoints/mobile-fusion-r5-preparation.md and mobile-fusion-r5-five-game-checklist.md. 165 ordinary tests, one pinned private reconnect gate and Android Kotlin compilation pass. Raw-only cancelled bundle regeneration/reopen and durable failure accounting tested; actual Android permission/Binder callbacks and phone/importer interruption acceptance remain pending. Source-ready/tests-passed/compiled do not mean APK-built or phone-verified. Publication verified separately in task handoff.
+
+No replacement APK built/staged: owner keeps manual-v1 for the five-game campaign. All validation games remain TESTS excluded from coaching; exact ledger reconciliation not claimed. Verify uploaded evidence independently: local fusion is not Drive delivery. Five-game reports/device failures remain pending, canonical HSC status IN PROGRESS, not DONE. Automatic collection OFF; R6, merge and deployment excluded. Latest usage8% five-hour/1% weekly; reset unused. No other project's plan/log changed.

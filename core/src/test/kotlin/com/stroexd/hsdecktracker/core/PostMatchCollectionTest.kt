@@ -116,4 +116,38 @@ class PostMatchCollectionTest {
         }
         assertEquals(1, EvidenceAdapters.exporterBundle(bundle.readBytes()).matches.size)
     }
+
+    @Test fun interruptedRawOnlyAttemptRegeneratesAfterReopenWithoutReader() = runBlocking {
+        val repo = PostMatchCollectionRepository(temporary.root)
+        val attempt = repo.begin("tracker-match")
+        val source = snapshot()
+        repo.retain(attempt.id, source)
+        assertFailsWith<java.util.concurrent.CancellationException> { repo.buildBundle(attempt.id) { true } }
+        val reopened = PostMatchCollectionRepository(temporary.root)
+        reopened.recoverInterrupted()
+        val bundle = reopened.buildBundle(attempt.id)
+        val bytes = bundle.readBytes()
+        assertEquals(1, EvidenceAdapters.exporterBundle(bytes).matches.size)
+        assertContentEquals(bytes, reopened.buildBundle(attempt.id).readBytes())
+        assertEquals(1, reopened.entries.value.size)
+        assertEquals("tracker-match", reopened.entries.value.single().matchId)
+        assertContentEquals(source.copyBytes(), File(temporary.root, "post-match-logs/${source.sourceSha256}.Power.log").readBytes())
+    }
+
+    @Test fun permissionOrBinderReadFailuresNeverBecomeBundleSuccess() = runBlocking {
+        for (reason in listOf("Permission denied", "Reader disconnected; reconnect manually")) {
+            val directory = temporary.newFolder()
+            val repo = PostMatchCollectionRepository(directory)
+            val attempt = repo.begin("tracker-match")
+            repo.recordReadFailure(attempt.id, session, reason)
+            repo.fail(attempt.id, reason)
+            assertFailsWith<IllegalArgumentException> { repo.buildBundle(attempt.id) }
+            val reopened = PostMatchCollectionRepository(directory)
+            reopened.recoverInterrupted()
+            assertEquals(LogCollectionState.FAILED, reopened.entries.value.single().state)
+            assertEquals(reason, reopened.entries.value.single().readFailures[session])
+            assertTrue(reopened.entries.value.single().logs.isEmpty())
+            assertFalse(File(directory, "post-match-logs").listFiles()!!.any { it.name.endsWith(".zip") })
+        }
+    }
 }

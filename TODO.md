@@ -2,6 +2,8 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+2026-10-11 owner resumed bounded preparation while five normal-use game reports are pending. Keep the installed manual-v1 APK unchanged; no automatic collection or R6. See `checkpoints/mobile-fusion-r5-preparation.md` and `checkpoints/mobile-fusion-r5-five-game-checklist.md`. This supersedes the pause for this preparation only.
+
 This section supersedes historical R5-not-authorized statements below. Owner approved the reviewed R5 plan with the existing 90% five-hour ceiling. R6, continuous tailing, merge and deployment remain excluded.
 
 - [x] Inventory the pinned exporter v0.4 source and restricted read-only reader; record provenance and independent lifecycle requirements in `checkpoints/mobile-fusion-r5-post-match.md`.
@@ -14,7 +16,7 @@ This section supersedes historical R5-not-authorized statements below. Owner app
 - [x] Initial phone observation: screenshots show two retained raw logs, zero read failures and Fused locally; owner confirms status survives detail reopen and no duplicate history records. This is bounded manual-path evidence, not full R5 acceptance.
 - [x] Owner confirms background closes dialog, explicit reconnection is required and succeeds without errors; retained retry without reconnect displays Fused locally/no cloud upload. Existing-fused preservation path verified, not interrupted raw regeneration.
 - [ ] Next session after reset and owner resume: refresh usage/branch/shared protocol, then bounded permission/Binder-failure and interrupted raw-only retry gates. Use existing game where possible; request new phone participation explicitly.
-- [ ] Next needed UI update: readable session date/time plus selected game's timestamp, and explicit already-fused/retry confirmation. Do not guess which session contains a match or create a standalone polish build.
+- [x] Source preparation: readable session date/time plus selected game's timestamp, and explicit already-fused/retry confirmation. 165 ordinary tests, pinned reconnect gate and Android compilation pass. Not delivered/phone-verified; bundle into next needed APK, not a standalone polish build.
 - [ ] Verify five-match deduplication, interruption/retry and honest missing/truncated/rotated source handling. Saved locally and Drive arrival remain separate facts.
 - [ ] Only after manual acceptance: bounded automatic post-match collection using journal/outbox. Surface R6 separately before entering it.
 
