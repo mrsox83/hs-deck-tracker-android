@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-11 — owner-approved R5 queue additions
+
+Queued Stop tracking above the fusion finished-match checkbox for the next needed build; existing stop action, separate confirmation/no collection side effect. Owner also approved queuing conservative automatic candidate discovery to remove routine session-file selection burden: bounded user-triggered scan, unique evidence-based selection, readable ambiguity summaries and manual fallback. Missing/conflicting/truncated evidence remains explicit; nearest timestamp alone is insufficient. Define scan resource/cancellation limits and finite regression acceptance before coding. This turn only updates the queue; no implementation, build, phone acceptance or full R5 completion. Existing HSC-004/HSC-009 context; no canonical DONE claim, continuous tail, automatic collection, R6, merge or deployment.
+
 ## 2026-10-11 — owner-requested toolbar setup shortcut
 
 Screenshots9339/9336 identify Tracker's OpenInNew icon and Settings' background setup. Rewired only that toolbar action to existing BackgroundSetupDialog, with setup accessibility description instead of Open Hearthstone. Existing Settings dialog/Accessibility navigation/screen-sharing starter are reused; no forced permission, capture-policy change or parallel engine. Overlay and Stop actions unchanged. Keep manual-v1 APK for five-game campaign; bundle source change into next needed build. Kotlin compilation result recorded in shortcut checkpoint; no APK or phone acceptance implied.
