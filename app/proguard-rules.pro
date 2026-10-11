@@ -17,3 +17,6 @@
 
 # ONNX Runtime calls into its Java classes from native code
 -keep class ai.onnxruntime.** { *; }
+
+# Shizuku constructs this restricted Binder service by class name, outside the normal app process.
+-keep class com.stroexd.hsdecktracker.logs.RestrictedLogReader { public <init>(); *; }

@@ -24,6 +24,16 @@ Nine synthetic regression cases cover exact hash/bytes, invalid paths, size boun
 
 ## Next finite unit
 
-HS-FUSION: wire restricted reader and Shizuku permission/binder/death lifecycle, review parser completely before reuse, retain raw snapshots in private recoverable journal, and build foreground user-triggered Collect logs and fuse using existing importer/outbox. Honest denied/missing/raw-only/pending/local statuses; retry must not duplicate logical matches. Keep companion fallback and existing Drive/folder route. Do not turn on automatic post-match collection until manual phone validation is proven. Alert owner when isolated APK is actually ready.
+### Restricted Android reader checkpoint
+
+2026-10-10 follow-up, starting remote-verified e67c4a7. Usage 57% five-hour / 69% weekly -> 59%/69%, 90% ceiling, reset unused. Pinned parser and README read completely; parser implementation remains untouched pending reuse. Cached Shizuku API 13.1.5 source inspected for exact listener/UserService lifecycle signatures.
+
+Namespace-adapted ILogReader/RestrictedLogReader preserves path-only read access. PostMatchLogClient supplies explicit permission request, availability/error StateFlows, 15-second connection wait, non-daemon process, listener cleanup, manual close/reopen after connected loss and observable cleanup failure. Same opened descriptor supplies stat size and snapshot stream, with null guard and outer close covering invalid size/cancellation. No generic shell/write/stat path API, capture service, polling or auto-retry. Client is not instantiated by UI yet. Synchronous Binder calls may outlast coroutine cancellation; sourcecopy checks cancellation between reads but cannot forcibly unblock Binder.
+
+AIDL/Kotlin/Java compilation and merged-manifest gate passed for fusionTest; permission-protected provider authority and unchanged isolated package verified. This is compile-verified source only, not Android runtime lifecycle acceptance. No APK built/staged for this unit or phone-ready claim. Ordinary snapshot regression evidence is separate; actual Shizuku permission/death/timeout/close behavior must be phone-verified in the manual flow. No original-source/archive or other-project plan edits.
+
+HS-FUSION: instantiate the restricted client in an explicit foreground manual screen lifecycle, reuse the now-reviewed parser with provenance, retain raw snapshots in a private recoverable journal, and build user-triggered Collect logs and fuse using existing importer/outbox. Honest denied/missing/raw-only/pending/local statuses; retry must not duplicate logical matches. Keep companion fallback and existing Drive/folder route. Do not turn on automatic post-match collection until manual phone validation is proven. Alert owner when isolated APK is actually ready.
+
+Final lifecycle error-reporting edits compiled successfully; core:test was UP-TO-DATE (153-test result from foundation, not a fresh runtime execution). All four tracker ancestors rechecked. Publication state is independently verified in the session handoff; no APK/phone acceptance follows from compilation.
 
 Later acceptance: five completed matches without duplicates, interruptions/retries and missing/truncated/rotated/repeated sources. Capture opt-in is independent; timestamp bookmarks remain available. Saved/local, tests, APK-built, phone-verified, pushed, merged and deployed remain separate facts. R6/native Drive and continuous tailing require separate authorization.
