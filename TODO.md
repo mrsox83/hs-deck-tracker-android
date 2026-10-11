@@ -4,6 +4,8 @@
 
 2026-10-11 owner resumed bounded preparation while five normal-use game reports are pending. Keep the installed manual-v1 APK unchanged; no automatic collection or R6. See `checkpoints/mobile-fusion-r5-preparation.md` and `checkpoints/mobile-fusion-r5-five-game-checklist.md`. This supersedes the pause for this preparation only.
 
+- [x] Owner-requested Tracker toolbar OpenInNew shortcut now opens the same BackgroundSetupDialog as Settings instead of directly launching Hearthstone. Accessibility/settings and screen-sharing actions reused, no new capture-policy selector. Source prepared for next needed APK; phone check pending.
+
 This section supersedes historical R5-not-authorized statements below. Owner approved the reviewed R5 plan with the existing 90% five-hour ceiling. R6, continuous tailing, merge and deployment remain excluded.
 
 - [x] Inventory the pinned exporter v0.4 source and restricted read-only reader; record provenance and independent lifecycle requirements in `checkpoints/mobile-fusion-r5-post-match.md`.
