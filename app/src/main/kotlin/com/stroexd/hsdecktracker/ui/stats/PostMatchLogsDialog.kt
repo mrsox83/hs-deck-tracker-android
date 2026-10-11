@@ -127,7 +127,16 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
         onDismissRequest = onDismiss,
         title = { Text("Collect logs and fuse — manual pilot") },
         text = {
-            Column(Modifier.heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.heightIn(max = 500.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = MaterialTheme.shapes.medium) {
+                    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                        Text("Status", style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        Text(message, color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+                Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("After a match, Shizuku reads only Hearthstone session Power.log files. Raw logs may contain account names. Copies stay in this app's private storage; Hearthstone originals are never changed. No screen capture or upload is started.")
                 Text("Selected game: ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(Date(match.timestamp))} (phone local time)")
                 Text("${match.playerClass} vs ${match.opponentClass} • ${match.result} • ${match.deckName}")
@@ -189,8 +198,8 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     exportEvidence { withContext(Dispatchers.IO) { container.fusionImports.artifactForExport(match.id) } }
                 }) { Text("Export fused artifact (JSON)") }
                 Text("Export uses Android's file picker: select Drive or a local folder. Evidence may contain account names. These validation exports are TESTS, excluded from coaching. Keep this dialog open until the result appears.")
-                Text(message)
                 Text("Use Import fusion bundle for the companion-exporter fallback. Local retention is not Drive upload confirmation.")
+                }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(if (busy) "Stop / close" else "Close") } },
