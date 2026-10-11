@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-10 — owner pause and completed basic phone gate
+
+Owner confirms dialog closes on background, reader connection is explicitly required again, reconnect succeeds and no errors occur. Retained retry without reconnect displays Fused locally/no cloud upload. Together with prior persistence/no-duplicate observation, basic manual/persistence/background/reconnect/existing-fused preservation gate is user-confirmed. This is not interrupted raw-log regeneration, permission denial/Binder death, five-match acceptance or full R5 closeout. No artifact upload or cloud completion inferred.
+
+Owner requested pause until at least the next reset window. Fresh usage77% five-hour /72% weekly, ceiling90%, reset unused. Documentation-only handoff; no new code/build/test run. Remaining work assigned to next resumed HS-FUSION session: refresh protocol/branch/usage, bounded failure/interruption gates, then five-match acceptance; session-label/retry-feedback change bundled with next needed UI build. Automatic collection remains off, R6/merge/deploy excluded. No scheduled resume created. Updated TODO/checkpoint/shared release note; publication follows in final handoff.
+
 ## 2026-10-10 — R5 first phone observations and next lifecycle gate
 
 Owner screenshots 9326/9328 show manual-v1 session selection and two retained raw logs, zero read failures, bundle_ready and Fused locally/no cloud upload. Owner confirms fusion status remains after closing/reopening details and sees no duplicate games for the deck. Record bounded manual collection/local persistence as user-confirmed; no private artifact or independent phone hash read performed. Retry was clicked but no visible change/popup noticed: do not mark retained retry completion proved. Existing already-fused branch preserves the prior artifact without rebuilding, so this also cannot prove interrupted raw-only regeneration on phone.

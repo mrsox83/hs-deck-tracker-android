@@ -1,5 +1,7 @@
 # HS-FUSION — R5 manual pilot ready for device gate
 
+Latest phone evidence: owner confirms local fusion survives reopen with no duplicate history, background closes dialog, explicit reconnect succeeds without errors, and retained retry without reconnect reports Fused locally. Basic manual gate user-confirmed; existing-fused preservation only, not interrupted raw regeneration. Failure/interruption/five-match gates remain pending; canonical status remains IN PROGRESS. Owner paused until at least next five-hour reset/explicit resume; last usage77%, ceiling90%, reset unused. No automatic collection/resume, merge or deployment.
+
 IDs: existing HSC-004/HSC-009. Origin/implementation target: HS-FUSION tracker integration. Category: bounded release/test handoff. Companion HS-EXPORTER source/UI unchanged; no other project's plan/log overwritten.
 
 Implementation pushed/remote-verified: [f78430c](https://github.com/mrsox83/hs-deck-tracker-android/commit/f78430c5d0011af577bc059189a8e1904aec62fa). Documentation publication may follow as a separate checkpoint. APK/README/checksum staged in mounted Drive and APK hash reread; independent cloud sync/phone installation remains unverified. Final sampled usage73% five-hour, 90% ceiling; paused at the phone gate, reset unused.
