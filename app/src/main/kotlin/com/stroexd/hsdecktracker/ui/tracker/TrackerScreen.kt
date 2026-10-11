@@ -82,9 +82,9 @@ fun TrackerScreen(navController: NavHostController) {
                 },
                 actions = {
                     IconButton(onClick = { startOverlay() }) { Icon(Icons.Filled.Layers, contentDescription = stringResource(R.string.show_as_overlay)) }
-                    IconButton(onClick = {
-                        if (!OverlayLauncher.launchHearthstone(context)) context.toast(context.getString(R.string.hearthstone_not_installed))
-                    }) { Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = stringResource(R.string.open_hearthstone)) }
+                    IconButton(onClick = { showBackgroundSetup = true }) {
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = stringResource(R.string.background_setup_title))
+                    }
                     if (state != null) {
                         IconButton(onClick = {
                             container.tracker.stop()

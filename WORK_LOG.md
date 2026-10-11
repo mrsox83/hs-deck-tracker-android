@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-11 — owner-requested toolbar setup shortcut
+
+Screenshots9339/9336 identify Tracker's OpenInNew icon and Settings' background setup. Rewired only that toolbar action to existing BackgroundSetupDialog, with setup accessibility description instead of Open Hearthstone. Existing Settings dialog/Accessibility navigation/screen-sharing starter are reused; no forced permission, capture-policy change or parallel engine. Overlay and Stop actions unchanged. Keep manual-v1 APK for five-game campaign; bundle source change into next needed build. Kotlin compilation result recorded in shortcut checkpoint; no APK or phone acceptance implied.
+
 ## 2026-10-11 — approved R5 report-wait preparation
 
 Owner resumed bounded session-label/retry-feedback work and recovery-test preparation while five normal-use validation games are pending. Drive initially missing; owner restored H:, then shared guidance/owned notes/plan read. Local/remote start0623c073 matched; four tracker ancestors preserved. Usage1% five-hour/0% weekly at preflight, final8%/1%, ceiling90%, reset unused.
