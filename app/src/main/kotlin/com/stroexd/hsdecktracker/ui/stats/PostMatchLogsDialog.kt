@@ -13,11 +13,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stroexd.hsdecktracker.AppContainer
-import com.stroexd.hsdecktracker.core.fusion.FusionImportState
+import com.stroexd.hsdecktracker.core.fusion.PostMatchPresentation
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.logs.PostMatchLogClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Date
 
 /** Explicit foreground-only manual pilot. Closing/backgrounding cancels collection and unbinds. */
 @Composable
@@ -52,17 +54,15 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
             finally { busy = false }
         }
     }
-    fun resultText(state: FusionImportState, errors: String?): String = when (state) {
-        FusionImportState.FUSED_LOCAL -> "Fused locally. No cloud upload was performed."
-        FusionImportState.PENDING_PAIRING -> "Raw logs saved locally; pairing is pending. ${errors.orEmpty()}"
-        else -> "Raw logs saved locally; fusion did not complete. ${errors.orEmpty()}"
-    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Collect logs and fuse — manual pilot") },
         text = {
             Column(Modifier.heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("After a match, Shizuku reads only Hearthstone session Power.log files. Raw logs may contain account names. Copies stay in this app's private storage; Hearthstone originals are never changed. No screen capture or upload is started.")
+                Text("Selected game: ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(Date(match.timestamp))} (phone local time)")
+                Text("${match.playerClass} vs ${match.opponentClass} • ${match.result} • ${match.deckName}")
+                Text("Session times below come from folder names; their timezone and game contents are not verified. Choose manually, not by a suggested match.")
                 Row {
                     Checkbox(confirmedFinished, { confirmedFinished = it }, enabled = !busy)
                     Text("I have finished the match and stopped active tracking.")
@@ -82,14 +82,17 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     Row {
                         Checkbox(session in selected, { checked -> selected = if (checked) selected + session else selected - session },
                             enabled = !busy && (session in selected || selected.size < 2))
-                        Text(session.removePrefix("Hearthstone_").replace('_', ' '))
+                        Column {
+                            Text(PostMatchPresentation.sessionLabel(session))
+                            Text(session, style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
                 Button(enabled = !busy && confirmedFinished && selected.isNotEmpty() && availability == PostMatchLogClient.Availability.CONNECTED, onClick = {
                     val chosen = selected.sorted()
                     runOperation {
                         val result = container.collectPostMatchLogs(match, chosen, client::snapshot)
-                        resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason)
+                        PostMatchPresentation.resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason)
                     }
                 }) { Text("Collect selected logs and fuse") }
                 collections.lastOrNull { it.matchId == match.id }?.let { retained ->
@@ -99,7 +102,8 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     TextButton(enabled = !busy && confirmedFinished && retained.logs.isNotEmpty(), onClick = {
                         runOperation {
                             val result = container.retryCollectedLogs(match, retained.id)
-                            resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason)
+                            PostMatchPresentation.resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason,
+                                PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED in result.diagnostics)
                         }
                     }) { Text("Retry fusion from retained logs (no Shizuku read)") }
                 }

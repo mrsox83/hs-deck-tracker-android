@@ -346,7 +346,7 @@ class AppContainer(context: Context) {
         val entry = postMatchCollections.entries.value.firstOrNull { it.id == collectionId && it.matchId == record.id }
             ?: error("No retained collection for this match")
         fusionImports.entries.value.firstOrNull { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }
-            ?.let { return FusionImportResult(it, listOf("Already fused locally; preserved existing artifact")) }
+            ?.let { return FusionImportResult(it, listOf(com.stroexd.hsdecktracker.core.fusion.PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED)) }
         val caller = kotlinx.coroutines.currentCoroutineContext()
         val bundle = postMatchCollections.buildBundle(entry.id) { caller.ensureActive(); false }
         val bytes = withContext(Dispatchers.IO) { bundle.readBytes() }

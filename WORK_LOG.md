@@ -1,5 +1,13 @@
 # Mobile fusion work log
 
+## 2026-10-11 — approved R5 report-wait preparation
+
+Owner resumed bounded session-label/retry-feedback work and recovery-test preparation while five normal-use validation games are pending. Drive initially missing; owner restored H:, then shared guidance/owned notes/plan read. Local/remote start0623c073 matched; four tracker ancestors preserved. Usage1% five-hour/0% weekly at preflight, final8%/1%, ceiling90%, reset unused.
+
+Readable session names now use strict date parsing with exact aliases retained; selected-game timestamp/classes/result/deck shown. No session timezone or pairing inferred. Already-fused retry displays preservation/no regeneration from actual result diagnostics. Added presentation regressions, cancelled raw-only rebuild after reopen, and durable permission/Binder-shaped failure accounting. 165 ordinary tests and one pinned reconnect test pass, zero failures/errors/skips; Android fusionTest Kotlin compilation passes. These are not Android callback or full phone-interruption acceptance.
+
+Wrapper PKIX download error avoided with existing cached Gradle/JDK offline; PowerShell property quoting corrected; locked old outputs preserved and fresh validation output directory used. No certificate bypass, fixture relocation or deletion. No new APK built/staged, working phone APK/data unchanged. TODO/checkpoint and five-game report checklist updated. Phone failure/interrupted-import/five-game gates pending; automatic collectionOFF, no R6/merge/deploy. Source publication verified separately at handoff.
+
 ## 2026-10-10 — owner pause and completed basic phone gate
 
 Owner confirms dialog closes on background, reader connection is explicitly required again, reconnect succeeds and no errors occur. Retained retry without reconnect displays Fused locally/no cloud upload. Together with prior persistence/no-duplicate observation, basic manual/persistence/background/reconnect/existing-fused preservation gate is user-confirmed. This is not interrupted raw-log regeneration, permission denial/Binder death, five-match acceptance or full R5 closeout. No artifact upload or cloud completion inferred.
