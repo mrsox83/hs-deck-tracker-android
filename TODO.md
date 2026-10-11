@@ -11,7 +11,9 @@ This section supersedes historical R5-not-authorized statements below. Owner app
 - [x] Reuse pinned parser/bundle contracts, private raw retention and collection/recovery journal feeding existing conservative importer. 160 ordinary tests plus required private reconnect round-trip passed; no newest-match guessing or tracker-record creation.
 - [x] Add optional manual Collect logs and fuse, explicit retained/local/failed/pending states, retained-log retry and companion fallback. Existing destinations/data preserved; phone acceptance remains pending.
 - [x] Build/check isolated manual-v1 APK, stage README/checksum in Development/mobile-fusion-r5-manual-device-validation-v1 and alert owner. Staged APK hash matches local build; no claim of phone installation or independently verified cloud sync.
-- [ ] Owner phone gate: one convenient test match, restricted permission/manual collection, reopen/status and retained-log retry with one history record. Use `checkpoints/mobile-fusion-r5-phone-readme.md`; do not start five matches yet.
+- [x] Initial phone observation: screenshots show two retained raw logs, zero read failures and Fused locally; owner confirms status survives detail reopen and no duplicate history records. This is bounded manual-path evidence, not full R5 acceptance.
+- [ ] Complete retained-retry/lifecycle gate: owner clicked retry but noticed no visible confirmation; completion remains unverified. Check background/reopen/reconnect using existing saved game; no new match yet.
+- [ ] Next needed UI update: readable session date/time plus selected game's timestamp, and explicit already-fused/retry confirmation. Do not guess which session contains a match or create a standalone polish build.
 - [ ] Verify five-match deduplication, interruption/retry and honest missing/truncated/rotated source handling. Saved locally and Drive arrival remain separate facts.
 - [ ] Only after manual acceptance: bounded automatic post-match collection using journal/outbox. Surface R6 separately before entering it.
 

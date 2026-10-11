@@ -1,5 +1,11 @@
 # R5 post-match collection — manual-v1 device checkpoint
 
+## Phone observations — latest status
+
+Owner supplied 9326/9328 screenshots: two raw logs retained, zero read failures, bundle ready and Fused locally. Owner separately confirms local status survives detail reopen and no duplicate deck-history records. Initial manual path/persistence is phone-observed; full R5 lifecycle/five-match acceptance remains pending. Clicked retained retry had no noticed confirmation; completion not independently established and already-fused short-circuit is not a raw-regeneration test. No new APK/code change for this record. Live usage75% five-hour /72% weekly, ceiling90%, reset unused.
+
+Next finite owner gate: existing saved game, explicit reader connect, background/reopen/reconnect without collection/new match, then inspect retained retry's in-dialog final status. Follow-up phone denial/Binder loss and interrupted raw-only retry still pending. Readable session timestamps and selected-game context plus explicit already-fused/retry feedback assigned for next needed UI change. No guessed session recommendation, automatic collection, five-game request, R6/merge/deploy.
+
 Implementation pushed and independently remote-verified: f78430c5d0011af577bc059189a8e1904aec62fa on feature/mobile-fusion-offline. Source-ready/tests-passed/APK-built/staged: yes. Phone-verified: no. Automatic collection: off. Merged/deployed: no. Final sampled usage73% five-hour /71% weekly, below90% ceiling; no reset. Stop for first manual phone gate; do not consume the remaining window on unsolicited polishing or automatic retrieval.
 
 ## Manual integration in progress — reboot recovery
