@@ -36,6 +36,9 @@ import com.stroexd.hsdecktracker.core.meta.OpponentPredictor
 import com.stroexd.hsdecktracker.core.fusion.FusionImportRepository
 import com.stroexd.hsdecktracker.core.fusion.FusionImportResult
 import com.stroexd.hsdecktracker.core.fusion.FusionImporter
+import com.stroexd.hsdecktracker.core.fusion.PostMatchCollectionRepository
+import com.stroexd.hsdecktracker.core.fusion.PostMatchLogSnapshot
+import com.stroexd.hsdecktracker.core.fusion.FusionImportState
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.tracker.GameEvent
@@ -52,6 +55,7 @@ import com.stroexd.hsdecktracker.vision.VisualEvidenceRecorder
 import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.async
@@ -130,6 +134,8 @@ class AppContainer(context: Context) {
     val collection = CollectionRepository(dataDir)
     val matches = MatchRepository(dataDir)
     val fusionImports = FusionImportRepository(dataDir)
+    val postMatchCollections = PostMatchCollectionRepository(dataDir)
+    private val postMatchRecovery = appScope.async { postMatchCollections.recoverInterrupted() }
     private val fusionImporter = FusionImporter(fusionImports, ZoneId.systemDefault())
     private val fusionRecovery = appScope.async { fusionImports.recoverInterrupted() }
     private val activeMatchJournal = ActiveMatchJournalRepository(dataDir)
@@ -301,6 +307,56 @@ class AppContainer(context: Context) {
             MatchTransferResult.WRITTEN -> CompletedMatchExporter.Result.WRITTEN
             MatchTransferResult.ALREADY_PRESENT, null -> CompletedMatchExporter.Result.ALREADY_PRESENT
         }
+    }
+
+    /** Foreground manual pilot only. Reader is supplied by the explicit screen's lifecycle. */
+    suspend fun collectPostMatchLogs(
+        record: MatchRecord,
+        sessions: List<String>,
+        snapshot: suspend (String) -> PostMatchLogSnapshot.Snapshot,
+    ): FusionImportResult {
+        require(sessions.size in 1..2 && sessions.distinct().size == sessions.size) { "Select one or two sessions" }
+        require(tracker.state.value?.draftActive != true) { "Finish or stop active tracking before collecting post-match logs" }
+        require(fusionImports.entries.value.none { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }) {
+            "This match is already fused locally; the manual pilot will not overwrite it"
+        }
+        postMatchRecovery.await()
+        val entry = postMatchCollections.begin(record.id)
+        try {
+            for (session in sessions) {
+                try {
+                    postMatchCollections.retain(entry.id, snapshot(session))
+                } catch (error: kotlinx.coroutines.CancellationException) { throw error
+                } catch (error: Exception) {
+                    postMatchCollections.recordReadFailure(entry.id, session, error.message ?: "Log read failed")
+                }
+            }
+            return retryCollectedLogs(record, entry.id)
+        } catch (error: kotlinx.coroutines.CancellationException) {
+            withContext(kotlinx.coroutines.NonCancellable) { postMatchCollections.fail(entry.id, "Interrupted; retry retained raw logs") }
+            throw error
+        } catch (error: Exception) {
+            postMatchCollections.fail(entry.id, error.message ?: "Collection failed")
+            throw error
+        }
+    }
+
+    suspend fun retryCollectedLogs(record: MatchRecord, collectionId: String): FusionImportResult {
+        postMatchRecovery.await()
+        val entry = postMatchCollections.entries.value.firstOrNull { it.id == collectionId && it.matchId == record.id }
+            ?: error("No retained collection for this match")
+        fusionImports.entries.value.firstOrNull { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }
+            ?.let { return FusionImportResult(it, listOf("Already fused locally; preserved existing artifact")) }
+        val caller = kotlinx.coroutines.currentCoroutineContext()
+        val bundle = postMatchCollections.buildBundle(entry.id) { caller.ensureActive(); false }
+        val bytes = withContext(Dispatchers.IO) { bundle.readBytes() }
+        val hasMatches = withContext(Dispatchers.Default) {
+            com.stroexd.hsdecktracker.core.fusion.EvidenceAdapters.exporterBundle(bytes).matches.isNotEmpty()
+        }
+        require(hasMatches) {
+            "Raw log retained locally but no matches decoded; use the companion exporter or select another session"
+        }
+        return importFusionBundles(record, listOf(bytes))
     }
 
     suspend fun importFusionBundles(record: MatchRecord, bundles: List<ByteArray>): FusionImportResult =

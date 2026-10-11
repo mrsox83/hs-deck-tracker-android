@@ -31,11 +31,27 @@ dependencies {
 }
 
 tasks.test {
+    exclude("**/RealPostMatchCollectionTest.class")
     exclude("**/RealFusionFixtureTest.class")
     exclude("**/RealFusionArtifactEncodeTest.class")
     exclude("**/RealFusionArtifactDecodeTest.class")
     exclude("**/RealVisualFieldFixtureTest.class")
     exclude("**/RealCardCatalogFixtureTest.class")
+}
+
+tasks.register<Test>("realPostMatchCollectionTest") {
+    description = "Rebuilds the pinned private reconnect exporter bundle using the R5 parser/journal"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealPostMatchCollectionTest.class")
+    maxHeapSize = "512m"
+    outputs.upToDateWhen { false }
+    val fixture = providers.gradleProperty("hsPostMatchFixtureZip")
+    doFirst {
+        require(fixture.isPresent) { "Pass -PhsPostMatchFixtureZip=<pinned R3 reconnect ZIP>" }
+        systemProperty("hsPostMatchFixtureZip", fixture.get())
+    }
 }
 
 tasks.register<Test>("realCardCatalogFixtureTest") {
