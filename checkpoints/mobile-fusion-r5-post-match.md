@@ -1,5 +1,7 @@
 # R5 post-match collection — manual-v1 device checkpoint
 
+Latest owner pause supersedes older pending observations below: background closes dialog; explicit reconnect succeeds without errors; retained retry without reconnect reports Fused locally. Basic manual phone gate passes as user-confirmed, but existing-fused shortcut is not raw regeneration. Permission/Binder failure, interrupted raw-only retry and five-match acceptance remain open. Paused until at least next reset and owner resume, usage77% five-hour/72% weekly, reset unused. See mobile-fusion-r5-pause-handoff.md; no automatic restart scheduled.
+
 ## Phone observations — latest status
 
 Owner supplied 9326/9328 screenshots: two raw logs retained, zero read failures, bundle ready and Fused locally. Owner separately confirms local status survives detail reopen and no duplicate deck-history records. Initial manual path/persistence is phone-observed; full R5 lifecycle/five-match acceptance remains pending. Clicked retained retry had no noticed confirmation; completion not independently established and already-fused short-circuit is not a raw-regeneration test. No new APK/code change for this record. Live usage75% five-hour /72% weekly, ceiling90%, reset unused.

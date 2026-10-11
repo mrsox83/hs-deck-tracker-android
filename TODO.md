@@ -12,10 +12,13 @@ This section supersedes historical R5-not-authorized statements below. Owner app
 - [x] Add optional manual Collect logs and fuse, explicit retained/local/failed/pending states, retained-log retry and companion fallback. Existing destinations/data preserved; phone acceptance remains pending.
 - [x] Build/check isolated manual-v1 APK, stage README/checksum in Development/mobile-fusion-r5-manual-device-validation-v1 and alert owner. Staged APK hash matches local build; no claim of phone installation or independently verified cloud sync.
 - [x] Initial phone observation: screenshots show two retained raw logs, zero read failures and Fused locally; owner confirms status survives detail reopen and no duplicate history records. This is bounded manual-path evidence, not full R5 acceptance.
-- [ ] Complete retained-retry/lifecycle gate: owner clicked retry but noticed no visible confirmation; completion remains unverified. Check background/reopen/reconnect using existing saved game; no new match yet.
+- [x] Owner confirms background closes dialog, explicit reconnection is required and succeeds without errors; retained retry without reconnect displays Fused locally/no cloud upload. Existing-fused preservation path verified, not interrupted raw regeneration.
+- [ ] Next session after reset and owner resume: refresh usage/branch/shared protocol, then bounded permission/Binder-failure and interrupted raw-only retry gates. Use existing game where possible; request new phone participation explicitly.
 - [ ] Next needed UI update: readable session date/time plus selected game's timestamp, and explicit already-fused/retry confirmation. Do not guess which session contains a match or create a standalone polish build.
 - [ ] Verify five-match deduplication, interruption/retry and honest missing/truncated/rotated source handling. Saved locally and Drive arrival remain separate facts.
 - [ ] Only after manual acceptance: bounded automatic post-match collection using journal/outbox. Surface R6 separately before entering it.
+
+Paused at owner request, 2026-10-10. Last sampled five-hour usage77%, ceiling90%, reset unused. No automatic resume scheduled. See `checkpoints/mobile-fusion-r5-pause-handoff.md`.
 
 ## Owner-authorized catalog bug follow-up — 2026-10-10
 
