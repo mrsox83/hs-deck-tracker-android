@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-11 — manual-v3 game 1 phone acceptance and scoped coaching override
+
+Owner confirms all four requested checks pass on the first game: fusion state survives detail reopen; retry preserves the fused game without duplicate history; status panel stays visible/readable; Stop tracking works without auto-checking confirmation. This closes those bounded UI checks, not five-game or failure/recovery acceptance. Games 2-5 remain pending. Prior Drive inspection verified the raw/decoded ZIP and fused JSON for tracker record 861b778a-104c-4d6d-b741-07acea8ba6a7, logical match e14389a4d8e0258210404db2203d1bd7. No new artifact inspection, code changes, build or test run in this documentation turn.
+
+Owner explicitly makes this game and the remaining four campaign games available for coaching. This supersedes prior campaign TESTS-only language and filename-prefix inference, not older R3/R4 diagnostic exclusions. Shared handoff requests coaching-side deduplication/ledger reconciliation; no coaching ledger write or completed analysis is claimed. Automatic collection OFF, R6/merge/deployment excluded. Publication verification recorded at handoff.
+
 ## 2026-10-11 — manual-v2 phone export failure and v3 correction
 
 Screenshot9344 confirms fused-game state but pre-picker Invalid fused artifact filename. Identified tracker UUID versus derived32hex logical-ID mismatch introduced by v2 export guard. Corrected journal-owned basename validation with containment/traversal checks retained; regression now uses actual FusionCoordinator and writeArtifact. Contrast status panel stays above scrolling controls rather than at bottom, as owner requested; export toasts retained. No lost data/cloud failure inferred and no phone success claimed. v3 finite tests/build/identity/delivery in mobile-fusion-r5-export-v3.md. Existing APK/data preserved; no new fusion required. Automatic discovery queued, collectionOFF, no R6/merge/deployment.
