@@ -1,4 +1,6 @@
-# R5 manual-v2 — fusion evidence export
+# R5 manual-v3 — corrected fusion evidence export
+
+Supersedes manual-v2 for export validation: screenshot9344 exposed a filename guard bug; fused logical IDs differ from tracker record IDs. v3 corrects that guard with canonical path protection intact. Status now stays in a contrasting panel above scrolling controls. Do not re-fuse/delete data merely to work around the v2 error; update then export the already-saved game. Phone/provider success remains pending.
 
 Update only HS Deck Tracker Fusion R4 Test; do not uninstall or clear app data. Working tracker remains separate. Keep the companion exporter fallback. All validation games/exports are TESTS excluded from coaching; these instructions do not mutate the coaching ledger.
 

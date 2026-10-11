@@ -48,7 +48,8 @@ class FusionImportRepository(
         val entry = store.value.firstOrNull { it.matchId == matchId && it.state == FusionImportState.FUSED_LOCAL }
             ?: error("This match has no fused artifact saved locally")
         val name = requireNotNull(entry.artifactFile) { "Fused artifact filename missing" }
-        require(name == "$matchId.json" && File(name).name == name && !name.contains('/') && !name.contains('\\')) {
+        // Coordinator filenames use the derived logical ID, not the tracker UUID.
+        require(name.matches(Regex("[0-9a-f]{32}\\.json")) && File(name).name == name) {
             "Invalid fused artifact filename"
         }
         val directory = File(dir, "fused-matches").canonicalFile

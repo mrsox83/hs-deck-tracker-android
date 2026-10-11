@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-11 — manual-v2 phone export failure and v3 correction
+
+Screenshot9344 confirms fused-game state but pre-picker Invalid fused artifact filename. Identified tracker UUID versus derived32hex logical-ID mismatch introduced by v2 export guard. Corrected journal-owned basename validation with containment/traversal checks retained; regression now uses actual FusionCoordinator and writeArtifact. Contrast status panel stays above scrolling controls rather than at bottom, as owner requested; export toasts retained. No lost data/cloud failure inferred and no phone success claimed. v3 finite tests/build/identity/delivery in mobile-fusion-r5-export-v3.md. Existing APK/data preserved; no new fusion required. Automatic discovery queued, collectionOFF, no R6/merge/deployment.
+
 ## 2026-10-11 — owner-authorized manual-v2 evidence export
 
 User reported private storage inaccessible and authorized a new build. Added explicit CreateDocument export of retained raw/decoded bundle and existing match-owned fused JSON, privacy/test disclosure and cancel/failure/provider-write feedback; private originals kept. Picker transition closes reader safely but retains dialog for result. Stop tracking above checkbox and prepared toolbar/date/retry improvements bundled. Automatic discovery remains queued; collectionOFF/no R6, merge or deployment. 167 ordinary and one private reconnect test pass; APK facts in checkpoints/mobile-fusion-r5-export.md. Device/provider acceptance remains pending. Initial generated test output lock avoided by fresh output directory, no deletion. Latest sampled five-hour8%/weekly3%, ceiling90%, reset unused.

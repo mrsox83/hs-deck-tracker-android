@@ -1,6 +1,9 @@
 package com.stroexd.hsdecktracker.core
 
 import com.stroexd.hsdecktracker.core.fusion.*
+import com.stroexd.hsdecktracker.core.stats.MatchRecord
+import com.stroexd.hsdecktracker.core.stats.MatchResult
+import com.stroexd.hsdecktracker.core.util.AppJson
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -15,13 +18,19 @@ class FusionArtifactExportTest {
         assertFailsWith<IllegalStateException> { repo.artifactForExport("one") }
         repo.begin("one", emptyList())
         assertFailsWith<IllegalStateException> { repo.artifactForExport("one") }
-        repo.transition("one", FusionImportState.FUSED_LOCAL, artifactFile = "one.json")
+        val record = MatchRecord(id = "one", timestamp = 1, result = MatchResult.WIN)
+        val tracker = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), record).toByteArray())
+        val fused = FusionCoordinator.assemble(tracker, emptyList(),
+            PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "Export fixture"))
+        val logicalName = "${fused.matchId}.json"
+        assertNotEquals("one.json", logicalName)
+        repo.transition("one", FusionImportState.FUSED_LOCAL, artifactFile = logicalName)
         assertFailsWith<IllegalArgumentException> { repo.artifactForExport("one") }
-        val artifact = File(temporary.root, "fused-matches/one.json")
-        artifact.parentFile.mkdirs()
-        artifact.writeText("{}")
+        val artifact = File(temporary.root, "fused-matches/$logicalName")
+        assertEquals(logicalName, repo.writeArtifact(fused))
+        val original = artifact.readBytes()
         assertEquals(artifact.canonicalFile, repo.artifactForExport("one"))
-        assertEquals("{}", artifact.readText())
+        assertContentEquals(original, artifact.readBytes())
     }
 
     @Test fun exportRejectsTraversalOrAnotherMatchFilename() = runBlocking {
