@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-10 — R5 first phone observations and next lifecycle gate
+
+Owner screenshots 9326/9328 show manual-v1 session selection and two retained raw logs, zero read failures, bundle_ready and Fused locally/no cloud upload. Owner confirms fusion status remains after closing/reopening details and sees no duplicate games for the deck. Record bounded manual collection/local persistence as user-confirmed; no private artifact or independent phone hash read performed. Retry was clicked but no visible change/popup noticed: do not mark retained retry completion proved. Existing already-fused branch preserves the prior artifact without rebuilding, so this also cannot prove interrupted raw-only regeneration on phone.
+
+Live usage75% five-hour /72% weekly; ceiling90%, reset unused. No new code/APK/tests needed for observation recording. Next owner check uses the existing saved game: connect reader, background the tracker, reopen dialog/reconnect and report state/errors; then inspect visible retained-retry outcome. No new match, five-game campaign, automatic collection or R6 yet. Session names are difficult and retry confirmation is inconspicuous; assigned readable timestamps/game-time context and explicit preserved/retry feedback for the next needed UI update, not a speculative matching change or standalone polish build. Existing matches/uploads remain classified TESTS; no coaching-ledger reconciliation claimed.
+
 ## 2026-10-10 — R5 manual collection integration, resumed after reboot
 
 Implementation checkpoint f78430c5d0011af577bc059189a8e1904aec62fa pushed and independently remote-verified. Final live sample73% five-hour /71% weekly, no reset, below90%. Stopping at the physical-device boundary. Shared release/test-exclusion note will be copied to Shared Exchange with this implementation link; canonical backlog DONE/phone acceptance/remote cloud arrival are not claimed. No automatic collection, merge, deploy or R6.
