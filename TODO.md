@@ -6,7 +6,8 @@ This section supersedes historical R5-not-authorized statements below. Owner app
 
 - [x] Inventory the pinned exporter v0.4 source and restricted read-only reader; record provenance and independent lifecycle requirements in `checkpoints/mobile-fusion-r5-post-match.md`.
 - [x] Implement and test bounded snapshot primitive; publish foundation checkpoint (remote publication recorded in session handoff).
-- [ ] HS-FUSION: wire restricted Shizuku permission/binder/death handling independently of capture/Accessibility; foreground manual operation first.
+- [x] Implement restricted Shizuku client/reader with explicit permission request, Binder/death states, bounded connection wait and close/unbind; Android compilation/manifest gate passed. Not yet instantiated by UI or phone-verified.
+- [ ] HS-FUSION: connect foreground manual screen lifecycle to reader; test permission denial, Binder loss, close/reopen and timeout on phone. No automatic retry or capture/Accessibility dependency.
 - [ ] HS-FUSION: reuse reviewed exporter parsing/bundle contracts, retain raw evidence privately, journal collection/recovery and feed the existing conservative importer. Never assign a historical match merely because it is newest.
 - [ ] HS-FUSION: add optional user-triggered Collect logs and fuse, explicit local/failed/pending states and companion fallback. Preserve folder destinations and tracker data.
 - [ ] Alert owner when isolated APK is ready; phone-test Shizuku permission and manual collection before enabling automatic retrieval.

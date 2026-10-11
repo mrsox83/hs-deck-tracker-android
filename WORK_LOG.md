@@ -1,5 +1,13 @@
 # Mobile fusion work log
 
+## 2026-10-10 — R5 restricted Android reader unit
+
+Resumed with live usage 57% five-hour / 69% weekly, ceiling 90%; latest 59%/69%, reset unused. Re-read shared START_HERE and inventory; no new Markdown exchange note beyond prior catalog/closeout/exclusion notes. Canonical backlog pointer metadata is visible, but no fresh canonical document content or HSC status change is claimed. Local/remote e67c4a7 verified, working tree clean before this unit.
+
+Read pinned v0.4 PowerParser.java and README completely and reviewed the actual cached Shizuku 13.1.5 source APIs. Parser reuse is assigned next, not modified/copied in this unit. Added namespace-adapted path-restricted AIDL/Java reader and main-thread-owned PostMatchLogClient: explicit-only permission request, observable availability/errors, non-daemon user service, 15-second connection wait, Binder-loss invalidation, cancellation checks, null-descriptor guard, same-descriptor size/stream and close on failure. Explicit close removes listeners and attempts local detach/remote destruction; cleanup errors remain observable. Connected-loss requires owner close/reopen, no automatic restart. Binder/provider stalls cannot be forcibly interrupted; runtime device behavior remains unverified.
+
+Pinned dependencies and permission-protected Shizuku provider added; merged manifest verifies unchanged com.stroexd.hsdecktracker.fusiontestr4. AIDL/Kotlin/Java compilation and manifest processing passed. Client is not instantiated by the app: no permission prompt or collection on launch, manual button, persistence, automatic service, capture changes, new APK or phone-ready claim. Standalone companion and upload destinations unchanged. Logs/TODO/checkpoint updated; development checkpoint publication follows. No merge/deploy/R6.
+
 ## 2026-10-10 — R5 authorization and bounded snapshot foundation
 
 Owner approved the reviewed post-match-only R5 plan at the previously set 90% five-hour ceiling. Start usage 50% five-hour / 68% weekly; refreshed 55%/68%, then 56%/69%, reset unused. Clean local/remote d352119 verified on feature/mobile-fusion-offline. Read shared protocol/inventory and R5 proposal; pinned v0.4 exporter source hash matches R0. No installed companion build identity is inferred from source availability. No HS-EXPORTER/HS-COACHING plans changed.

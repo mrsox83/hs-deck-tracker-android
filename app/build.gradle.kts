@@ -67,6 +67,7 @@ android {
     }
 
     buildFeatures {
+        aidl = true
         compose = true
         buildConfig = true
     }
@@ -95,6 +96,9 @@ kotlin {
 
 dependencies {
     implementation(project(":core"))
+    // R5 restricted post-match reader; pinned to the reviewed companion source API.
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
