@@ -489,6 +489,7 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
     val db = cardState.db
     var editing by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var showPostMatchLogs by remember { mutableStateOf(false) }
     var selectedCard by remember { mutableStateOf<Card?>(null) }
     val importFusion = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         val selectedMatch = match
@@ -517,6 +518,10 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                 }
             }
         }
+    }
+
+    if (showPostMatchLogs && match != null) {
+        PostMatchLogsDialog(container, match) { showPostMatchLogs = false }
     }
 
     Scaffold(
@@ -591,6 +596,11 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
                 MatchHeaderCard(match, onOpenDeck = deck?.let { d -> { navController.navigate(Routes.deck(d.id)) } })
+            }
+            item {
+                FilledTonalButton(onClick = { showPostMatchLogs = true }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Text("Collect logs and fuse — manual pilot")
+                }
             }
             fusionEntry?.let { entry ->
                 item {

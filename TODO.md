@@ -6,11 +6,12 @@ This section supersedes historical R5-not-authorized statements below. Owner app
 
 - [x] Inventory the pinned exporter v0.4 source and restricted read-only reader; record provenance and independent lifecycle requirements in `checkpoints/mobile-fusion-r5-post-match.md`.
 - [x] Implement and test bounded snapshot primitive; publish foundation checkpoint (remote publication recorded in session handoff).
-- [x] Implement restricted Shizuku client/reader with explicit permission request, Binder/death states, bounded connection wait and close/unbind; Android compilation/manifest gate passed. Not yet instantiated by UI or phone-verified.
-- [ ] HS-FUSION: connect foreground manual screen lifecycle to reader; test permission denial, Binder loss, close/reopen and timeout on phone. No automatic retry or capture/Accessibility dependency.
-- [ ] HS-FUSION: reuse reviewed exporter parsing/bundle contracts, retain raw evidence privately, journal collection/recovery and feed the existing conservative importer. Never assign a historical match merely because it is newest.
-- [ ] HS-FUSION: add optional user-triggered Collect logs and fuse, explicit local/failed/pending states and companion fallback. Preserve folder destinations and tracker data.
-- [ ] Alert owner when isolated APK is ready; phone-test Shizuku permission and manual collection before enabling automatic retrieval.
+- [x] Implement restricted Shizuku client/reader with explicit permission request, Binder/death states, bounded connection wait and close/unbind; compiled and connected to foreground manual UI. Phone behavior still pending.
+- [x] Wire foreground manual dialog lifecycle to reader; no automatic retry or capture/Accessibility dependency. Android compilation passed. Permission denial, Binder loss, close/reopen and timeout remain phone gates.
+- [x] Reuse pinned parser/bundle contracts, private raw retention and collection/recovery journal feeding existing conservative importer. 160 ordinary tests plus required private reconnect round-trip passed; no newest-match guessing or tracker-record creation.
+- [x] Add optional manual Collect logs and fuse, explicit retained/local/failed/pending states, retained-log retry and companion fallback. Existing destinations/data preserved; phone acceptance remains pending.
+- [x] Build/check isolated manual-v1 APK, stage README/checksum in Development/mobile-fusion-r5-manual-device-validation-v1 and alert owner. Staged APK hash matches local build; no claim of phone installation or independently verified cloud sync.
+- [ ] Owner phone gate: one convenient test match, restricted permission/manual collection, reopen/status and retained-log retry with one history record. Use `checkpoints/mobile-fusion-r5-phone-readme.md`; do not start five matches yet.
 - [ ] Verify five-match deduplication, interruption/retry and honest missing/truncated/rotated source handling. Saved locally and Drive arrival remain separate facts.
 - [ ] Only after manual acceptance: bounded automatic post-match collection using journal/outbox. Surface R6 separately before entering it.
 

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
     <exclude domain="file" path="cache" />
+    <!-- R5 raw logs may contain account identifiers; keep them out of automatic backup. -->
+    <exclude domain="file" path="data/post-match-logs" />
 </full-backup-content>
