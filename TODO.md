@@ -2,6 +2,9 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+- [x] Manual-v3 game 1 phone UI acceptance: persisted status, already-fused retry without duplicate history, visible/readable status panel, and Stop tracking with confirmation checkbox unchanged. Owner confirms all four. Prior artifact inspection verified ZIP/JSON Drive arrival and accepted lineage for logical match e14389a4d8e0258210404db2203d1bd7.
+- [ ] Complete games 2-5 and separate permission/Binder/interrupted raw-only recovery gates. Owner made this five-game campaign coaching-eligible; older test exclusions stay intact. See current five-game checklist, which supersedes earlier campaign exclusion and APK instructions below.
+
 2026-10-11 owner resumed bounded preparation while five normal-use game reports are pending. Keep the installed manual-v1 APK unchanged; no automatic collection or R6. See `checkpoints/mobile-fusion-r5-preparation.md` and `checkpoints/mobile-fusion-r5-five-game-checklist.md`. This supersedes the pause for this preparation only.
 
 - [x] Owner-requested Tracker toolbar OpenInNew shortcut now opens the same BackgroundSetupDialog as Settings instead of directly launching Hearthstone. Accessibility/settings and screen-sharing actions reused, no new capture-policy selector. Source prepared for next needed APK; phone check pending.
