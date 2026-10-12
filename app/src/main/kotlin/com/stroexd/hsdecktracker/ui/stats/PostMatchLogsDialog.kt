@@ -44,7 +44,12 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var busy by remember { mutableStateOf(false) }
     var confirmedFinished by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf("No collection started.") }
+    var message by remember {
+        val saved = container.fusionImports.entries.value.firstOrNull { it.matchId == match.id }
+        mutableStateOf(if (saved?.state == com.stroexd.hsdecktracker.core.fusion.FusionImportState.FUSED_LOCAL)
+            PostMatchPresentation.resultText(saved.state, null, true, saved.coverageWarnings)
+        else "No collection started.")
+    }
     var pendingExport by remember { mutableStateOf<File?>(null) }
     var choosingExport by remember { mutableStateOf(false) }
     val saveEvidence = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
@@ -176,7 +181,8 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     val chosen = selected.sorted()
                     runOperation {
                         val result = container.collectPostMatchLogs(match, chosen, client::snapshot)
-                        PostMatchPresentation.resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason)
+                        PostMatchPresentation.resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason,
+                            coverageWarnings = result.entry.coverageWarnings)
                     }
                 }) { Text("Collect selected logs and fuse") }
                 collections.lastOrNull { it.matchId == match.id }?.let { retained ->
@@ -190,7 +196,8 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         runOperation {
                             val result = container.retryCollectedLogs(match, retained.id)
                             PostMatchPresentation.resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason,
-                                PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED in result.diagnostics)
+                                PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED in result.diagnostics,
+                                result.entry.coverageWarnings)
                         }
                     }) { Text("Retry fusion from retained logs (no Shizuku read)") }
                 }

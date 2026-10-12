@@ -29,6 +29,7 @@ data class FusionImportEntry(
     val attempts: Int = 0,
     val lastError: String? = null,
     val updatedAt: Long,
+    val coverageWarnings: List<String> = emptyList(),
 )
 
 class FusionImportRepository(
@@ -101,12 +102,14 @@ class FusionImportRepository(
         pairing: PairingDecision? = null,
         artifactFile: String? = null,
         error: String? = null,
+        coverageWarnings: List<String>? = null,
     ): FusionImportEntry = update(matchId) { previous ->
         requireNotNull(previous) { "Unknown fusion import $matchId" }.copy(
             state = state,
             pairing = pairing ?: previous.pairing,
             artifactFile = artifactFile ?: previous.artifactFile,
             lastError = error,
+            coverageWarnings = coverageWarnings ?: previous.coverageWarnings,
             updatedAt = clock(),
         )
     }
@@ -217,6 +220,7 @@ class FusionImporter(
                     FusionImportState.FUSED_LOCAL,
                     pairing = pairing,
                     artifactFile = artifact,
+                    coverageWarnings = fused.diagnostics.filter { it.startsWith("Partial reconstruction:") },
                 ),
                 diagnostics,
             )

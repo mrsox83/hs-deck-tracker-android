@@ -483,6 +483,7 @@ class FusionCoreTest {
 
         assertEquals(SourceType.DERIVED_FUSION, fused.sources.single { it.id == stitched.source.id }.type)
         assertEquals(decision, fused.continuations.single())
+        assertFalse(fused.diagnostics.any { it.startsWith("Partial reconstruction:") })
         assertTrue(FusionProvenanceValidator.validate(fused).isEmpty())
         assertEquals(fused, FusionArtifactCodec.decode(FusionArtifactCodec.encode(fused)))
     }
@@ -500,6 +501,18 @@ class FusionCoreTest {
 
         assertEquals(ContinuationStatus.REJECTED, decision.status)
         assertTrue(decision.reasons.contains("earlier segment is already complete"))
+    }
+
+    @Test
+    fun `unincorporated selected sources warn without claiming they belong to the match`() {
+        val accepted = reducedPower()
+        val unused = accepted.copy(source = accepted.source.copy(id = "power:unused"), completed = false)
+        val fused = FusionCoordinator.assemble(tracker(), listOf(accepted, unused), evidencedDecision(accepted))
+        assertEquals(accepted.events, fused.events)
+        assertTrue(fused.diagnostics.single { it.startsWith("Partial reconstruction:") }.contains("may be unrelated"))
+        assertEquals(fused, FusionArtifactCodec.decode(FusionArtifactCodec.encode(fused)))
+        val single = FusionCoordinator.assemble(tracker(), listOf(accepted), evidencedDecision(accepted))
+        assertFalse(single.diagnostics.any { it.startsWith("Partial reconstruction:") })
     }
 
     private fun tracker(): TrackerEvidence {

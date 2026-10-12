@@ -31,12 +31,30 @@ dependencies {
 }
 
 tasks.test {
+    exclude("**/RealManualReconnectTest.class")
     exclude("**/RealPostMatchCollectionTest.class")
     exclude("**/RealFusionFixtureTest.class")
     exclude("**/RealFusionArtifactEncodeTest.class")
     exclude("**/RealFusionArtifactDecodeTest.class")
     exclude("**/RealVisualFieldFixtureTest.class")
     exclude("**/RealCardCatalogFixtureTest.class")
+}
+
+tasks.register<Test>("realManualReconnectTest") {
+    description = "Checks the owner's private manual-record reconnect and partial coverage warning"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealManualReconnectTest.class")
+    maxHeapSize = "512m"
+    outputs.upToDateWhen { false }
+    doFirst {
+        for (name in listOf("hsManualReconnectZip", "hsManualReconnectTracker")) {
+            val value = providers.gradleProperty(name)
+            require(value.isPresent) { "Pass -P$name=<private fixture file>" }
+            systemProperty(name, value.get())
+        }
+    }
 }
 
 tasks.register<Test>("realPostMatchCollectionTest") {

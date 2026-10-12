@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-12 — manual-record reconnect diagnosis and partial coverage disclosure
+
+Refreshed shared protocol, owned plan/checkpoints, clean local/remote8a5f880, fork/package and all four tracker ancestors. Live usage0% five-hour/5% weekly, final validation6%/6%, ceiling90%, reset unused. Drive connector unavailable; mounted Drive read with scoped permission, originals preserved.
+
+Private manual-record reconnect reproduces no unique open-choice anchor and absent raw-turn continuity. Existing narrow stitch gate correctly rejects; later completed log pairs but earlier log is only retained provenance. Added generic honest unincorporated-source warning in artifact and durable journal, collection/retry/reopen and details UI; unrelated selected games are not labeled proven reconnects. Pairing/IDs unchanged.169 ordinary tests and two private gates pass; Android compilation passes after correcting test codec argument. No new APK/phone acceptance, old artifacts unchanged. Missing automatic record is user-confirmed but screen-share-versus-Accessibility cause unproven; shared coaching handoff flags partial timeline/one lineage. Other campaign reports/failure gates remain open. Source commit/push and shared readback follow at handoff; no automatic collection/R6/merge/deploy.
+
 ## 2026-10-11 — manual-v3 game 1 phone acceptance and scoped coaching override
 
 Owner confirms all four requested checks pass on the first game: fusion state survives detail reopen; retry preserves the fused game without duplicate history; status panel stays visible/readable; Stop tracking works without auto-checking confirmation. This closes those bounded UI checks, not five-game or failure/recovery acceptance. Games 2-5 remain pending. Prior Drive inspection verified the raw/decoded ZIP and fused JSON for tracker record 861b778a-104c-4d6d-b741-07acea8ba6a7, logical match e14389a4d8e0258210404db2203d1bd7. No new artifact inspection, code changes, build or test run in this documentation turn.
