@@ -18,7 +18,10 @@ object PowerClock {
             val date = LocalDate.of(match.groupValues[1].toInt(), match.groupValues[2].toInt(), match.groupValues[3].toInt())
             val sessionStart = LocalTime.of(match.groupValues[4].toInt(), match.groupValues[5].toInt(), match.groupValues[6].toInt())
             val observed = LocalTime.parse(observedLogTime, logTime)
-            val resolvedDate = if (observed.isBefore(sessionStart.minusHours(12))) date.plusDays(1) else date
+            // LocalTime.minusHours wraps at midnight. Compare non-wrapping seconds instead:
+            // a 00:08 session and 00:14 event are on the same day, not tomorrow.
+            val crossesMidnight = observed.toSecondOfDay() - sessionStart.toSecondOfDay() < -12 * 60 * 60
+            val resolvedDate = if (crossesMidnight) date.plusDays(1) else date
             LocalDateTime.of(resolvedDate, observed).atZone(zoneId).toInstant()
         } catch (_: DateTimeParseException) {
             null

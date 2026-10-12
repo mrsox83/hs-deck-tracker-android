@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stroexd.hsdecktracker.AppContainer
 import com.stroexd.hsdecktracker.core.fusion.PostMatchPresentation
+import com.stroexd.hsdecktracker.core.fusion.FusionImportState
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.logs.PostMatchLogClient
 import kotlinx.coroutines.CancellationException
@@ -40,14 +41,17 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
     val availability by client.availability.collectAsStateWithLifecycle()
     val readerError by client.lastError.collectAsStateWithLifecycle()
     val collections by container.postMatchCollections.entries.collectAsStateWithLifecycle()
+    val imports by container.fusionImports.entries.collectAsStateWithLifecycle()
+    val fusedEntry = imports.firstOrNull { it.matchId == match.id && it.state == FusionImportState.FUSED_LOCAL }
     var sessions by remember { mutableStateOf(emptyList<String>()) }
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var busy by remember { mutableStateOf(false) }
     var confirmedFinished by remember { mutableStateOf(false) }
     var message by remember {
         val saved = container.fusionImports.entries.value.firstOrNull { it.matchId == match.id }
-        mutableStateOf(if (saved?.state == com.stroexd.hsdecktracker.core.fusion.FusionImportState.FUSED_LOCAL)
-            PostMatchPresentation.resultText(saved.state, null, true, saved.coverageWarnings)
+        mutableStateOf(if (saved != null)
+            PostMatchPresentation.resultText(saved.state, saved.lastError ?: saved.pairing?.reason,
+                saved.state == FusionImportState.FUSED_LOCAL, saved.coverageWarnings)
         else "No collection started.")
     }
     var pendingExport by remember { mutableStateOf<File?>(null) }
@@ -146,7 +150,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 Text("Selected game: ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(Date(match.timestamp))} (phone local time)")
                 Text("${match.playerClass} vs ${match.opponentClass} • ${match.result} • ${match.deckName}")
                 Text("Session times below come from folder names; their timezone and game contents are not verified. Choose manually, not by a suggested match.")
-                TextButton(enabled = !busy, onClick = {
+                OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy, onClick = {
                     container.tracker.stop()
                     OverlayLauncher.stop(context)
                     message = "Tracking stop requested. Confirm the finished-match checkbox separately; no collection started."
@@ -177,7 +181,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         }
                     }
                 }
-                Button(enabled = !busy && confirmedFinished && selected.isNotEmpty() && availability == PostMatchLogClient.Availability.CONNECTED, onClick = {
+                Button(modifier = Modifier.fillMaxWidth(), enabled = !busy && confirmedFinished && selected.isNotEmpty() && availability == PostMatchLogClient.Availability.CONNECTED, onClick = {
                     val chosen = selected.sorted()
                     runOperation {
                         val result = container.collectPostMatchLogs(match, chosen, client::snapshot)
@@ -189,22 +193,28 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     Text("Retained collection: ${retained.logs.size} raw log(s), ${retained.readFailures.size} read failure(s). ${retained.state.name.lowercase()}")
                     retained.readFailures.forEach { (session, error) -> Text("$session: $error") }
                     retained.error?.let { Text(it) }
-                    TextButton(enabled = !busy && retained.logs.isNotEmpty(), onClick = {
+                    Text("If fusion is pending or failed, export the logs ZIP for investigation. If fusion succeeded, skip Retry and export the fused JSON below.")
+                    FilledTonalButton(modifier = Modifier.fillMaxWidth(), enabled = !busy && retained.logs.isNotEmpty(), onClick = {
                         exportEvidence { container.postMatchCollections.buildBundle(retained.id) }
-                    }) { Text("Export retained logs bundle") }
-                    TextButton(enabled = !busy && confirmedFinished && retained.logs.isNotEmpty(), onClick = {
+                    }) { Text("Export saved logs (ZIP)") }
+                    Text("Saves the retained logs and decoded evidence. This does not fuse them or confirm Drive arrival.", style = MaterialTheme.typography.bodySmall)
+                    OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy && confirmedFinished && retained.logs.isNotEmpty() && fusedEntry == null, onClick = {
                         runOperation {
                             val result = container.retryCollectedLogs(match, retained.id)
                             PostMatchPresentation.resultText(result.entry.state, result.entry.lastError ?: result.entry.pairing?.reason,
                                 PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED in result.diagnostics,
                                 result.entry.coverageWarnings)
                         }
-                    }) { Text("Retry fusion from retained logs (no Shizuku read)") }
+                    }) { Text("Retry using saved logs") }
+                    Text(if (fusedEntry != null) "Already fused: retry is unnecessary. Export the fused JSON below."
+                        else "Recovery only: reuses the same logs without reading Hearthstone again. It cannot supply missing evidence or correct the selected sessions.", style = MaterialTheme.typography.bodySmall)
                 }
-                TextButton(enabled = !busy, onClick = {
+                FilledTonalButton(modifier = Modifier.fillMaxWidth(), enabled = !busy && fusedEntry?.artifactFile != null, onClick = {
                     exportEvidence { withContext(Dispatchers.IO) { container.fusionImports.artifactForExport(match.id) } }
-                }) { Text("Export fused artifact (JSON)") }
-                Text("Export uses Android's file picker: select Drive or a local folder. Evidence may contain account names. These validation exports are TESTS, excluded from coaching. Keep this dialog open until the result appears.")
+                }) { Text("Export fused game (JSON)") }
+                Text(if (fusedEntry == null) "Unavailable until this game is successfully fused. Export the logs ZIP if pairing is pending."
+                    else "Saves the existing fused result; review any partial-reconstruction warning. During validation, also export the logs ZIP.", style = MaterialTheme.typography.bodySmall)
+                Text("Export uses Android's file picker: select Drive or a local folder. Evidence may contain account names. Coaching eligibility follows your instructions; diagnostic tests stay separate. Keep this dialog open until the result appears.")
                 Text("Use Import fusion bundle for the companion-exporter fallback. Local retention is not Drive upload confirmation.")
                 }
             }

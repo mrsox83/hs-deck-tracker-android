@@ -2,6 +2,10 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+- [x] Screenshot9362 pending diagnosis: PowerClock's wrapped twelve-hour threshold wrongly shifts early-morning logs to tomorrow. Correct non-wrapping rollover and reproduce unique first-game pairing in exact two-game bundle;172 ordinary, one exact private, six full fixture tests pass.
+- [x] Prepare owner-requested full-width export/retry buttons with usage guidance, success-conditioned JSON and unnecessary-retry disabling; saved status/coverage restored on reopen. No automatic session search added.
+- [ ] Manual-v4 phone gate: update in place, retry retained logs for existing4ae366a8 game, export fusedJSON, confirm warning/status persistence, button clarity/enablement and no duplicate history. No replay needed. See midnight/actions checkpoint and v4 README.
+
 - [x] Diagnose manual-record reconnect f2af39db: two stitch guards fail (choice anchor, raw-turn continuity); accepted timeline uses later fragment only. Preserve guards and implement persisted/artifact partial-coverage warning;169 ordinary tests and two private gates pass. See mobile-fusion-r5-manual-reconnect.md.
 - [ ] Bundle partial-coverage warning into next needed APK; phone visibility pending. Existing artifacts are not retroactively rewritten. Missed automatic record remains an observed issue with unproven capture/recognition cause; obtain bounded frame diagnostics if reproduced, no speculative capture change.
 

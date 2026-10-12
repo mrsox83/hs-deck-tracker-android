@@ -31,6 +31,7 @@ dependencies {
 }
 
 tasks.test {
+    exclude("**/RealPendingPairingTest.class")
     exclude("**/RealManualReconnectTest.class")
     exclude("**/RealPostMatchCollectionTest.class")
     exclude("**/RealFusionFixtureTest.class")
@@ -38,6 +39,22 @@ tasks.test {
     exclude("**/RealFusionArtifactDecodeTest.class")
     exclude("**/RealVisualFieldFixtureTest.class")
     exclude("**/RealCardCatalogFixtureTest.class")
+}
+
+tasks.register<Test>("realPendingPairingTest") {
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealPendingPairingTest.class")
+    maxHeapSize = "512m"
+    outputs.upToDateWhen { false }
+    doFirst {
+        for (name in listOf("hsPendingZip", "hsPendingTracker")) {
+            val value = providers.gradleProperty(name)
+            require(value.isPresent) { "Pass -P$name=<private fixture file>" }
+            systemProperty(name, value.get())
+        }
+    }
 }
 
 tasks.register<Test>("realManualReconnectTest") {
