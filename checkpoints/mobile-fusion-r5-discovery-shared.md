@@ -1,0 +1,7 @@
+# HS-FUSION R5 closeout / discovery start — 2026-10-12
+
+Origin HS-FUSION; target HS-FUSION/HS-COACHING; HSC-009/HSC-013 context. Manual acceptance owner-reported PASS: permission denial/regrant, restarted reader recovery, interrupted retained retry, network route, persisted status/no duplicate history. Uploaded six logical-game identities verified separately; identical re-export not another game. Exact mid-read Binder/interruption timing not independently instrumented. No further redundant manual test loop.
+
+Owner approved user-triggered bounded candidate discovery, with explicit confirmation, ambiguous/manual fallback and no unsupported guessing. Core policy/non-writing preview foundation started; Android search/confirm UI not wired, no new APK or discovery phone acceptance. Manual-v5 remains installed build. Upcoming search cap: six sessions,64MiB raw,24 decoded matches,60s cooperative budget; retain incomplete status on failures/caps. Existing pairing/reconnect rules not weakened; folder times only hints.
+
+Owned checkpoint: Development/02 - Mobile Tracker and Offline Fusion/mobile-fusion-r5-discovery.md and repository checkpoints. Preserve coaching eligibility instructions and old test exclusions, accepted artifacts and original tracker data. No new coaching ledger/analysis, automatic collection/R6/merge/deploy. Canonical backlog remains separate; this note supersedes old pending manual-gate shared status, not full discovery DONE.
