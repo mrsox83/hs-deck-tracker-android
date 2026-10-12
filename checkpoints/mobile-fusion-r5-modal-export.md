@@ -1,5 +1,7 @@
 # R5 modal/export blocker — 2026-10-12
 
+Latest acceptance supersedes pending text below: owner confirms v5 export buttons reachable and complete details readable. Re-export of5ac9586b arrived byte-identical (SHA256ec066d58cfcf097d99e1160b4d1cc9efde3b2a23329e9f204c03aef2cccba749). Reported modal blocker resolved on the user's phone; expanded font/small-window matrix not separately established. Canonical backlog document itself has not been edited; shared acceptance note links this outcome. No broad R5 acceptance implied.
+
 Owner: HS-FUSION. Shared report: UNASSIGNED 2026-10-12 R5 manual pilot modal blocks export, proposed P1. No fabricated HSC identifier; existing HSC-009/HSC-013 remain related context.
 
 Canonical backlog: https://docs.google.com/document/d/1KN4dh1whjgnktgPrwsgyHKT5dA5obO7sNmlXveWy4cc/edit
