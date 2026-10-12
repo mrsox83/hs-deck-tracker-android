@@ -2,10 +2,14 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+- [x] R5 manual acceptance owner-confirmed: denial blocks reads, regrant restores connection/fusion; owner reports restart/reconnect, network recovery, persisted statuses/no duplicates all PASS. Artifact arrival/identity inventory verified separately. See discovery checkpoint; no further manual phone loop requested.
+- [x] Owner approved reviewed user-triggered match-discovery scope on2026-10-12. Initial core policy/non-writing preview implemented; Android search and confirm UI not yet wired. Six sessions/64MiB raw/24 matches/60s cooperative budget; no closest-time pairing or score-only winner among plausible games.
+- [ ] Discovery next checkpoint: bounded retained-snapshot collector, shared non-writing evaluator including existing reconnect guards and controller mapping, readable candidate summaries plus confirm-fusion action; actual deadline/cancellation/match bounds, incomplete search stays pending, accepted artifacts preserved. Then integration/private gates and one test APK/phone alert. No R6/background collection.
+
 - [x] Triage 2026-10-12 Shared Exchange UNASSIGNED modal/export blocker to HS-FUSION: unbounded status consumed the dialog body. Compact status, expandable bounded full details and one scrolling body implemented; artifacts and pairing untouched.
 - [x] Manual-v5 reported modal blocker accepted: owner confirms buttons reachable/full details readable; re-export arrived byte-identical. No blanket enlarged-font/small-window coverage claimed. See r5 acceptance reconciliation checkpoint.
 - [x] Owner reports interrupted-retained retry (#3) passed; saved fused JSON export with Shizuku stopped also passes, Drive arrival parsed. Exact interruption boundary not independently instrumented.
-- [ ] Remaining finite R5 acceptance: explicit permission-denial/regrant, stopped-reader restart/reconnect and network/export recovery; per-game persisted-status/no-duplicate confirmation. Six unique accepted exports verified, not proof of five consecutive error-free runs. No more games requested solely for file count.
+- [x] Remaining finite R5 manual checks owner-reported all PASS after permission denial/regrant. Six unique accepted exports verified; five consecutive error-free sequence is not independently instrumented. No more games requested solely for file count.
 
 - [x] Screenshot9362 pending diagnosis: PowerClock's wrapped twelve-hour threshold wrongly shifts early-morning logs to tomorrow. Correct non-wrapping rollover and reproduce unique first-game pairing in exact two-game bundle;172 ordinary, one exact private, six full fixture tests pass.
 - [x] Prepare owner-requested full-width export/retry buttons with usage guidance, success-conditioned JSON and unnecessary-retry disabling; saved status/coverage restored on reopen. No automatic session search added.
@@ -15,7 +19,7 @@
 - [x] Partial-coverage warning shipped in v4/v5 and observed in uploads; full status details phone-confirmed. Existing artifacts are not retroactively rewritten. Missed automatic record remains an observed issue with unproven cause, no speculative capture change.
 
 - [x] Manual-v3 game 1 phone UI acceptance: persisted status, already-fused retry without duplicate history, visible/readable status panel, and Stop tracking with confirmation checkbox unchanged. Owner confirms all four. Prior artifact inspection verified ZIP/JSON Drive arrival and accepted lineage for logical match e14389a4d8e0258210404db2203d1bd7.
-- [ ] Complete games 2-5 and separate permission/Binder/interrupted raw-only recovery gates. Owner made this five-game campaign coaching-eligible; older test exclusions stay intact. See current five-game checklist, which supersedes earlier campaign exclusion and APK instructions below.
+- [x] Campaign/recovery manual closeout accepted on owner reports and uploaded identity inventory; exact interruption timing/live Binder death during a copy not independently measured. Owner made this five-game campaign coaching-eligible; older exclusions intact. Latest discovery checkpoint supersedes stale pending checklist text.
 
 2026-10-11 owner resumed bounded preparation while five normal-use game reports are pending. Keep the installed manual-v1 APK unchanged; no automatic collection or R6. See `checkpoints/mobile-fusion-r5-preparation.md` and `checkpoints/mobile-fusion-r5-five-game-checklist.md`. This supersedes the pause for this preparation only.
 
