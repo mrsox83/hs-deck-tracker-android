@@ -2,6 +2,9 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+- [x] Diagnose manual-record reconnect f2af39db: two stitch guards fail (choice anchor, raw-turn continuity); accepted timeline uses later fragment only. Preserve guards and implement persisted/artifact partial-coverage warning;169 ordinary tests and two private gates pass. See mobile-fusion-r5-manual-reconnect.md.
+- [ ] Bundle partial-coverage warning into next needed APK; phone visibility pending. Existing artifacts are not retroactively rewritten. Missed automatic record remains an observed issue with unproven capture/recognition cause; obtain bounded frame diagnostics if reproduced, no speculative capture change.
+
 - [x] Manual-v3 game 1 phone UI acceptance: persisted status, already-fused retry without duplicate history, visible/readable status panel, and Stop tracking with confirmation checkbox unchanged. Owner confirms all four. Prior artifact inspection verified ZIP/JSON Drive arrival and accepted lineage for logical match e14389a4d8e0258210404db2203d1bd7.
 - [ ] Complete games 2-5 and separate permission/Binder/interrupted raw-only recovery gates. Owner made this five-game campaign coaching-eligible; older test exclusions stay intact. See current five-game checklist, which supersedes earlier campaign exclusion and APK instructions below.
 

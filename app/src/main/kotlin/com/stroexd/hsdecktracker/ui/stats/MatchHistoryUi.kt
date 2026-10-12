@@ -617,6 +617,10 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                             fontWeight = FontWeight.SemiBold,
                         )
                         val detail = entry.lastError ?: entry.pairing?.reason
+                        entry.coverageWarnings.forEach { warning ->
+                            Text(warning, style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error)
+                        }
                         if (!detail.isNullOrBlank()) {
                             Text(
                                 detail,

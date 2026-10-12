@@ -18,11 +18,12 @@ object PostMatchPresentation {
             .getOrDefault(session)
     }
 
-    fun resultText(state: FusionImportState, errors: String?, alreadyFused: Boolean = false): String = when (state) {
+    fun resultText(state: FusionImportState, errors: String?, alreadyFused: Boolean = false,
+        coverageWarnings: List<String> = emptyList()): String = (when (state) {
         FusionImportState.FUSED_LOCAL -> if (alreadyFused)
             "Already fused locally. Existing artifact preserved; no regeneration or new Shizuku read. No cloud upload was performed."
         else "Fused locally. No cloud upload was performed."
         FusionImportState.PENDING_PAIRING -> "Raw logs saved locally; pairing is pending. ${errors.orEmpty()}"
         else -> "Raw logs saved locally; fusion did not complete. ${errors.orEmpty()}"
-    }
+    }) + if (coverageWarnings.isEmpty()) "" else "\n" + coverageWarnings.joinToString("\n")
 }

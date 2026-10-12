@@ -4,6 +4,12 @@ import com.stroexd.hsdecktracker.core.fusion.*
 import kotlin.test.*
 
 class PostMatchPresentationTest {
+    @Test fun partialWarningSurvivesPreservedResultPresentation() {
+        val warning = "Partial reconstruction: selected source not incorporated"
+        for (preserved in listOf(false, true)) {
+            assertTrue(PostMatchPresentation.resultText(FusionImportState.FUSED_LOCAL, null, preserved, listOf(warning)).contains(warning))
+        }
+    }
     @Test fun readableSessionHasNoInferredTimezoneOrPairing() {
         assertEquals("Oct 10, 2026 • 7:54:55 PM", PostMatchPresentation.sessionLabel("Hearthstone_2026_10_10_19_54_55"))
         assertEquals("Oct 11, 2026 • 12:00:00 AM", PostMatchPresentation.sessionLabel("Hearthstone_2026_10_11_00_00_00"))

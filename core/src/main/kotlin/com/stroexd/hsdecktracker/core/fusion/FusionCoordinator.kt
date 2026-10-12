@@ -13,6 +13,12 @@ object FusionCoordinator {
         val accepted = uniquePower.singleOrNull { it.source.id == pairing.acceptedSourceId }
         val sources = mergeSources(listOf(tracker.source) + powerMatches.map { it.source })
         val matchId = stableId("logical", tracker.record.id, *sources.map { it.id }.toTypedArray())
+        val incorporated = setOfNotNull(accepted?.source?.id) + accepted?.source?.parentSourceIds.orEmpty()
+        val unused = uniquePower.filter { it.source.type != SourceType.DERIVED_FUSION && it.source.id !in incorporated }
+        val coverageWarnings = if (accepted != null && unused.isNotEmpty()) listOf(
+            "Partial reconstruction: ${unused.size} selected Power source(s) retained as provenance but not incorporated into the timeline. " +
+                "They may be unrelated games or unverified reconnect fragments; full reconnect recovery is not established.",
+        ) else emptyList()
         return FusedMatch(
             schema = FUSION_SCHEMA,
             matchId = matchId,
@@ -23,7 +29,7 @@ object FusionCoordinator {
             entities = accepted?.entities.orEmpty(),
             choices = accepted?.choices.orEmpty(),
             snapshots = accepted?.snapshots.orEmpty(),
-            diagnostics = accepted?.diagnostics.orEmpty(),
+            diagnostics = accepted?.diagnostics.orEmpty() + coverageWarnings,
             continuations = listOfNotNull(accepted?.continuation),
         )
     }
