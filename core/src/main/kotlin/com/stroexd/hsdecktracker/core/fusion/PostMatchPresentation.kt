@@ -12,6 +12,17 @@ object PostMatchPresentation {
         .withResolverStyle(ResolverStyle.STRICT)
     private val output = DateTimeFormatter.ofPattern("MMM d, uuuu • h:mm:ss a", Locale.US)
 
+    /** Compact UI label only; the full original message remains available in status details. */
+    fun statusSummary(message: String): String {
+        val summary = when {
+            message.startsWith("Already fused locally.") -> "Already fused locally; artifact preserved. No cloud upload."
+            message.startsWith("Fused locally.") -> "Fused locally. No cloud upload."
+            message.startsWith("Raw logs saved locally; pairing is pending.") -> "Logs saved locally; pairing pending."
+            else -> message.substringBefore('\n').substringBefore(". ").take(140)
+        }
+        return summary + if (message.contains("Partial reconstruction:")) " Coverage warning: see details." else ""
+    }
+
     fun sessionLabel(session: String): String {
         val value = session.removePrefix("Hearthstone_")
         return runCatching { LocalDateTime.parse(value, input).format(output) }
