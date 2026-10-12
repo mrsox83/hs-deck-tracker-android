@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-12 — Shared Exchange modal/export blocker
+
+Owner authorized fixing the UNASSIGNED HS-FUSION R5 modal report. Clean local/remote4625b19 verified, four tracker ancestors retained. Fresh usage4% five-hour/9% weekly; ceiling90%, reset unused. Screenshot shows long preserved-artifact/three-source coverage warning consumes fixed status space and hides actions. No evidence of lost artifacts or successful upload. Replaced fixed status plus weighted action scroller with a single scrolling body, compact two-line summary and Show/Hide status details; full unchanged message stays in bounded scrollable details. Close remains outside the body. No parser, pairing, capture, export repository, history or private fixture changes. Native Gradle library failed under sandbox; permitted local-toolchain retry proceeds without security bypass. Build/delivery results are recorded in modal checkpoint. Phone acceptance and canonical report closure remain pending; no automatic collection/R6/merge/deploy.
+
 ## 2026-10-12 — screenshot9362 midnight pairing defect and clearer actions
 
 Owner resumed pending-game diagnosis and queued UI implementation. Clean local/remote18a1e23 verified, tracker ancestors preserved, usage12%/7% start,18%/8% after gates; ceiling90%, reset unused. Exact uploaded raw-log hash matches manifest; two completed games are present. Reproduced wrapped LocalTime threshold shifting early-morning events one day forward. Corrected non-wrapping rollover, no weakened pairing gate. First game now uniquely accepted at approximately6.87second endpoint delta; later game stays excluded from timeline and retained provenance.172 ordinary, one exact private and six full private corpus tests pass. Initial JUnit return-value and integer-delta expectations corrected; locked generated outputs preserved and avoided with fresh roots.

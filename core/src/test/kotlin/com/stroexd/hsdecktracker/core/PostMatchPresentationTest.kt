@@ -4,6 +4,25 @@ import com.stroexd.hsdecktracker.core.fusion.*
 import kotlin.test.*
 
 class PostMatchPresentationTest {
+    @Test fun longCoverageStatusIsCompactWithoutChangingFullEvidence() {
+        val warning = "Partial reconstruction: 3 selected Power sources retained as provenance. " + "Unverified reconnect. ".repeat(100)
+        val full = PostMatchPresentation.resultText(FusionImportState.FUSED_LOCAL, null, true, listOf(warning))
+        val summary = PostMatchPresentation.statusSummary(full)
+        assertTrue(summary.length < 140)
+        assertTrue(summary.contains("artifact preserved"))
+        assertTrue(summary.contains("No cloud upload"))
+        assertTrue(summary.contains("Coverage warning"))
+        assertTrue(full.endsWith(warning))
+    }
+    @Test fun pendingAndFailureSummariesNeverClaimFusionSuccess() {
+        val pending = PostMatchPresentation.statusSummary(PostMatchPresentation.resultText(FusionImportState.PENDING_PAIRING, "ambiguous".repeat(200)))
+        assertEquals("Logs saved locally; pairing pending.", pending)
+        for (message in listOf("Export cancelled. Private evidence remains saved locally", "Export not completed: " + "error".repeat(200))) {
+            val summary = PostMatchPresentation.statusSummary(message)
+            assertTrue(summary.length <= 140)
+            assertFalse(summary.contains("Fused locally"))
+        }
+    }
     @Test fun partialWarningSurvivesPreservedResultPresentation() {
         val warning = "Partial reconstruction: selected source not incorporated"
         for (preserved in listOf(false, true)) {

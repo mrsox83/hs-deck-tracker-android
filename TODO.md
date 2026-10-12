@@ -2,6 +2,9 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+- [x] Triage 2026-10-12 Shared Exchange UNASSIGNED modal/export blocker to HS-FUSION: unbounded status consumed the dialog body. Compact status, expandable bounded full details and one scrolling body implemented; artifacts and pairing untouched.
+- [ ] Manual-v5 phone acceptance: long three-source warning and short status, enlarged Android text/small window; full details readable, ZIP/JSON export controls reachable, Close works and no refusion/duplicate history. Shared report remains open until acceptance.
+
 - [x] Screenshot9362 pending diagnosis: PowerClock's wrapped twelve-hour threshold wrongly shifts early-morning logs to tomorrow. Correct non-wrapping rollover and reproduce unique first-game pairing in exact two-game bundle;172 ordinary, one exact private, six full fixture tests pass.
 - [x] Prepare owner-requested full-width export/retry buttons with usage guidance, success-conditioned JSON and unnecessary-retry disabling; saved status/coverage restored on reopen. No automatic session search added.
 - [ ] Manual-v4 phone gate: update in place, retry retained logs for existing4ae366a8 game, export fusedJSON, confirm warning/status persistence, button clarity/enablement and no duplicate history. No replay needed. See midnight/actions checkpoint and v4 README.
