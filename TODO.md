@@ -3,14 +3,16 @@
 ## R5 authorized — post-match collection, 2026-10-10
 
 - [x] Triage 2026-10-12 Shared Exchange UNASSIGNED modal/export blocker to HS-FUSION: unbounded status consumed the dialog body. Compact status, expandable bounded full details and one scrolling body implemented; artifacts and pairing untouched.
-- [ ] Manual-v5 phone acceptance: long three-source warning and short status, enlarged Android text/small window; full details readable, ZIP/JSON export controls reachable, Close works and no refusion/duplicate history. Shared report remains open until acceptance.
+- [x] Manual-v5 reported modal blocker accepted: owner confirms buttons reachable/full details readable; re-export arrived byte-identical. No blanket enlarged-font/small-window coverage claimed. See r5 acceptance reconciliation checkpoint.
+- [x] Owner reports interrupted-retained retry (#3) passed; saved fused JSON export with Shizuku stopped also passes, Drive arrival parsed. Exact interruption boundary not independently instrumented.
+- [ ] Remaining finite R5 acceptance: explicit permission-denial/regrant, stopped-reader restart/reconnect and network/export recovery; per-game persisted-status/no-duplicate confirmation. Six unique accepted exports verified, not proof of five consecutive error-free runs. No more games requested solely for file count.
 
 - [x] Screenshot9362 pending diagnosis: PowerClock's wrapped twelve-hour threshold wrongly shifts early-morning logs to tomorrow. Correct non-wrapping rollover and reproduce unique first-game pairing in exact two-game bundle;172 ordinary, one exact private, six full fixture tests pass.
 - [x] Prepare owner-requested full-width export/retry buttons with usage guidance, success-conditioned JSON and unnecessary-retry disabling; saved status/coverage restored on reopen. No automatic session search added.
 - [ ] Manual-v4 phone gate: update in place, retry retained logs for existing4ae366a8 game, export fusedJSON, confirm warning/status persistence, button clarity/enablement and no duplicate history. No replay needed. See midnight/actions checkpoint and v4 README.
 
 - [x] Diagnose manual-record reconnect f2af39db: two stitch guards fail (choice anchor, raw-turn continuity); accepted timeline uses later fragment only. Preserve guards and implement persisted/artifact partial-coverage warning;169 ordinary tests and two private gates pass. See mobile-fusion-r5-manual-reconnect.md.
-- [ ] Bundle partial-coverage warning into next needed APK; phone visibility pending. Existing artifacts are not retroactively rewritten. Missed automatic record remains an observed issue with unproven capture/recognition cause; obtain bounded frame diagnostics if reproduced, no speculative capture change.
+- [x] Partial-coverage warning shipped in v4/v5 and observed in uploads; full status details phone-confirmed. Existing artifacts are not retroactively rewritten. Missed automatic record remains an observed issue with unproven cause, no speculative capture change.
 
 - [x] Manual-v3 game 1 phone UI acceptance: persisted status, already-fused retry without duplicate history, visible/readable status panel, and Stop tracking with confirmation checkbox unchanged. Owner confirms all four. Prior artifact inspection verified ZIP/JSON Drive arrival and accepted lineage for logical match e14389a4d8e0258210404db2203d1bd7.
 - [ ] Complete games 2-5 and separate permission/Binder/interrupted raw-only recovery gates. Owner made this five-game campaign coaching-eligible; older test exclusions stay intact. See current five-game checklist, which supersedes earlier campaign exclusion and APK instructions below.
