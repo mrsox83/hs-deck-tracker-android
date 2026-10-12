@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-12 — screenshot9362 midnight pairing defect and clearer actions
+
+Owner resumed pending-game diagnosis and queued UI implementation. Clean local/remote18a1e23 verified, tracker ancestors preserved, usage12%/7% start,18%/8% after gates; ceiling90%, reset unused. Exact uploaded raw-log hash matches manifest; two completed games are present. Reproduced wrapped LocalTime threshold shifting early-morning events one day forward. Corrected non-wrapping rollover, no weakened pairing gate. First game now uniquely accepted at approximately6.87second endpoint delta; later game stays excluded from timeline and retained provenance.172 ordinary, one exact private and six full private corpus tests pass. Initial JUnit return-value and integer-delta expectations corrected; locked generated outputs preserved and avoided with fresh roots.
+
+Implemented full-width ZIP/retry/JSON buttons, short next-action explanations, JSON state gating, Retry disabled after success and saved status on reopen. Current coaching eligibility instruction replaces blanketTESTS UI wording, older diagnostics remain excluded. Bundle blocker fix plus previous partial warnings into manual-v4; no standalone cosmetic-only build. APK final assembly/package/signature/hash/delivery recorded at handoff. No old artifacts rewritten, new tracker records, automatic discovery/collection/R6/merge/deploy. Phone acceptance and remaining campaign/failure gates pending.
+
 ## 2026-10-12 — manual-record reconnect diagnosis and partial coverage disclosure
 
 Refreshed shared protocol, owned plan/checkpoints, clean local/remote8a5f880, fork/package and all four tracker ancestors. Live usage0% five-hour/5% weekly, final validation6%/6%, ceiling90%, reset unused. Drive connector unavailable; mounted Drive read with scoped permission, originals preserved.
