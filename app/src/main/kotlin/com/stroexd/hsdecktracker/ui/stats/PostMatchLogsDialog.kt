@@ -18,6 +18,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stroexd.hsdecktracker.AppContainer
 import com.stroexd.hsdecktracker.core.fusion.PostMatchPresentation
 import com.stroexd.hsdecktracker.core.fusion.FusionImportState
+import com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult
+import com.stroexd.hsdecktracker.core.fusion.PairingStatus
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.logs.PostMatchLogClient
 import kotlinx.coroutines.CancellationException
@@ -46,6 +48,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
     val fusedEntry = imports.firstOrNull { it.matchId == match.id && it.state == FusionImportState.FUSED_LOCAL }
     var sessions by remember { mutableStateOf(emptyList<String>()) }
     var selected by remember { mutableStateOf(emptySet<String>()) }
+    var discovery by remember { mutableStateOf<PostMatchDiscoveryResult?>(null) }
     var busy by remember { mutableStateOf(false) }
     var confirmedFinished by remember { mutableStateOf(false) }
     var message by remember {
@@ -158,7 +161,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 Text("After a match, Shizuku reads only Hearthstone session Power.log files. Raw logs may contain account names. Copies stay in this app's private storage; Hearthstone originals are never changed. No screen capture or upload is started.")
                 Text("Selected game: ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(Date(match.timestamp))} (phone local time)")
                 Text("${match.playerClass} vs ${match.opponentClass} • ${match.result} • ${match.deckName}")
-                Text("Session times below come from folder names; their timezone and game contents are not verified. Choose manually, not by a suggested match.")
+                Text("Search uses folder times only to order reads, not to prove a match. Evidence must support a unique candidate; manual session selection remains available.")
                 OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy, onClick = {
                     container.tracker.stop()
                     OverlayLauncher.stop(context)
@@ -176,6 +179,54 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     TextButton(enabled = !busy, onClick = {
                         try { client.requestPermission() } catch (error: Exception) { message = error.message.orEmpty() }
                     }) { Text("Authorize restricted reader") }
+                }
+                Button(modifier = Modifier.fillMaxWidth(), enabled = !busy && confirmedFinished && fusedEntry == null &&
+                    availability in listOf(PostMatchLogClient.Availability.READY, PostMatchLogClient.Availability.CONNECTED), onClick = {
+                    val requestedSessions = selected.toList()
+                    discovery = null
+                    runOperation {
+                        client.connect()
+                        sessions = client.listSessions()
+                        selected = emptySet()
+                        val result = container.discoverPostMatchLogs(match,
+                            requestedSessions.ifEmpty { sessions }, client::snapshotWithinBudget)
+                        discovery = result
+                        result.pairing.reason + "\n" + result.notes.joinToString("\n")
+                    }
+                }) { Text(if (selected.isEmpty()) "Find matching logs" else "Find match in selected sessions") }
+                Text("Reads at most 6 sessions / 64 MiB raw / 24 matches, with a 60-second cooperative deadline. Closing cancels; slow system reads may take time to return. Search retains evidence but does not fuse or upload.",
+                    style = MaterialTheme.typography.bodySmall)
+                Text("If the session limit makes search incomplete, use a candidate's sessions for manual review, then search that explicitly selected scope. Other sessions remain unsearched; confirmation is not a global uniqueness claim.",
+                    style = MaterialTheme.typography.bodySmall)
+                discovery?.let { result ->
+                    Text("Search: ${result.pairing.status.name.lowercase()} — ${result.pairing.reason}")
+                    result.candidates.forEach { candidate ->
+                        Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small) {
+                            Column(Modifier.fillMaxWidth().padding(8.dp)) {
+                                Text(candidate.label)
+                                Text((candidate.reasons + candidate.rejected.map { "Not supported: $it" }).joinToString("; "),
+                                    style = MaterialTheme.typography.bodySmall)
+                                if (candidate.sessions.size in 1..2) OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy,
+                                    onClick = { selected = candidate.sessions.toSet(); message = "Sessions selected for manual review only. Collection still applies the pairing gate; no fusion performed." }) {
+                                    Text("Use sessions for manual review")
+                                }
+                            }
+                        }
+                    }
+                    Button(modifier = Modifier.fillMaxWidth(), enabled = !busy && confirmedFinished && fusedEntry == null &&
+                        result.pairing.status == PairingStatus.ACCEPTED, onClick = {
+                        runOperation {
+                            val fused = container.confirmDiscoveredMatch(match, result)
+                            PostMatchPresentation.resultText(fused.entry.state, fused.entry.lastError ?: fused.entry.pairing?.reason,
+                                PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED in fused.diagnostics, fused.entry.coverageWarnings)
+                        }
+                    }) { Text("Confirm candidate and fuse saved logs") }
+                    Text("Confirmation rechecks the saved evidence without a new Shizuku read. Incomplete/ambiguous searches cannot be confirmed; use manual review.", style = MaterialTheme.typography.bodySmall)
+                    result.bundles.forEachIndexed { index, bundle ->
+                        OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy, onClick = {
+                            exportEvidence { container.postMatchCollections.buildBundle(bundle.collectionId) }
+                        }) { Text("Export searched session ${index + 1} (ZIP)") }
+                    }
                 }
                 TextButton(enabled = !busy && confirmedFinished && availability in listOf(PostMatchLogClient.Availability.READY, PostMatchLogClient.Availability.CONNECTED), onClick = {
                     runOperation { client.connect(); sessions = client.listSessions(); selected = emptySet(); "Select one session, or two for reconnect. Nothing is selected automatically." }

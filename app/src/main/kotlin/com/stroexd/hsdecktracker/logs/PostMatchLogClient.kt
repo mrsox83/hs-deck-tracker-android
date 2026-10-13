@@ -104,7 +104,9 @@ class PostMatchLogClient(context: Context) : Closeable {
         names.distinct().sortedDescending()
     }
 
-    suspend fun snapshot(session: String): PostMatchLogSnapshot.Snapshot = withContext(Dispatchers.IO) {
+    suspend fun snapshot(session: String): PostMatchLogSnapshot.Snapshot = snapshotWithinBudget(session, PostMatchLogSnapshot.MAX_BYTES)
+
+    suspend fun snapshotWithinBudget(session: String, maxBytes: Long): PostMatchLogSnapshot.Snapshot = withContext(Dispatchers.IO) {
         PostMatchLogSnapshot.requireSession(session)
         val jobContext = currentCoroutineContext()
         jobContext.ensureActive()
@@ -113,6 +115,9 @@ class PostMatchLogClient(context: Context) : Closeable {
         // cancellation before stream construction and constructor failure, unlike the old null dereference.
         val descriptor = source.openLog(session) ?: throw IOException("Reader returned no Power.log descriptor")
         descriptor.use { fd ->
+            require(maxBytes in 1..PostMatchLogSnapshot.MAX_BYTES && fd.statSize in 1..maxBytes) {
+                "Log exceeds remaining search budget or has invalid size"
+            }
             PostMatchLogSnapshot.read(session, fd.statSize, { ParcelFileDescriptor.AutoCloseInputStream(fd) }) {
                 jobContext.ensureActive()
                 closed.get() || reader !== source
