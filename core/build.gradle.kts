@@ -31,6 +31,7 @@ dependencies {
 }
 
 tasks.test {
+    exclude("**/RealDiscoveryFixtureTest.class")
     exclude("**/RealPendingPairingTest.class")
     exclude("**/RealManualReconnectTest.class")
     exclude("**/RealPostMatchCollectionTest.class")
@@ -39,6 +40,20 @@ tasks.test {
     exclude("**/RealFusionArtifactDecodeTest.class")
     exclude("**/RealVisualFieldFixtureTest.class")
     exclude("**/RealCardCatalogFixtureTest.class")
+}
+
+tasks.register<Test>("realDiscoveryFixtureTest") {
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealDiscoveryFixtureTest.class")
+    maxHeapSize = "512m"
+    outputs.upToDateWhen { false }
+    doFirst {
+        val directory = providers.gradleProperty("hsDiscoveryFixtureDir")
+        require(directory.isPresent) { "Pass -PhsDiscoveryFixtureDir=<private fixture directory>" }
+        systemProperty("hsDiscoveryFixtureDir", directory.get())
+    }
 }
 
 tasks.register<Test>("realPendingPairingTest") {

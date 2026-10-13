@@ -4,6 +4,7 @@ import com.stroexd.hsdecktracker.core.data.JsonFileStore
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.util.AppJson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -170,7 +171,10 @@ class FusionImporter(
         record: MatchRecord,
         bundles: List<ByteArray>,
         trackerCardIds: Set<String> = emptySet(),
+        confirmedSourceId: String? = null,
     ): FusionImportResult = mutex.withLock {
+        repository.entries.value.firstOrNull { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }
+            ?.let { return@withLock FusionImportResult(it, listOf(PostMatchPresentation.EXISTING_ARTIFACT_PRESERVED)) }
         require(bundles.isNotEmpty()) { "Select at least one exporter bundle" }
         val hashes = bundles.map(EvidenceAdapters::sha256).distinct().sorted()
         repository.begin(record.id, hashes)
@@ -183,35 +187,19 @@ class FusionImporter(
             val originals = parsed.flatMap { bundle -> bundle.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) } }
                 .distinctBy { it.source.id }
             require(originals.isNotEmpty()) { "Selected files contain no exporter match evidence" }
-            val powers = originals + acceptedContinuations(originals, tracker)
-            val decisions = candidateControllers(powers).map { controller ->
-                FusionPairing.decide(
-                    tracker,
-                    powers.map { power ->
-                        val end = power.endedLogTime?.let { time ->
-                            power.source.sessionAlias?.let { PowerClock.resolve(it, time, zoneId) }
-                        }
-                        PowerPairingFacts.fromReduced(power, end, controller)
-                    },
-                    trackerCardIds,
-                )
-            }
-            val accepted = decisions.filter { it.status == PairingStatus.ACCEPTED }
-                .distinctBy { it.acceptedSourceId }
-            if (accepted.size != 1) {
-                val pending = decisions.maxByOrNull { decision -> decision.candidates.maxOfOrNull { it.score } ?: 0 }
-                    ?: PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "No controller evidence was available")
-                val guarded = if (accepted.size > 1) pending.copy(
-                    status = PairingStatus.CONFLICTED,
-                    acceptedSourceId = null,
-                    reason = "Multiple selected Power matches satisfy the conservative pairing gate",
-                ) else pending
+            val caller = kotlinx.coroutines.currentCoroutineContext()
+            val evaluation = FusionEvaluator.evaluate(tracker, originals, zoneId, trackerCardIds) { caller.ensureActive() }
+            val powers = evaluation.powers
+            val pairing = if (confirmedSourceId == null) evaluation.manualDecision() else evaluation.discoveryDecision(true)
+            if (pairing.status != PairingStatus.ACCEPTED ||
+                (confirmedSourceId != null && pairing.acceptedSourceId != confirmedSourceId)) {
+                val guarded = if (pairing.status == PairingStatus.ACCEPTED) pairing.copy(
+                    status = PairingStatus.PENDING, acceptedSourceId = null, reason = "Confirmed candidate changed; search again") else pairing
                 return@withLock FusionImportResult(
                     repository.transition(record.id, FusionImportState.PENDING_PAIRING, pairing = guarded),
                     diagnostics,
                 )
             }
-            val pairing = accepted.single()
             val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = "android-r3/1")
             val artifact = repository.writeArtifact(fused)
             FusionImportResult(
@@ -237,21 +225,4 @@ class FusionImporter(
         }
     }
 
-    private fun acceptedContinuations(matches: List<ReducedPowerMatch>, tracker: TrackerEvidence): List<ReducedPowerMatch> {
-        val stitched = mutableListOf<ReducedPowerMatch>()
-        for (earlier in matches) for (later in matches) {
-            if (earlier === later) continue
-            val decision = PowerContinuationStitcher.evaluate(earlier, later, tracker, zoneId)
-            if (decision.status == ContinuationStatus.ACCEPTED) {
-                stitched += PowerContinuationStitcher.stitch(earlier, later, decision)
-            }
-        }
-        return stitched.distinctBy { it.source.id }
-    }
-
-    private fun candidateControllers(matches: List<ReducedPowerMatch>): Set<Int> = matches
-        .flatMap { match -> match.entities.values.mapNotNull { it.controller.value } }
-        .filter { it > 0 }
-        .toSet()
-        .ifEmpty { setOf(1, 2) }
 }

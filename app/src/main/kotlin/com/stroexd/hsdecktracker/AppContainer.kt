@@ -359,13 +359,46 @@ class AppContainer(context: Context) {
         return importFusionBundles(record, listOf(bytes))
     }
 
-    suspend fun importFusionBundles(record: MatchRecord, bundles: List<ByteArray>): FusionImportResult =
+    suspend fun discoverPostMatchLogs(record: MatchRecord, sessions: List<String>,
+        snapshot: suspend (String, Long) -> PostMatchLogSnapshot.Snapshot): com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult {
+        require(tracker.state.value?.draftActive != true) { "Finish or stop active tracking before searching logs" }
+        require(fusionImports.entries.value.none { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }) {
+            "Already fused locally; existing artifact preserved"
+        }
+        postMatchRecovery.await()
+        val ids = record.timeline.mapNotNull { it.cardId ?: it.dbfId?.let { id -> cards.db.byDbfId(id)?.id } }.toSet()
+        return com.stroexd.hsdecktracker.core.fusion.PostMatchDiscovery(postMatchCollections, ZoneId.systemDefault())
+            .search(record, sessions, ids, snapshot)
+    }
+
+    suspend fun confirmDiscoveredMatch(record: MatchRecord,
+        result: com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult): FusionImportResult {
+        require(result.matchId == record.id && result.pairing.status == com.stroexd.hsdecktracker.core.fusion.PairingStatus.ACCEPTED) {
+            "No supported discovery candidate to confirm"
+        }
+        require(tracker.state.value?.draftActive != true) { "Stop active tracking before fusion" }
+        val caller = kotlinx.coroutines.currentCoroutineContext()
+        val bytes = result.bundles.map { bundle ->
+            require(postMatchCollections.entries.value.any { it.id == bundle.collectionId && it.matchId == record.id }) {
+                "Discovery collection ownership changed"
+            }
+            val file = postMatchCollections.buildBundle(bundle.collectionId) { caller.ensureActive(); false }
+            withContext(Dispatchers.IO) { file.readBytes() }.also {
+                require(com.stroexd.hsdecktracker.core.fusion.EvidenceAdapters.sha256(it) == bundle.sha256) {
+                    "Saved search evidence changed; search again"
+                }
+            }
+        }
+        return importFusionBundles(record, bytes, checkNotNull(result.pairing.acceptedSourceId))
+    }
+
+    suspend fun importFusionBundles(record: MatchRecord, bundles: List<ByteArray>, confirmedSourceId: String? = null): FusionImportResult =
         withContext(Dispatchers.Default) {
             fusionRecovery.await()
             val trackerCardIds = record.timeline.mapNotNull { event ->
                 event.cardId ?: event.dbfId?.let { cards.db.byDbfId(it)?.id }
             }.toSet()
-            fusionImporter.import(record, bundles, trackerCardIds)
+            fusionImporter.import(record, bundles, trackerCardIds, confirmedSourceId)
         }
 
     suspend fun recordFusionAccessFailure(matchId: String, error: Throwable) {
