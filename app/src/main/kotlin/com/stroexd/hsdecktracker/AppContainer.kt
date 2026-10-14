@@ -360,7 +360,8 @@ class AppContainer(context: Context) {
     }
 
     suspend fun discoverPostMatchLogs(record: MatchRecord, sessions: List<String>,
-        snapshot: suspend (String, Long) -> PostMatchLogSnapshot.Snapshot): com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult {
+        snapshot: suspend (String, Long) -> PostMatchLogSnapshot.Snapshot,
+        previous: com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult? = null): com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult {
         require(tracker.state.value?.draftActive != true) { "Finish or stop active tracking before searching logs" }
         require(fusionImports.entries.value.none { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }) {
             "Already fused locally; existing artifact preserved"
@@ -368,7 +369,7 @@ class AppContainer(context: Context) {
         postMatchRecovery.await()
         val ids = record.timeline.mapNotNull { it.cardId ?: it.dbfId?.let { id -> cards.db.byDbfId(id)?.id } }.toSet()
         return com.stroexd.hsdecktracker.core.fusion.PostMatchDiscovery(postMatchCollections, ZoneId.systemDefault())
-            .search(record, sessions, ids, snapshot)
+            .search(record, sessions, ids, previous, snapshot)
     }
 
     suspend fun confirmDiscoveredMatch(record: MatchRecord,

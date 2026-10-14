@@ -191,14 +191,25 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         val result = container.discoverPostMatchLogs(match,
                             requestedSessions.ifEmpty { sessions }, client::snapshotWithinBudget)
                         discovery = result
-                        result.pairing.reason + "\n" + result.notes.joinToString("\n")
+                        result.statusText()
                     }
                 }) { Text(if (selected.isEmpty()) "Find matching logs" else "Find match in selected sessions") }
-                Text("Reads at most 6 sessions / 64 MiB raw / 24 matches, with a 60-second cooperative deadline. Closing cancels; slow system reads may take time to return. Search retains evidence but does not fuse or upload.",
+                Text("Search starts with 3 ranked sessions. Search next 3 expands on request, reusing saved evidence/results. Total caps: 6 sessions / 64 MiB raw / 24 matches; 60-second cooperative deadline per batch. Closing cancels; slow system reads may take time to return.",
                     style = MaterialTheme.typography.bodySmall)
-                Text("If the session limit makes search incomplete, use a candidate's sessions for manual review, then search that explicitly selected scope. Other sessions remain unsearched; confirmation is not a global uniqueness claim.",
+                Text("Only inspected sessions support a recommendation, not global uniqueness. If unreadable logs or timeouts block confirmation, review candidate sessions and search an explicitly selected scope.",
                     style = MaterialTheme.typography.bodySmall)
                 discovery?.let { result ->
+                    if (result.pendingSessions.isNotEmpty() && result.pairing.status != PairingStatus.ACCEPTED) {
+                        FilledTonalButton(modifier = Modifier.fillMaxWidth(), enabled = !busy && confirmedFinished && fusedEntry == null &&
+                            availability == PostMatchLogClient.Availability.CONNECTED, onClick = {
+                            runOperation {
+                                val expanded = container.discoverPostMatchLogs(match, sessions, client::snapshotWithinBudget, result)
+                                discovery = expanded
+                                expanded.statusText()
+                            }
+                        }) { Text("Search next ${minOf(3, result.pendingSessions.size)}") }
+                    }
+                    result.stopReasons.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
                     Text("Search: ${result.pairing.status.name.lowercase()} — ${result.pairing.reason}")
                     result.candidates.forEach { candidate ->
                         Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small) {

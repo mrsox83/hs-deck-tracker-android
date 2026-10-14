@@ -79,6 +79,7 @@ class OverlayWindow(
     private var side = context.appContainer.settings.value.overlaySide
     private var panel = ScreenBox(0, 0, 0, 0)
     private var collapsed = false
+    private var bubblePosition: Pair<Int, Int>? = null
     private var panelSize by mutableStateOf(DpSize.Zero)
 
     private val rotationListener = object : DisplayManager.DisplayListener {
@@ -114,8 +115,9 @@ class OverlayWindow(
                         OverlayContent(
                             panelSize = panelSize,
                             onDrag = { dx, dy -> moveBy(dx, dy) },
-                            onDragEnd = { snapToSide() },
+                            onDragEnd = { if (collapsed) place() else snapToSide() },
                             onCollapsedChange = { value ->
+                                if (value && bubblePosition == null) bubblePosition = params.x to params.y
                                 collapsed = value
                                 place()
                             },
@@ -166,11 +168,17 @@ class OverlayWindow(
             cutouts = cutouts,
         )
         panelSize = DpSize((panel.width / density).dp, (panel.height / density).dp)
-        val x = if (collapsed && side == OverlaySide.RIGHT) panel.right - px(BUBBLE_SIZE.value) else panel.left
+        val bubble = if (collapsed) {
+            val saved = bubblePosition ?: (panel.left to panel.top)
+            OverlayLayout.bubblePosition(saved.first, saved.second, width, height, px(BUBBLE_SIZE.value))
+                .also { bubblePosition = it }
+        } else null
+        val x = bubble?.first ?: panel.left
+        val y = bubble?.second ?: panel.top
         // Display changes also fire for refresh rate switches, so only move when something changed
-        if (x != params.x || panel.top != params.y) {
+        if (x != params.x || y != params.y) {
             params.x = x
-            params.y = panel.top
+            params.y = y
             view?.takeIf { it.isAttachedToWindow }?.let { windowManager.updateViewLayout(it, params) }
         }
         updateBounds()
@@ -211,6 +219,13 @@ class OverlayWindow(
         val current = view ?: return
         params.x += dx.toInt()
         params.y += dy.toInt()
+        if (collapsed) {
+            val (width, height) = realDisplaySize(context)
+            val position = OverlayLayout.bubblePosition(params.x, params.y, width, height, px(BUBBLE_SIZE.value))
+            params.x = position.first
+            params.y = position.second
+            bubblePosition = position
+        }
         windowManager.updateViewLayout(current, params)
         updateBounds()
     }
