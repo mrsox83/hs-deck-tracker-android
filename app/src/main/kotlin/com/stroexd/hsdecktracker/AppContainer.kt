@@ -372,6 +372,19 @@ class AppContainer(context: Context) {
             .search(record, sessions, ids, previous, snapshot)
     }
 
+    suspend fun reviewDiscoveredCandidate(record: MatchRecord,
+        result: com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult,
+        sourceId: String): com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult {
+        require(tracker.state.value?.draftActive != true) { "Stop active tracking before reviewing logs" }
+        require(fusionImports.entries.value.none { it.matchId == record.id && it.state == FusionImportState.FUSED_LOCAL }) {
+            "Already fused locally; existing artifact preserved"
+        }
+        postMatchRecovery.await()
+        val ids = record.timeline.mapNotNull { it.cardId ?: it.dbfId?.let { id -> cards.db.byDbfId(id)?.id } }.toSet()
+        return com.stroexd.hsdecktracker.core.fusion.PostMatchDiscovery(postMatchCollections, ZoneId.systemDefault())
+            .reviewSavedCandidate(record, result, sourceId, ids)
+    }
+
     suspend fun confirmDiscoveredMatch(record: MatchRecord,
         result: com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult): FusionImportResult {
         require(result.matchId == record.id && result.pairing.status == com.stroexd.hsdecktracker.core.fusion.PairingStatus.ACCEPTED) {
