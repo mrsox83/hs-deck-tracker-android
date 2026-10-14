@@ -170,4 +170,7 @@ jobs:
           git add -A
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -q -m "F-Droid repository with version $VERSION"
-          git push -f "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" fdroid
+          # GitHub CLI supplies the existing GH_TOKEN via its credential helper, not the push URL.
+          # This configures only the disposable Actions runner; no new token/permission is created.
+          gh auth setup-git --hostname github.com
+          git push -f "https://github.com/$GITHUB_REPOSITORY.git" fdroid

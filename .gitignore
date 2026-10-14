@@ -10,4 +10,11 @@ build/
 .cxx
 *.keystore
 *.p12
-!debug.keystore
+# Signing private keys must remain local, including personal debug/update keys.
+*.jks
+*.key
+*.pem
+.env
+.env.*
+credentials.json
+service-account*.json

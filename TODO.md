@@ -1,5 +1,10 @@
 # Mobile fusion R0–R2
 
+## Security audit — 2026-10-14
+
+- [x] Investigate owner-authorized GitGuardian email: linked release hashes independently verified; false positive at the reported location. Scan source/history/local deliveries; no actual credential found within documented bounds. Add preventive signing-file ignores and token-free CI push authentication. See checkpoints/mobile-fusion-credential-audit-2026-10-14.md.
+- [ ] Release CI credential-helper runtime validation remains unperformed; do not trigger a release solely for this audit. GitGuardian dashboard disposition/provider access-log review not performed or required to verify these public hashes.
+
 ## R5 authorized — post-match collection, 2026-10-10
 
 - [x] Owner-approved three-session discovery batches: first3 ranked sessions, explicit next3, cached bounded candidate/reducer results and saved bundles reused without repeat Shizuku reads; cumulative6/64MiB/24matches/32MiB caps and per-batch60s cooperative deadline. Stops lead status; timeout candidates preserved but remain unconfirmed. Source checkpoint mobile-fusion-r5-batches.md; not installed yet.
