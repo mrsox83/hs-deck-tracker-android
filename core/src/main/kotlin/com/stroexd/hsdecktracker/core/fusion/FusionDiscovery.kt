@@ -6,6 +6,7 @@ import java.time.ZoneId
 /** Search bounds only. Folder times order reads, never establish pairing or global uniqueness. */
 object FusionDiscoveryPolicy {
     const val MAX_SESSIONS = 6
+    const val BATCH_SIZE = 3
     const val MAX_RAW_BYTES = 64L * 1024 * 1024
     const val MAX_MATCHES = 24
     const val DEADLINE_MILLIS = 60_000L

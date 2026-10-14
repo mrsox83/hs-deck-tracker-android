@@ -17,6 +17,9 @@ enum class OverlaySide { LEFT, RIGHT }
  * rounded display corners and the options button in the top right.
  */
 object OverlayLayout {
+    /** Free floating minimized bubble; clamp only to visible display bounds, never an edge anchor. */
+    fun bubblePosition(x: Int, y: Int, screenWidth: Int, screenHeight: Int, size: Int): Pair<Int, Int> =
+        x.coerceIn(0, max(0, screenWidth - size)) to y.coerceIn(0, max(0, screenHeight - size))
     /** Board width per height, including where the opponent's played card appears (measured on a 20:9 phone). */
     const val BOARD_ASPECT = 1.64f
 

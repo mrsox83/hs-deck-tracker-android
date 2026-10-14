@@ -71,7 +71,7 @@ class PostMatchDiscoveryTest {
         }
         assertEquals(PairingStatus.PENDING, result.pairing.status)
         assertNull(result.pairing.acceptedSourceId)
-        assertTrue(result.notes.any { it.contains("Reader lost") })
+        assertTrue(result.statusText().contains("Reader lost"))
         assertTrue(repo.entries.value.any { it.readFailures.isNotEmpty() })
     }
 
@@ -85,7 +85,7 @@ class PostMatchDiscoveryTest {
         assertEquals(1, reads)
         assertEquals(PairingStatus.PENDING, result.pairing.status)
         assertEquals(1, repo.entries.value.single().logs.size)
-        assertTrue(result.notes.any { it.contains("deadline") })
+        assertTrue(result.statusText().contains("deadline"))
     }
 
     @Test fun cancellationPropagatesAndRecordsRecovery() = runBlocking {
@@ -103,13 +103,69 @@ class PostMatchDiscoveryTest {
             snapshot(name, (1..25).joinToString("\n") { raw })
         }
         assertEquals(PairingStatus.PENDING, large.pairing.status)
-        assertTrue(large.notes.any { it.contains("24 decoded-match") })
+        assertTrue(large.statusText().contains("24 decoded-match"))
         val names = (1..7).map { "Hearthstone_2026_10_13_12_0${it}_00" }
         var reads = 0
         val limited = PostMatchDiscovery(repo, zone).search(record, names, emptySet()) { name, _ -> reads++; snapshot(name, "no matches") }
-        assertEquals(6, reads)
+        assertEquals(3, reads)
         assertEquals(PairingStatus.PENDING, limited.pairing.status)
-        assertTrue(limited.notes.any { it.contains("session limit") })
+        assertEquals(3, limited.pendingSessions.size)
+        val expanded = PostMatchDiscovery(repo, zone).search(record, names, emptySet(), limited) { name, _ -> reads++; snapshot(name, "no matches") }
+        assertEquals(6, reads)
+        assertTrue(expanded.pendingSessions.isEmpty())
+        assertEquals(6, expanded.bundles.size)
+    }
+
+    @Test fun timeoutKeepsEarlierCandidatesButNeverClaimsAcceptance() = runBlocking {
+        var now = 0L
+        var reads = 0
+        val repo = PostMatchCollectionRepository(temporary.root)
+        val other = "Hearthstone_2026_10_13_11_59_00"
+        val result = PostMatchDiscovery(repo, zone) { now }.search(record, listOf(session, other), emptySet()) { name, _ ->
+            reads++
+            if (name == other) now = 60_000
+            snapshot(name)
+        }
+        assertEquals(2, reads)
+        assertEquals(PairingStatus.PENDING, result.pairing.status)
+        assertNull(result.pairing.acceptedSourceId)
+        assertTrue(result.candidates.isNotEmpty())
+        assertTrue(result.statusText().startsWith("60-second search deadline reached"))
+    }
+
+    @Test fun nextBatchFindsGameWithoutRereadingEarlierSessions() = runBlocking {
+        val repo = PostMatchCollectionRepository(temporary.root)
+        val names = (1..6).map { "Hearthstone_2026_10_13_11_0${it}_00" }
+        val order = FusionDiscoveryPolicy.sessions(names, record.timestamp, zone)
+        val reads = mutableListOf<String>()
+        val initial = PostMatchDiscovery(repo, zone).search(record, names, emptySet()) { name, _ ->
+            reads += name; snapshot(name, "no matches")
+        }
+        assertEquals(order.take(3), reads)
+        assertEquals(PairingStatus.PENDING, initial.pairing.status)
+        val expanded = PostMatchDiscovery(repo, zone).search(record, names, emptySet(), initial) { name, _ ->
+            reads += name; snapshot(name, if (name == order[3]) raw else "no matches")
+        }
+        assertEquals(order, reads)
+        assertEquals(reads.size, reads.distinct().size)
+        assertEquals(PairingStatus.ACCEPTED, expanded.pairing.status, expanded.pairing.toString())
+        assertEquals(6, expanded.bundles.size)
+        assertTrue(expanded.pendingSessions.isEmpty())
+    }
+
+    @Test fun firstBatchCanRecommendOnlyItsInspectedScopeAndErrorsLeadStatus() = runBlocking {
+        val repo = PostMatchCollectionRepository(temporary.root)
+        val names = (1..6).map { "Hearthstone_2026_10_13_11_0${it}_00" }
+        val order = FusionDiscoveryPolicy.sessions(names, record.timestamp, zone)
+        val result = PostMatchDiscovery(repo, zone).search(record, names, emptySet()) { name, _ ->
+            snapshot(name, if (name == order.first()) raw else "no matches")
+        }
+        assertEquals(PairingStatus.ACCEPTED, result.pairing.status)
+        assertEquals(3, result.pendingSessions.size)
+        assertTrue(result.notes.any { it.contains("Unsearched sessions") })
+        val failed = PostMatchDiscovery(repo, zone).search(record, listOf(names.first()), emptySet()) { _, _ -> error("No descriptor") }
+        assertTrue(failed.statusText().startsWith("Unreadable/unprocessed session:"))
+        assertTrue(failed.statusText().contains("No descriptor"))
     }
 
     @Test fun alreadyFusedImportIsPreservedWithoutParsingNewInputs() = runBlocking {

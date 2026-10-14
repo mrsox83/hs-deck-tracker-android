@@ -2,6 +2,10 @@
 
 ## R5 authorized — post-match collection, 2026-10-10
 
+- [x] Owner-approved three-session discovery batches: first3 ranked sessions, explicit next3, cached bounded candidate/reducer results and saved bundles reused without repeat Shizuku reads; cumulative6/64MiB/24matches/32MiB caps and per-batch60s cooperative deadline. Stops lead status; timeout candidates preserved but remain unconfirmed. Source checkpoint mobile-fusion-r5-batches.md; not installed yet.
+- [x] Next-build overlay QoL source: minimized bubble moves freely within display bounds, no edge snap; clamps on rotation. Position retained for current overlay lifetime, not a new persisted setting. Phone acceptance pending.
+- [ ] Next combined-build blocker: diagnose/fix overlay toolbar click-through after Return to app, particularly X activating controls behind it. User-reported, cause unconfirmed; no speculative security/touch-flag weakening. Batch/bubble source will be packaged with the next appropriate verified update, not an isolated cosmetic build.
+
 - [x] R5 manual acceptance owner-confirmed: denial blocks reads, regrant restores connection/fusion; owner reports restart/reconnect, network recovery, persisted statuses/no duplicates all PASS. Artifact arrival/identity inventory verified separately. See discovery checkpoint; no further manual phone loop requested.
 - [x] Owner approved reviewed user-triggered match-discovery scope on2026-10-12. Core policy/preview and Android search/confirm UI now implemented; discovery phone acceptance pending. Six sessions/64MiB raw/24 matches/60s cooperative budget; no closest-time pairing or score-only winner among plausible games.
 - [x] Discovery integration source/tests/APK: retained per-session search, shared evaluator/reconnect lineage, candidate summaries/manual scope review and explicit confirmed fusion. Limits/cancellation/incomplete states and artifact-preservation guard tested. See mobile-fusion-r5-discovery-integration.md. Local toolchain repaired from verified official archives; no source SDK changes.
