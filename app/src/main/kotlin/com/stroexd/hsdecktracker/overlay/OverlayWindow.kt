@@ -175,11 +175,20 @@ class OverlayWindow(
         } else null
         val x = bubble?.first ?: panel.left
         val y = bubble?.second ?: panel.top
-        // Display changes also fire for refresh rate switches, so only move when something changed
-        if (x != params.x || y != params.y) {
+        val windowWidth = if (collapsed) px(BUBBLE_SIZE.value) else panel.width
+        val widthChanged = params.width != windowWidth
+        val sizeChanged = lastPanelHeight != panel.height
+        lastPanelHeight = panel.height
+        // Rotation can change the panel size without changing its top-left position. Keep Android's
+        // window/input region in sync too, rather than updating only Compose's visible content.
+        if (x != params.x || y != params.y || widthChanged || sizeChanged) {
             params.x = x
             params.y = y
-            view?.takeIf { it.isAttachedToWindow }?.let { windowManager.updateViewLayout(it, params) }
+            params.width = windowWidth
+            view?.takeIf { it.isAttachedToWindow }?.let {
+                it.requestLayout()
+                windowManager.updateViewLayout(it, params)
+            }
         }
         updateBounds()
     }
@@ -241,6 +250,8 @@ class OverlayWindow(
     }
 
     private fun px(dp: Float): Int = (dp * density).toInt()
+
+    private var lastPanelHeight = -1
 
     private companion object {
         const val MIN_WIDTH_DP = 104f

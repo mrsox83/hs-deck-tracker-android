@@ -70,6 +70,7 @@ import com.stroexd.hsdecktracker.ui.toast
 import com.stroexd.hsdecktracker.ui.tracker.TrackerPanel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import androidx.compose.runtime.withFrameNanos
 
 @Composable
 internal fun OverlayContent(
@@ -89,6 +90,20 @@ internal fun OverlayContent(
     val decks by container.decks.decks.collectAsStateWithLifecycle()
     var collapsed by remember { mutableStateOf(false) }
     var actionsExpanded by remember { mutableStateOf(false) }
+    var openAppPending by remember { mutableStateOf(false) }
+
+    // Remove the focusable menu popup before switching activities/orientation. Merely assigning
+    // expanded=false does not synchronously remove its separate Android input window.
+    LaunchedEffect(openAppPending, actionsExpanded) {
+        if (openAppPending && !actionsExpanded) {
+            withFrameNanos { }
+            openAppPending = false
+            val intent = Intent(context, MainActivity::class.java)
+                .putExtra(MainActivity.EXTRA_OPEN_TRACKER, true)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            context.startActivity(intent)
+        }
+    }
 
     LaunchedEffect(state?.startedAt) {
         if (state != null) collapsed = false
@@ -173,10 +188,7 @@ internal fun OverlayContent(
                             leadingIcon = { Icon(Icons.Filled.OpenInFull, contentDescription = null) },
                             onClick = {
                                 actionsExpanded = false
-                                val intent = Intent(context, MainActivity::class.java)
-                                    .putExtra(MainActivity.EXTRA_OPEN_TRACKER, true)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                context.startActivity(intent)
+                                openAppPending = true
                             },
                         )
                     }
