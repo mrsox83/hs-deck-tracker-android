@@ -75,6 +75,45 @@ class PostMatchDiscoveryTest {
         assertTrue(repo.entries.value.any { it.readFailures.isNotEmpty() })
     }
 
+    @Test fun savedReviewRecoversUnreadableSiblingWithoutReadsOrNewCollections() = runBlocking {
+        val repo = PostMatchCollectionRepository(temporary.root)
+        val engine = PostMatchDiscovery(repo, zone)
+        var reads = 0
+        val result = engine.search(record, listOf(session, "Hearthstone_2026_10_13_11_00_00"), emptySet()) { name, _ ->
+            reads++
+            if (name != session) error("Reader returned no Power.log descriptor") else snapshot(name)
+        }
+        assertFalse(result.complete)
+        assertEquals(PairingStatus.PENDING, result.pairing.status)
+        val count = repo.entries.value.size
+        val reviewed = engine.reviewSavedCandidate(record, result, result.candidates.single().sourceId, emptySet())
+        assertEquals(PairingStatus.ACCEPTED, reviewed.pairing.status)
+        assertTrue(reviewed.complete)
+        assertEquals(2, reads)
+        assertEquals(count, repo.entries.value.size)
+        assertTrue(reviewed.statusText().contains("Earlier broad-search warning"))
+        assertTrue(reviewed.statusText().contains("excluded, not ruled out"))
+        assertEquals(PairingStatus.PENDING, result.pairing.status)
+        assertTrue(FusionImportRepository(temporary.root).entries.value.isEmpty())
+        assertFailsWith<IllegalArgumentException> {
+            engine.reviewSavedCandidate(record.copy(id = "other"), result, result.candidates.single().sourceId, emptySet())
+        }
+        result.bundles.single().file.appendText("changed")
+        assertFailsWith<IllegalArgumentException> {
+            engine.reviewSavedCandidate(record, result, result.candidates.single().sourceId, emptySet())
+        }
+        Unit
+    }
+
+    @Test fun savedReviewDoesNotCherryPickOneGameFromAmbiguousSession() = runBlocking {
+        val engine = PostMatchDiscovery(PostMatchCollectionRepository(temporary.root), zone)
+        val result = engine.search(record, listOf(session), emptySet()) { name, _ -> snapshot(name, raw + "\n" + raw) }
+        val reviewed = engine.reviewSavedCandidate(record, result, result.candidates.first().sourceId, emptySet())
+        assertEquals(PairingStatus.CONFLICTED, reviewed.pairing.status)
+        assertNull(reviewed.pairing.acceptedSourceId)
+        assertEquals(2, reviewed.documents)
+    }
+
     @Test fun deadlinePreservesRawWithoutContinuingReads() = runBlocking {
         var now = 0L
         var reads = 0

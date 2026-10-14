@@ -9,6 +9,36 @@ import kotlin.test.*
 
 class RealDiscoveryFixtureTest {
     @get:Rule val temporary = TemporaryFolder()
+    @Test fun oct14SavedCandidateReviewRecoversNullDescriptorSibling() = runBlocking {
+        val root = File(checkNotNull(System.getProperty("hsDiscoveryFixtureDir")))
+        val tracker = EvidenceAdapters.tracker(File(root,
+            "match_20261014T210056120Z_2ac51b619e2849f3068a0165ddc7078c6baef25da2dcee38773a311c781a4d24.json").readBytes())
+        val session = "Hearthstone_2026_10_14_15_50_04"
+        val bytes = java.util.zip.ZipFile(File(root,
+            "fusion-test-4e5edb8e-035d-4f59-a939-514e4c3c4f58-156d05bc-b19f-4c95-a52d-d629d78b7322.zip")).use { zip ->
+            zip.getInputStream(zip.getEntry("$session/Power.log")).use { it.readBytes() }
+        }
+        assertEquals("75498254000df9a0ca6755ddcdb993bf8432fc925cd89c2213556d3c63820f7a", EvidenceAdapters.sha256(bytes))
+        val repo = PostMatchCollectionRepository(temporary.root)
+        val engine = PostMatchDiscovery(repo, ZoneId.of("America/Chicago"))
+        val result = engine.search(tracker.record, listOf(session, "Hearthstone_2026_10_14_12_38_17"), emptySet()) { name, _ ->
+            if (name != session) error("Reader returned no Power.log descriptor")
+            PostMatchLogSnapshot.read(name, bytes.size.toLong(), { bytes.inputStream() })
+        }
+        assertEquals(PairingStatus.PENDING, result.pairing.status)
+        val reviewed = engine.reviewSavedCandidate(tracker.record, result, result.candidates.single().sourceId, emptySet())
+        assertEquals(PairingStatus.ACCEPTED, reviewed.pairing.status)
+        val imports = FusionImportRepository(temporary.root)
+        val importer = FusionImporter(imports, ZoneId.of("America/Chicago"))
+        val saved = reviewed.bundles.map { it.file.readBytes() }
+        val imported = importer.import(tracker.record, saved, emptySet(), reviewed.pairing.acceptedSourceId)
+        assertEquals(FusionImportState.FUSED_LOCAL, imported.entry.state)
+        val artifact = FusionArtifactCodec.decode(imports.artifactForExport(tracker.record.id).readText())
+        assertEquals(414, artifact.events.size)
+        assertEquals(562, artifact.snapshots.size)
+        assertTrue(FusionProvenanceValidator.validate(artifact).isEmpty())
+        assertEquals(imported.entry, importer.import(tracker.record, saved, emptySet(), reviewed.pairing.acceptedSourceId).entry)
+    }
     @Test fun multiGamePrivatePreviewAndConfirmedImportPreserveSelectedIdentity() = runBlocking {
         val root = File(checkNotNull(System.getProperty("hsDiscoveryFixtureDir")))
         val bundle = File(root, "fusion-test-5ac9586b-19b0-4a06-98f6-91dd23c4e87a-5c56b471-f751-459f-9ca3-f94480a0d48e.zip").readBytes()

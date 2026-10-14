@@ -23,6 +23,68 @@ class PostMatchDiscovery(private val repository: PostMatchCollectionRepository, 
     private val elapsedMillis: () -> Long = { System.nanoTime() / 1_000_000 }) {
     private class SearchLimit(message: String) : Exception(message)
 
+    /** Explicitly chosen session scope, not a waiver of a failed broad search or a new protected read. */
+    suspend fun reviewSavedCandidate(record: MatchRecord, previous: PostMatchDiscoveryResult,
+        sourceId: String, cards: Set<String>): PostMatchDiscoveryResult {
+        require(previous.matchId == record.id) { "Search belongs to another game" }
+        val candidate = previous.candidates.single { it.sourceId == sourceId }
+        val scope = candidate.sessions.toSet()
+        require(scope.size in 1..2) { "Candidate has no bounded session scope" }
+        val caller = currentCoroutineContext()
+        val start = elapsedMillis()
+        fun check() {
+            caller.ensureActive()
+            require(elapsedMillis() - start < FusionDiscoveryPolicy.DEADLINE_MILLIS) { "Saved review deadline reached" }
+        }
+        val bundles = mutableListOf<DiscoveryBundle>()
+        val powers = mutableListOf<ReducedPowerMatch>()
+        val found = mutableSetOf<String>()
+        var decoded = 0L
+        var documents = 0
+        for (bundle in previous.bundles) {
+            check()
+            require(repository.entries.value.any { it.id == bundle.collectionId && it.matchId == record.id }) {
+                "Saved search ownership changed"
+            }
+            val bytes = withContext(Dispatchers.IO) { bundle.file.readBytes() }
+            require(EvidenceAdapters.sha256(bytes) == bundle.sha256) { "Saved search evidence changed; start a new search" }
+            val parsed = withContext(Dispatchers.Default) { EvidenceAdapters.exporterBundle(bytes) }
+            val aliases = parsed.matches.mapNotNull { it.first.sessionAlias }.toSet()
+            if (aliases.none { it in scope }) continue
+            require(aliases.all { it in scope }) { "Saved bundle includes sessions outside the chosen scope" }
+            require(parsed.diagnostics.none { it.contains("hash mismatch", true) }) { "Bundle hash mismatch" }
+            java.util.zip.ZipFile(bundle.file).use { zip ->
+                val manifest = zip.getEntry("manifest.json") ?: error("Bundle manifest missing")
+                val text = zip.getInputStream(manifest).use { it.readBytes().decodeToString() }
+                require(!text.contains("RAW_ONLY_PARSE_FAILED")) { "Session parsing failed; raw evidence retained" }
+            }
+            found += aliases
+            bundles += bundle
+            // Re-evaluate EVERY game in the chosen sessions, never just the clicked candidate.
+            for ((source, document) in parsed.matches) {
+                check()
+                documents++
+                decoded += document.toString().toByteArray().size
+                require(documents <= FusionDiscoveryPolicy.MAX_MATCHES && decoded <= 32L * 1024 * 1024) {
+                    "Saved review decode budget exceeded"
+                }
+                powers += withContext(Dispatchers.Default) { PowerEvidenceReducer.reduce(source, document) }
+            }
+        }
+        require(found.containsAll(scope)) { "Candidate sessions are not fully available in saved evidence" }
+        val tracker = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), record).toByteArray())
+        val evaluation = withContext(Dispatchers.Default) { FusionEvaluator.evaluate(tracker, powers, zone, cards, ::check) }
+        val pairing = evaluation.discoveryDecision(true)
+        val ids = pairing.candidates.map { it.powerSourceId }.toSet()
+        return previous.copy(bundles = bundles, pairing = pairing,
+            candidates = previous.candidates.filter { it.sourceId in ids },
+            notes = listOf("Explicit saved-session review: ${scope.joinToString()}. Other unreadable/unsearched sessions are excluded, not ruled out. No new Shizuku read or fusion performed.") +
+                previous.stopReasons.map { "Earlier broad-search warning: $it" } +
+                previous.notes.map { "Earlier search context: $it" },
+            pendingSessions = emptyList(), searchedSessions = scope.toList(), stopReasons = emptyList(), complete = true,
+            decodedBytes = decoded, documents = documents, reduced = powers)
+    }
+
     suspend fun search(record: MatchRecord, names: List<String>, cards: Set<String>,
         previous: PostMatchDiscoveryResult? = null,
         snapshot: suspend (String, Long) -> PostMatchLogSnapshot.Snapshot): PostMatchDiscoveryResult {

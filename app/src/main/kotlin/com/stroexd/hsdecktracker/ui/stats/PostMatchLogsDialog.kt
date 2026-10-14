@@ -49,6 +49,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
     var sessions by remember { mutableStateOf(emptyList<String>()) }
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var discovery by remember { mutableStateOf<PostMatchDiscoveryResult?>(null) }
+    var broadSearch by remember { mutableStateOf<PostMatchDiscoveryResult?>(null) }
     var busy by remember { mutableStateOf(false) }
     var confirmedFinished by remember { mutableStateOf(false) }
     var message by remember {
@@ -184,6 +185,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                     availability in listOf(PostMatchLogClient.Availability.READY, PostMatchLogClient.Availability.CONNECTED), onClick = {
                     val requestedSessions = selected.toList()
                     discovery = null
+                    broadSearch = null
                     runOperation {
                         client.connect()
                         sessions = client.listSessions()
@@ -199,6 +201,13 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 Text("Only inspected sessions support a recommendation, not global uniqueness. If unreadable logs or timeouts block confirmation, review candidate sessions and search an explicitly selected scope.",
                     style = MaterialTheme.typography.bodySmall)
                 discovery?.let { result ->
+                    broadSearch?.let { original ->
+                        OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy && fusedEntry == null, onClick = {
+                            discovery = original
+                            broadSearch = null
+                            message = original.statusText()
+                        }) { Text("Back to all search candidates") }
+                    }
                     if (result.pendingSessions.isNotEmpty() && result.pairing.status != PairingStatus.ACCEPTED) {
                         FilledTonalButton(modifier = Modifier.fillMaxWidth(), enabled = !busy && confirmedFinished && fusedEntry == null &&
                             availability == PostMatchLogClient.Availability.CONNECTED, onClick = {
@@ -217,10 +226,21 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                                 Text(candidate.label)
                                 Text((candidate.reasons + candidate.rejected.map { "Not supported: $it" }).joinToString("; "),
                                     style = MaterialTheme.typography.bodySmall)
-                                if (candidate.sessions.size in 1..2) OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy,
-                                    onClick = { selected = candidate.sessions.toSet(); message = "Sessions selected for manual review only. Collection still applies the pairing gate; no fusion performed." }) {
-                                    Text("Use sessions for manual review")
+                                if (candidate.sessions.size in 1..2) OutlinedButton(modifier = Modifier.fillMaxWidth(),
+                                    enabled = !busy && confirmedFinished && fusedEntry == null,
+                                    onClick = {
+                                        runOperation {
+                                            val reviewed = container.reviewDiscoveredCandidate(match, result, candidate.sourceId)
+                                            if (broadSearch == null) broadSearch = result
+                                            discovery = reviewed
+                                            selected = emptySet()
+                                            reviewed.statusText()
+                                        }
+                                    }) {
+                                    Text("Review this game's saved logs")
                                 }
+                                Text("Reviews all games in this candidate's saved sessions only; other unreadable/unsearched sessions remain excluded. No new reader connection. Confirm fusion separately.",
+                                    style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }

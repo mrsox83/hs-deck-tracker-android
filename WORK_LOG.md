@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-14 — Saved candidate review v3
+
+Owner approved recovery fix. Verified clean remote d662d70; four tracker patches preserved. Added explicit one/two saved-session review with ownership/hash/full-session reparse, strict evaluator and retained warnings; no protected rereads/new collections/fusion until separate confirm. Back to all search candidates restores original scope.195ordinary+3private tests pass, zero failures/errors/skips; exact latest414event/562snapshot log fixture verifies provenance/idempotence. Corrected new JUnit return type before final gates. Old build output Windows-locked; fresh r5-recovery-v3 used, no evidence deletion. APK built/signature/package/ZIP/native16KiB alignment verified; same test identity/signer.68,277,634bytes, public checksumdbc7bb016d44f59a02d8eb0bece7eeebefa21c1abf301a73df8cc8117f306314. Delivery Development/mobile-fusion-r5-discovery-device-validation-v3; readback/push results in final handoff. Usage14%->21%five-hour/23%->24%weekly, no reset. Overlay owner-confirmed resolved; v3 phone acceptance pending. No R6/merge/deploy/private fixture Git copies/ledger changes. See checkpoints/mobile-fusion-r5-saved-review-v3.md.
+
 ## 2026-10-14 — approved three-session batches / overlay source queue
 
 Owner supplied9430-9438: broad v1 inspected4/6,35,193,189raw bytes/11matches;60s deadline, one null descriptor, two truncation markers. Narrowed source fused/uploaded successfully; prior-turn actual JSON verification731d567a Rogue/Rogue LOSS, accepted8e80162d9a7e05df7b1499a51b952a99,521events/709snapshots, no diagnostics, SHAd25b3aaa04efc2d979281bb49ec167f6498ebb0868da46012c64328138359e26. This proves narrowed path, not broad-search success or universal completeness.
