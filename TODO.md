@@ -1,5 +1,11 @@
 # Mobile fusion R0–R2
 
+## HSC-004 chronology — 2026-10-14
+
+- [x] Source fix for session-global player-name/controller leakage: match-line scoping, time-gated alias application, synthetic controller-swap/no-future tests. See checkpoints/mobile-fusion-chronology-investigation.md; not a shipped or exact-Warrior-verified fix.
+- [ ] Obtain retained raw session Hearthstone_2026_10_14_18_40_30 (SHA25605525573fe6a2386897d74aefe0b068427d51dfc700d60eace75542cd2169143), replay game3 and verify actual turn ownership/index/provenance. No new game needed. Version updated outputs before next build; preserve old artifact. HSC-004 remains INVESTIGATE.
+- [ ] HSC-006/010 compact coaching companion depends on verified chronology; no summary implementation/acceptance yet.
+
 ## Security audit — 2026-10-14
 
 - [x] Investigate owner-authorized GitGuardian email: linked release hashes independently verified; false positive at the reported location. Scan source/history/local deliveries; no actual credential found within documented bounds. Add preventive signing-file ignores and token-free CI push authentication. See checkpoints/mobile-fusion-credential-audit-2026-10-14.md.
