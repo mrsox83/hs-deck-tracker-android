@@ -62,17 +62,17 @@ object EvidenceAdapters {
                         contentHashes[entry.name] = sha256(raw)
                         val session = entry.name.substringBefore('/')
                         var markerLine: Int? = null
-                        val mappings = linkedMapOf<String, PlayerNameMapping>()
+                        val mappings = mutableListOf<PlayerNameMapping>()
                         raw.toString(Charsets.UTF_8).lineSequence().forEachIndexed { index, line ->
                             if (markerLine == null && line.contains("Truncating log, which has reached the size limit")) markerLine = index + 1
                             val match = playerNameLine.find(line)
                             if (match != null) {
                                 val name = match.groupValues[2].trim()
-                                mappings[name] = PlayerNameMapping(name, match.groupValues[1].toInt(), index + 1)
+                                mappings += PlayerNameMapping(name, match.groupValues[1].toInt(), index + 1)
                             }
                         }
                         if (markerLine != null) truncationLines[session] = markerLine!!
-                        if (mappings.isNotEmpty()) playerNames[session] = mappings.values.toList()
+                        if (mappings.isNotEmpty()) playerNames[session] = mappings.toList()
                     }
                     entry.name.matches(Regex(".*/match-[0-9]+\\.json")) -> matchEntries[entry.name] = zip.readBytes()
                 }
@@ -102,7 +102,13 @@ object EvidenceAdapters {
             val root = parsed.second
             val rootFields = root.toMutableMap()
             playerNames[session]?.let { mappings ->
-                rootFields["player_name_mappings"] = kotlinx.serialization.json.JsonArray(mappings.map { mapping ->
+                val lines = root["match"]?.jsonObject?.get("events")?.jsonArray.orEmpty()
+                    .mapNotNull { it.jsonObject["source_line"]?.jsonPrimitive?.content?.toIntOrNull() }
+                val first = lines.minOrNull()
+                val last = lines.maxOrNull()
+                // Controllers are match-local: later games can reuse/swap the same player names.
+                val scoped = mappings.filter { first != null && last != null && it.sourceLine in first..last }
+                rootFields["player_name_mappings"] = kotlinx.serialization.json.JsonArray(scoped.map { mapping ->
                     JsonObject(mapOf(
                         "name" to JsonPrimitive(mapping.name),
                         "controller" to JsonPrimitive(mapping.controller),

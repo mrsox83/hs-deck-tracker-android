@@ -79,12 +79,19 @@ object PowerEvidenceReducer {
                 observeTag(
                     mutableEntities, pendingEntity!!, "PLAYER_ID", controller.toString(), sequence, line, time, evidence,
                 )
-                playerNamesByController[controller].orEmpty().forEach { (name, aliasEvidence) ->
-                    aliases[name] = pendingEntity!!
-                    mutableEntities.getValue(pendingEntity!!).observeAlias(name, aliasEvidence)
-                }
             }
             gameEntity.matchEntire(body)?.let { game -> pendingEntity = game.groupValues[1] }
+            // Apply only mappings already observed in this match, never future/session-global names.
+            playerNamesByController.flatMap { (controller, mappings) ->
+                mappings.map { Triple(controller, it.first, it.second) }
+            }.sortedBy { it.third.sourceLine }.forEach { (controller, name, aliasEvidence) ->
+                if ((aliasEvidence.sourceLine ?: Int.MAX_VALUE) <= line) {
+                    mutableEntities.values.firstOrNull { it.tags["PLAYER_ID"] == controller.toString() }?.let { player ->
+                        aliases[name] = player.id
+                        player.observeAlias(name, aliasEvidence)
+                    }
+                }
+            }
             observeAlias(body, aliases)
 
             val tagName = event.string("tag")
