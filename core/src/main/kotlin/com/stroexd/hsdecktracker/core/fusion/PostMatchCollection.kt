@@ -2,6 +2,7 @@ package com.stroexd.hsdecktracker.core.fusion
 
 import com.stroexd.hsdecktracker.core.data.JsonFileStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -92,6 +93,31 @@ class PostMatchCollectionRepository(private val dataDir: File) {
         }
         update(id) { it.copy(state = LogCollectionState.BUNDLE_READY, error = null) }
         file
+    }
+
+    /** Export only hash-and-session-matched evidence owned by this game, never the latest collection. */
+    suspend fun buildGameBundle(matchId: String, sessionHashes: Map<String, String>): File = mutex.withLock {
+        require(sessionHashes.size in 1..2) { "No bounded saved-log scope for this fused game" }
+        sessionHashes.forEach { (session, hash) ->
+            PostMatchLogSnapshot.requireSession(session)
+            require(hash.matches(Regex("[0-9a-f]{64}"))) { "Invalid source hash" }
+        }
+        val logs = store.value.filter { it.matchId == matchId }.flatMap { it.logs }
+            .filter { sessionHashes[it.session] == it.sha256 }.distinct()
+        require(logs.map { it.session to it.sha256 }.toSet() == sessionHashes.toList().toSet()) {
+            "Matching saved logs are unavailable for this game. Use advanced recovery; no unrelated collection was exported."
+        }
+        val caller = kotlinx.coroutines.currentCoroutineContext()
+        withContext(Dispatchers.IO) {
+            val verified = logs.map { it to verify(it) }
+            val target = File(dir, "game-${EvidenceAdapters.sha256(matchId.toByteArray()).take(16)}-logs.zip")
+            val staging = Files.createTempFile(dir.toPath(), "game-logs-", ".part").toFile()
+            try {
+                PostMatchBundleBuilder.write(verified, staging, { caller.ensureActive(); false })
+                Files.move(staging.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+                target
+            } finally { staging.delete() }
+        }
     }
 
     private suspend fun update(id: String, transform: (LogCollectionEntry) -> LogCollectionEntry): LogCollectionEntry {

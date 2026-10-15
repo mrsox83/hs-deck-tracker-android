@@ -87,6 +87,7 @@ class RealFusionFixtureTest {
         )
         assertEquals(
             linkedMapOf(
+                "Turn owner unresolved at source line <n>; per-player turn indices remain unknown" to 400,
                 "Unmatched BLOCK_END at source line <n>" to 6,
                 "<n> unterminated block(s); final snapshot is unresolved" to 1,
             ),

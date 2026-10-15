@@ -3,7 +3,9 @@
 ## HSC-004 chronology — 2026-10-14
 
 - [x] Source fix for session-global player-name/controller leakage: match-line scoping, time-gated alias application, synthetic controller-swap/no-future tests. See checkpoints/mobile-fusion-chronology-investigation.md; not a shipped or exact-Warrior-verified fix.
-- [ ] Obtain retained raw session Hearthstone_2026_10_14_18_40_30 (SHA25605525573fe6a2386897d74aefe0b068427d51dfc700d60eace75542cd2169143), replay game3 and verify actual turn ownership/index/provenance. No new game needed. Version updated outputs before next build; preserve old artifact. HSC-004 remains INVESTIGATE.
+- [x] Exact18:40:30 raw ZIP arrived/hash verified. Game3 has unmapped named player after UNKNOWN HUMAN PLAYER; old reducer carried opponent owner forward. V4 clears unresolved owner/indices and preserves diagnostics, raw turns and existing artifacts. Exact15signal/290event replay passes; fusion versions /2. HSC-004 broader mapping/classification remains open, no parity inference. See checkpoints/mobile-fusion-manual-export-v4.md.
+- [ ] V4 phone: fused-game export-first layout, JSON and exact accepted-source troubleshooting ZIP without reader; Advanced available, cancellation honest. Verify uploaded ZIP's session/hash, not filename. Old artifacts are NOT regenerated. No repeat overlay campaign.
+- [x] Daily shared-feedback check2026-10-15 completed; quiet9AM read-only triage automation active. See checkpoints/shared-feedback-daily.md. No new implementation authority from shared notes.
 - [ ] HSC-006/010 compact coaching companion depends on verified chronology; no summary implementation/acceptance yet.
 
 ## Security audit — 2026-10-14

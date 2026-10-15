@@ -39,7 +39,7 @@ class PlayerMappingScopeTest {
         for (game in reduced) {
             val turns = game.snapshots.filter { it.phase == "TURN_SIGNAL" }
             assertEquals(listOf(null, 1, 2, 1, 2), turns.map { it.activeController })
-            assertEquals(mapOf(1 to 2, 2 to 2), turns.last().playerTurnIndices)
+            assertTrue(turns.last().playerTurnIndices.isEmpty(), "Unknown turn ownership must not fabricate later indices")
             assertTrue(game.entities.values.flatMap { it.aliasHistory }.all { observation ->
                 observation.evidence.sourceLine!! in (if (game.index == 1) 1..12 else 13..24)
             })

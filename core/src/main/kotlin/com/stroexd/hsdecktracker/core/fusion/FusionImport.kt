@@ -200,7 +200,7 @@ class FusionImporter(
                     diagnostics,
                 )
             }
-            val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = "android-r3/1")
+            val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = "android-r3/2")
             val artifact = repository.writeArtifact(fused)
             FusionImportResult(
                 repository.transition(
@@ -208,7 +208,10 @@ class FusionImporter(
                     FusionImportState.FUSED_LOCAL,
                     pairing = pairing,
                     artifactFile = artifact,
-                    coverageWarnings = fused.diagnostics.filter { it.startsWith("Partial reconstruction:") },
+                    coverageWarnings = fused.diagnostics.filter { it.startsWith("Partial reconstruction:") } +
+                        if (fused.diagnostics.any { it.startsWith("Turn owner unresolved") })
+                            listOf("Partial reconstruction: turn ownership or per-player indices remain unknown; see artifact diagnostics.")
+                        else emptyList(),
                 ),
                 diagnostics,
             )
