@@ -1,6 +1,6 @@
 # CLOUD-001 — passive compact coaching summary pilot
 
-Status READY_NOT_DISPATCHED; owner reservation cloud, worker/environment/launch SHA not assigned. Human approved this pilot setup; implementation begins only with coordinator launch capsule and DISPATCHED register entry.
+Status DISPATCHED_AWAITING_STARTUP_ACK; assigned cloud-001-worker-1 in published environment hs-deck-tracker-android. Read TASKS.md launch record and exact coordinator capsule. No cloud execution has been observed locally; implementation requires successful startup/base/usage checks. Only one chat may use this assignment.
 
 ## Goal / interface
 

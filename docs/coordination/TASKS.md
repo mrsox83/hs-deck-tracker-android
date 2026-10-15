@@ -5,7 +5,7 @@ Coordinator-owned. Updated2026-10-15. Source of truth for development ownership;
 | ID | Owner | Status | Scope / reserved writes | Dependency / acceptance |
 |---|---|---|---|---|
 | LOCAL-001 | Remote/local coordinator | WAITING_PHONE | Android UI, capture/reader, fusion reducer/models/import, export/persistence, all build/signing config, integration branch | v4 phone checks in checkpoints/mobile-fusion-manual-export-v4.md; no new changes merely because waiting |
-| CLOUD-001 | Reserved cloud worker; identity NOT yet assigned | READY_NOT_DISPATCHED | Only core/src/main/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; core/src/test/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; docs/coordination/reports/CLOUD-001.md | tasks/CLOUD-001.md; verified repository cloud environment + exact launch SHA/worker/branch required |
+| CLOUD-001 | cloud-001-worker-1, single user-launched cloud chat | DISPATCHED_AWAITING_STARTUP_ACK | Only core/src/main/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; core/src/test/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; docs/coordination/reports/CLOUD-001.md | tasks/CLOUD-001.md; launch capsule below; local model/build/interface freeze active |
 | COORD-001 | Remote/local coordinator | ACTIVE | AGENTS.md; docs/coordination/** except assigned worker report; TODO.md/WORK_LOG.md/checkpoints/**; approved shared-note publication | Publish startup/task/handoff protocol; no cloud dispatch without verified target |
 
 ## Assignment protocol
@@ -23,6 +23,15 @@ States: READY_NOT_DISPATCHED → DISPATCHED → ACKNOWLEDGED → WORKING → REV
 
 Code baseline for pilot planning:85fa84b566911bbfa57a2463f4e22b747dc413f2. Exact launch SHA must include these coordination documents and is supplied separately after publication. This is not a floating-start authorization.
 
-## Current dispatch blocker
+## CLOUD-001 launch record — 2026-10-15 17:36 UTC
 
-The owner confirms cloud access is enabled but no environment has been set up. The available project listing identifies a local Matches directory (not the actual Git checkout) and a ChatGPT Hearthstone project; neither is a verified repository coding environment. No real cloud environment discovery/launch API is available in this chat. Do not confuse the simulated environment setup tool or a generic cloud chat with real provisioning. Create/select a repository-connected environment, verify its toolchain and base, then issue the launch capsule. No cloud worker/task has been launched.
+Owner reports environment hs-deck-tracker-android published. Supplied setup report verifies baseline339515afcc780e4893ec4e8a96a3506c331df6a7, JDK21/Gradle8.14.3/SDK36/build-tools35.0.0,197 ordinary tests passing and clean checkout. Publication/fresh-task restoration is owner-reported, not directly observed locally; worker must verify restoration before implementation.
+
+- Worker identity: cloud-001-worker-1; bound exclusively to the first cloud chat launched with the coordinator capsule. Record its actual chat URL in its own report. Never reuse this capsule for a second chat.
+- Environment: hs-deck-tracker-android. Task branch: cloud/cloud-001-summary-pilot.
+- START_SHA: exact hash supplied in coordinator's launch message after this dispatch-record commit is published. It must be the commit introducing this record, not the earlier setup baseline. This external pin avoids a self-referential commit hash.
+- Review/stop deadline: 2026-10-16T17:36:00Z. Stop earlier on completed pilot, blocker or usage ceiling; expiry never permits reassignment without acknowledged stop.
+- Conservative shared five-hour ceiling75%; live local observation62% at dispatch preparation. No reset authorized by this assignment. Cloud must read fresh usage if available; if unavailable, return startup verification only and wait for a coordinator-authorized bounded work allowance rather than assume an independent quota.
+- Fetch pinned commit before running any baseline-pinned install script. Existing install.sh may intentionally reject a changed SHA: do not weaken it, modify tracked build files or silently revert. Reuse prepared toolchain via activate.sh, and report restoration/setup blockers.
+- Startup response must state exact HEAD, branch, environment, worker identity, actual chat URL and allowlist before edits. Then proceed within contract if all gates, including usage, pass; register updates remain coordinator-owned.
+- Dispatch means assignment issued for human relay, NOT proof the cloud chat is running. No direct cloud launch occurred locally. Coordinator avoids reserved directories and freezes model/interface/build changes until return.

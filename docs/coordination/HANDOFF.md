@@ -20,7 +20,7 @@ Private source remains <PRIVATE_EVIDENCE_ROOT>. Cloud gets synthetic repo fixtur
 
 ## Cloud pilot
 
-CLOUD-001 is reserved/READY_NOT_DISPATCHED. Pure passive summary formatter; no app integration or reconstruction changes. Contract tasks/CLOUD-001.md. Reserved new summary directories have no local implementation; coordinator must not implement the pilot while cloud owns it.
+CLOUD-001 is DISPATCHED_AWAITING_STARTUP_ACK to cloud-001-worker-1 in owner-published hs-deck-tracker-android; see TASKS launch record and external exact-SHA capsule. Human relay is required; no direct local cloud launch or execution claim. Pure passive summary formatter; no app integration or reconstruction changes. Contract tasks/CLOUD-001.md. Reserved new summary directories have no local implementation; coordinator must not implement the pilot while cloud owns it. Shared model/interface/build changes remain frozen.
 
 Before dispatch: confirm real cloud repository environment, publish all coordination docs, pin exact SHA and worker/branch, record assignment. No assumptions based on the generic Hearthstone ChatGPT project. If coordinator changes, read register, inspect active workers and reconcile outstanding patches before assigning anything. Don't assume a lost chat means its worker stopped.
 
