@@ -1,0 +1,7 @@
+# HS-FUSION daily shared feedback checks
+
+At the first active development session each local day, read shared START_HERE, canonical feedback and new relevant exchange notes before implementation. Use existing HSC IDs; shared notes are not blanket implementation authority. Record access failures honestly. Do not overwrite HS-EXPORTER/HS-COACHING plans or ledgers.
+
+2026-10-15 11:35 America/Chicago: canonical feedback read by read-only Google Docs text export; Shared Exchange inventory/protocol read via mounted Drive (connector unavailable). Latest canonical entries remain Oct14 HSC-004 chronology and HSC-006/010 coaching companion. No newer reports observed. Old modal/export note is historical; own v5 acceptance evidence supersedes its stale pending wording, not a claimed native-Doc edit. Exact18:40:30 raw evidence now arrived and verified. Current owned tasks: chronology honesty/raw replay and manual export UX. No automatic expansion into other projects/R6.
+
+Quiet daily9AM thread automation created/ACTIVE, ID daily-hearthstone-shared-feedback-check, plus active-day startup check. It triages only, not code/build/push/merge/deploy/reset. Reports new actionable feedback/priority changes/access blockers, silent when unchanged. Local files require the desktop app/computer/Drive available; this is not a cloud-availability guarantee. Automation was created using official app controls; no manual scheduler files edited.

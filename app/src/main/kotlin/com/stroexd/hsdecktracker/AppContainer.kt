@@ -385,6 +385,22 @@ class AppContainer(context: Context) {
             .reviewSavedCandidate(record, result, sourceId, ids)
     }
 
+    suspend fun exportFusedGameLogs(record: MatchRecord): File {
+        postMatchRecovery.await()
+        val artifact = withContext(Dispatchers.IO) {
+            com.stroexd.hsdecktracker.core.fusion.FusionArtifactCodec.decode(fusionImports.artifactForExport(record.id).readText())
+        }
+        val accepted = artifact.sources.single { it.id == artifact.pairing.acceptedSourceId }
+        val incorporated = setOf(accepted.id) + accepted.parentSourceIds
+        val sessionHashes = artifact.sources.filter { it.id in incorporated }.flatMap { source ->
+            source.contentSha256.filterKeys { it.endsWith("/Power.log") }.map { (path, hash) -> path.substringBefore('/') to hash }
+        }.distinct()
+        require(sessionHashes.groupBy { it.first }.values.all { it.map { pair -> pair.second }.distinct().size == 1 }) {
+            "Multiple raw revisions in fused scope; use advanced recovery"
+        }
+        return postMatchCollections.buildGameBundle(record.id, sessionHashes.toMap())
+    }
+
     suspend fun confirmDiscoveredMatch(record: MatchRecord,
         result: com.stroexd.hsdecktracker.core.fusion.PostMatchDiscoveryResult): FusionImportResult {
         require(result.matchId == record.id && result.pairing.status == com.stroexd.hsdecktracker.core.fusion.PairingStatus.ACCEPTED) {

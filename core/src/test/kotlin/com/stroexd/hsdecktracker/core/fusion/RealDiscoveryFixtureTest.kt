@@ -9,6 +9,22 @@ import kotlin.test.*
 
 class RealDiscoveryFixtureTest {
     @get:Rule val temporary = TemporaryFolder()
+    @Test fun warriorRawReplayNeverCarriesOpponentAcrossUnresolvedPlayerTurns() {
+        val root = File(checkNotNull(System.getProperty("hsDiscoveryFixtureDir")))
+        val bytes = File(root, "fusion-test-3957c5b3-875f-4510-a766-3356c4ef47f3-16f675c0-ab94-48e4-a753-dd7a1d1c3e51.zip").readBytes()
+        val parsed = EvidenceAdapters.exporterBundle(bytes)
+        val (source, document) = parsed.matches.single { it.second.getValue("match").toString().contains("\"index\":3") }
+        assertEquals("05525573fe6a2386897d74aefe0b068427d51dfc700d60eace75542cd2169143",
+            source.contentSha256["Hearthstone_2026_10_14_18_40_30/Power.log"])
+        val reduced = PowerEvidenceReducer.reduce(source, document)
+        assertEquals(290, reduced.events.size)
+        val signals = reduced.snapshots.filter { it.phase == "TURN_SIGNAL" }
+        assertEquals(15, signals.size)
+        assertEquals(List(15) { if (it == 0) 1 else if (it % 2 == 1) 2 else null }, signals.map { it.activeController })
+        assertEquals(7, reduced.diagnostics.count { it.startsWith("Turn owner unresolved") })
+        assertTrue(reduced.events.filter { it.evidence.any { e -> (e.sourceLine ?: 0) >= 57550 } }.all { it.playerTurnIndex == null })
+        assertTrue(signals.drop(2).all { it.playerTurnIndices.isEmpty() })
+    }
     @Test fun oct14SavedCandidateReviewRecoversNullDescriptorSibling() = runBlocking {
         val root = File(checkNotNull(System.getProperty("hsDiscoveryFixtureDir")))
         val tracker = EvidenceAdapters.tracker(File(root,

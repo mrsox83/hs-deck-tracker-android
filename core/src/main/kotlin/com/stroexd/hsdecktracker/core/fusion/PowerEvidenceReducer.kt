@@ -44,6 +44,7 @@ object PowerEvidenceReducer {
         }.groupBy({ it.first }, { it.second })
         var pendingEntity: String? = null
         var activeController: Int? = null
+        var turnIndicesComplete = true
         var rawTurn: Int? = null
         var lastEvidence: EvidenceRef? = null
         var previousSnapshotState: SnapshotState? = null
@@ -102,18 +103,26 @@ object PowerEvidenceReducer {
             if (tagName != null && tagValue != null && tagEntity != null) {
                 observeTag(mutableEntities, tagEntity, tagName, tagValue, sequence, line, time, evidence)
                 if (tagName == "TURN") rawTurn = tagValue.toIntOrNull()
-                if (tagName == "CURRENT_PLAYER" && tagValue == "1") {
-                    val nextController = mutableEntities[tagEntity]?.controller?.value
-                        ?: mutableEntities[tagEntity]?.tags?.get("PLAYER_ID")?.toIntOrNull()
-                    if (nextController != null && nextController != activeController) {
-                        playerTurnIndices[nextController] = (playerTurnIndices[nextController] ?: 0) + 1
-                        activeController = nextController
-                    }
-                }
             } else {
                 val inline = inlineTag.matchEntire(body)
                 if (inline != null && pendingEntity != null) {
                     observeTag(mutableEntities, pendingEntity!!, inline.groupValues[1], inline.groupValues[2], sequence, line, time, evidence)
+                }
+            }
+
+            if (tagName == "CURRENT_PLAYER" && tagValue == "1") {
+                val nextController = tagEntity?.let { mutableEntities[it] }?.let {
+                    it.controller.value ?: it.tags["PLAYER_ID"]?.toIntOrNull()
+                }
+                if (nextController == null) {
+                    activeController = null
+                    turnIndicesComplete = false
+                    playerTurnIndices.clear()
+                    diagnostics += "Turn owner unresolved at source line $line; per-player turn indices remain unknown"
+                } else {
+                    if (turnIndicesComplete && nextController != activeController)
+                        playerTurnIndices[nextController] = (playerTurnIndices[nextController] ?: 0) + 1
+                    activeController = nextController
                 }
             }
 
