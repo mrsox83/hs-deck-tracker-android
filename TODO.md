@@ -1,5 +1,12 @@
 # Mobile fusion R0–R2
 
+## Remote/cloud coordination — 2026-10-15
+
+- [x] Owner-approved coordinator protocol, task ownership register, handoff and bounded CLOUD-001 contract prepared in `docs/coordination/`; root `AGENTS.md` supplies startup safeguards.
+- [ ] Set up and verify a real cloud environment connected to this repository. Owner confirms cloud enabled but not configured; no worker dispatched.
+- [ ] Coordinator issues pinned launch capsule and records CLOUD-001 dispatch before implementation. Reserve summary/test directories; no UI/model/build overlap. Review returned patch locally before integration; no merge/deploy.
+- [ ] Existing manual-export-v4 phone gate remains pending; cloud preparation does not imply phone acceptance or complete HSC-006/010.
+
 ## HSC-004 chronology — 2026-10-14
 
 - [x] Source fix for session-global player-name/controller leakage: match-line scoping, time-gated alias application, synthetic controller-swap/no-future tests. See checkpoints/mobile-fusion-chronology-investigation.md; not a shipped or exact-Warrior-verified fix.
