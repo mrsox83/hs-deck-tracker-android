@@ -2,7 +2,7 @@
 
 2026-10-16. Human owner retains scope/approval authority. Remote/local chat coordinates. Only one assigned worker per task; records, not chat memory, carry ownership across sessions.
 
-Owner resumed after the end-of-day pause. Live usage and canonical backlog were refreshed. New October16 HSC-004/HSC-010 evidence showed that a user-corrected LOSS could retain/export the original WIN, so the owner approved a smaller corrected-result export unit before broader coaching-consumer work. Source now carries revision and user-edit result provenance, revised records supersede stale outbox content, and revised exports receive a distinct deterministic filename so the original artifact remains preserved. Focused and full core tests pass; Android Kotlin compilation passes with the cached Android36 validation toolchain. Review/publication and the separate fusion contradiction/manual-shell unit remain pending. No merge/deployment/R6.
+Owner resumed after the end-of-day pause. Live usage and canonical backlog were refreshed. New October16 HSC-004/HSC-010 evidence showed that a user-corrected LOSS could retain/export the original WIN, so the owner approved a smaller corrected-result export unit before broader coaching-consumer work. Source now carries revision and user-edit result provenance, revised records supersede stale outbox content, and revised exports receive a distinct deterministic filename so the original artifact remains preserved. Focused and full core tests pass; Android Kotlin compilation passes with the cached Android36 validation toolchain. Reviewed commit `3c35301` is published on the feature branch. The separate fusion contradiction/manual-shell unit remains pending. No merge/deployment/R6.
 
 ## Verified code and current phone gate
 
