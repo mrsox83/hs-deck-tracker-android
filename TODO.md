@@ -4,6 +4,8 @@
 
 This section is the restart source of truth. `docs/coordination/TASKS.md` owns active assignments and reserved paths; `docs/coordination/HANDOFF.md` owns the current integration/phone handoff. The dated sections below are retained as an append-only project history. An unchecked historical item is not active unless it is repeated here or in TASKS/HANDOFF.
 
+- [ ] **Paused by owner until tomorrow.** On resume, reread live usage and canonical feedback, then scope the smallest HSC-006/010 consumer/export integration around the accepted passive renderer. Do not automatically start implementation; see `checkpoints/mobile-fusion-close-2026-10-15.md`.
+
 - [x] Repository `mrsox83/hs-deck-tracker-android`, branch `feature/mobile-fusion-offline`; code baseline `85fa84b566911bbfa57a2463f4e22b747dc413f2` with coordination-only commits following it. Verify the live local/remote coordination tip before new work. Codex's sandboxed bundled Git can fail work-tree comparison and must not be treated as repository corruption without an external read-only check.
 - [x] `LOCAL-001` manual-export V4 phone/artifact gate accepted: fused JSON and exact accepted-source troubleshooting ZIP exported without Shizuku; enclosed manifest/Power.log hash matches accepted source, and owner confirms one app history entry. Two Drive JSON copies are byte-identical repeated exports, not duplicate app history.
 - [x] `CLOUD-001` passive summary pilot accepted and integrated as `a81538f`: exact allowlist, coordinator source review,14 focused and211 ordinary local tests pass; reservation/freeze released. This foundation does not by itself complete HSC-006/010 or add app integration.
@@ -12,6 +14,7 @@ This section is the restart source of truth. `docs/coordination/TASKS.md` owns a
 - [x] Manual R5 permission/regrant, reconnect, export, persistence and no-duplicate checks were later owner-accepted within their recorded limits. Historical pending manual campaigns are superseded; exact live Binder-death timing and five consecutively instrumented error-free games were not proven.
 - [ ] R6/background automatic collection, native Drive upload, merge and deployment remain excluded.
 - [ ] Before each phone-validation or release-candidate APK, run the shipped-artifact REA gate in `checkpoints/mobile-fusion-rea-artifact-gate.md`. This supplements source/build/signature and phone gates; static analysis never substitutes for runtime acceptance.
+- [ ] Low-priority tooling maintenance: identify the process locking Gradle/Kotlin outputs before cleanup. Fresh build directories remain the safe workaround. Inventory reports/APKs before removing roughly706.6MiB of likely disposable historical validation data; leftover unregistered review directory also remains.
 
 ## Remote/cloud coordination — 2026-10-15
 
