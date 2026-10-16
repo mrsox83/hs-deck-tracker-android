@@ -2,6 +2,8 @@
 
 2026-10-15. Human owner retains scope/approval authority. Remote/local chat coordinates. Only one assigned worker per task; records, not chat memory, carry ownership across sessions.
 
+Owner requested end-of-day pause after LOCAL-001 and CLOUD-001 acceptance. Do not resume automatically. Tomorrow: reread live usage and canonical backlog, then define the smallest HSC-006/010 consumer/export integration around the accepted passive renderer while keeping HSC-004 unknowns explicit. See `checkpoints/mobile-fusion-close-2026-10-15.md`.
+
 ## Verified code and current phone gate
 
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.
@@ -11,6 +13,7 @@
 - Exact18:40:30 game3 raw replay verified: unresolved named player must not inherit opponent owner. Unknown owner/turn indices retained, no parity inference. Old artifacts NOT silently regenerated. New output versions offline-r2/2 and android-r3/2.
 - LOCAL-001 accepted: already-fused game exported JSON plus accepted-source troubleshooting ZIP without Shizuku. JSON match `5c41abc7610b32cbfd01993df7592700`, pairing ACCEPTED, accepted source `b9a0140e...a47d07b:2`; ZIP manifest and enclosed Power.log independently match source hash `b9a0140e23b0b3846c579d6e9e2fea13e118acdc541e423655cbd2c34a47d07b`. Owner reopened/uploaded list and confirmed the app shows the match once. Two Drive JSON copies are byte-identical repeated exports, not distinct artifacts; both preserved.
 - Relevant checkpoints: mobile-fusion-manual-export-v4.md, mobile-fusion-chronology-investigation.md, shared-feedback-daily.md. TODO/work log retain fuller history.
+- End-of-day restart checkpoint: `checkpoints/mobile-fusion-close-2026-10-15.md`.
 
 ## Shipped-artifact verification
 

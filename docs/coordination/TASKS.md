@@ -6,7 +6,7 @@ Coordinator-owned. Updated2026-10-15. Source of truth for development ownership;
 |---|---|---|---|---|
 | LOCAL-001 | Remote/local coordinator | DONE | Android UI, capture/reader, fusion reducer/models/import, export/persistence, all build/signing config, integration branch | Manual-export V4 phone/artifact gate accepted; exact source hash verified and one app history entry confirmed |
 | CLOUD-001 | cloud-001-worker-1, single user-launched cloud chat | DONE | Only core/src/main/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; core/src/test/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; docs/coordination/reports/CLOUD-001.md | Accepted and integrated as `a81538f`; 14 focused and 211 ordinary tests pass locally; reservation released |
-| COORD-001 | Remote/local coordinator | ACTIVE | AGENTS.md; docs/coordination/** except assigned worker report; TODO.md/WORK_LOG.md/checkpoints/**; approved shared-note publication | Publish startup/task/handoff protocol; no cloud dispatch without verified target |
+| COORD-001 | Remote/local coordinator | WAITING_OWNER_RESUME | AGENTS.md; docs/coordination/** except assigned worker report; TODO.md/WORK_LOG.md/checkpoints/**; approved shared-note publication | End-of-day checkpoint recorded; resume tomorrow only after owner direction, live usage and backlog refresh |
 
 ## Assignment protocol
 
