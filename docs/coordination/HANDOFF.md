@@ -4,6 +4,8 @@
 
 Owner resumed after the end-of-day pause. Live usage and canonical backlog were refreshed. New October16 HSC-004/HSC-010 evidence showed that a user-corrected LOSS could retain/export the original WIN, so the owner approved a smaller corrected-result export unit before broader coaching-consumer work. Source now carries revision and user-edit result provenance, revised records supersede stale outbox content, and revised exports receive a distinct deterministic filename so the original artifact remains preserved. Focused and full core tests pass; Android Kotlin compilation passes with the cached Android36 validation toolchain. Reviewed commit `3c35301` is published on the feature branch. The separate fusion contradiction/manual-shell unit remains pending. No merge/deployment/R6.
 
+Backlog priority governance is now local policy in `docs/coordination/BACKLOG_PRIORITY_STANDARD.md` and root `AGENTS.md`. Reporting agents may propose severity but must leave priority UNASSESSED. Only coordinator comparison against the complete active queue, or an explicit owner override, can assign/reorder priority; rationale and prior values are retained.
+
 ## Verified code and current phone gate
 
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.
