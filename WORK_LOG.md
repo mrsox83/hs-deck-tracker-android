@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-15 Central — CLOUD-001 bounded resume after reset
+
+At2026-10-16T03:18Z coordinator live five-hour14%/weekly21%; owner authorizes90% ceiling. Owner-relayed cloud startup verified exactd71c04e isolatedbranch/toolchain; no implementation/tests. Recorded ACKNOWLEDGED_AWAITING_RESUME_RELAY and one20minute implementation checkpoint with at most one focused/one ordinary test invocation, no automatic continuation. Cannot guarantee a percentage from time/tool bounds; external usage monitoring remains required. Worker retains originalbase, reads amendment without merge/rebase. No local concurrent implementation, reset, APK, merge/deploy. REA binary_session now responds (no target open); static artifact analysis not performed by this connection check. GoogleDrive connector absent from live toolcatalog despite user reconnection, so no connected-Drive verification claimed. Existing uncommitted AGENTS/TODO/HANDOFF/feedback/REA-gate edits preserved and excluded from this assignment commit.
+
 ## 2026-10-15 — CLOUD-001 dispatch for human relay
 
 Reviewed owner-supplied full environment report: pinned339515a,197ordinary tests/35suites/zero failures, clean checkout; no private/device/APK gates. Owner confirms hs-deck-tracker-android published. Recorded exclusive cloud-001-worker-1 assignment on cloud/cloud-001-summary-pilot, with exact post-publication SHA in launch message and24h stop/review deadline. Fresh-task restoration and SHA-pinned install-script mismatch explicitly gated; no silent baseline downgrade. Live five-hour62%/weekly10%; conservative75% ceiling for this assignment, no reset. If cloud cannot observe usage it must return startup-only rather than spend unbounded shared quota. Local model/interface/build freeze active. No actual cloud chat launched here, no implementation or acceptance claimed. Documentation-only diff check; publication verified in final handoff.
