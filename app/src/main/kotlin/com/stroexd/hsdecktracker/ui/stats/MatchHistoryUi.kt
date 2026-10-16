@@ -90,6 +90,7 @@ import com.stroexd.hsdecktracker.core.stats.MatchHistory
 import com.stroexd.hsdecktracker.core.stats.MatchQuery
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.stats.MatchResult
+import com.stroexd.hsdecktracker.core.stats.ResultCorrection
 import com.stroexd.hsdecktracker.core.stats.MatchSource
 import com.stroexd.hsdecktracker.core.stats.ResultFilter
 import com.stroexd.hsdecktracker.core.stats.StatsCalculator
@@ -725,7 +726,21 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
             onDismiss = { editing = false },
             onSave = { updated ->
                 editing = false
-                scope.launch { container.matches.update(updated) }
+                if (updated != match) {
+                    val editedAt = System.currentTimeMillis()
+                    val corrections = if (updated.result != match.result) {
+                        match.resultCorrections + ResultCorrection(match.result, updated.result, editedAt)
+                    } else match.resultCorrections
+                    scope.launch {
+                        container.matches.update(
+                            updated.copy(
+                                revision = match.revision + 1,
+                                editedAt = editedAt,
+                                resultCorrections = corrections,
+                            ),
+                        )
+                    }
+                }
             },
         )
     }

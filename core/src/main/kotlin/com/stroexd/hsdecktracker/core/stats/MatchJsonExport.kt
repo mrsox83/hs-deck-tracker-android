@@ -14,6 +14,9 @@ object MatchJsonExport {
             .withZone(ZoneOffset.UTC).format(Instant.ofEpochMilli(record.timestamp))
         val id = MessageDigest.getInstance("SHA-256").digest(record.id.toByteArray(Charsets.UTF_8))
             .joinToString("") { "%02x".format(it.toInt() and 255) }
-        return "match_${timestamp}_$id.json"
+        if (record.revision <= 1) return "match_${timestamp}_$id.json"
+        val content = MessageDigest.getInstance("SHA-256").digest(encode(record).toByteArray(Charsets.UTF_8))
+            .take(8).joinToString("") { "%02x".format(it.toInt() and 255) }
+        return "match_${timestamp}_${id}_r${record.revision}_$content.json"
     }
 }

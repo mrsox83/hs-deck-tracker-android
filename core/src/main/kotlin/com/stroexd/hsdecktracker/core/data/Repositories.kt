@@ -167,6 +167,13 @@ class MatchRepository(dir: File) {
         store.update { list -> list.map { if (it.id == record.id) record else it } }
     }
 
+    suspend fun upsert(record: MatchRecord) {
+        store.update { list ->
+            if (list.any { it.id == record.id }) list.map { if (it.id == record.id) record else it }
+            else list + record
+        }
+    }
+
     suspend fun replaceAll(matches: List<MatchRecord>) {
         store.set(matches)
     }
@@ -206,10 +213,16 @@ class MatchOutboxRepository(dir: File, private val clock: () -> Long = System::c
         var result: MatchOutboxEntry? = null
         store.update { entries ->
             val existing = entries.firstOrNull { it.match.id == record.id }
-            require(existing == null || existing.match == record) { "Match id ${record.id} already has different outbox content" }
-            if (existing != null) {
+            if (existing?.match == record) {
                 result = existing
                 entries
+            } else if (existing != null) {
+                require(record.revision > existing.match.revision) {
+                    "Match id ${record.id} changed without a newer revision"
+                }
+                val revised = MatchOutboxEntry(record, MatchOutboxState.STAGED, updatedAt = clock())
+                result = revised
+                entries.map { if (it.match.id == record.id) revised else it }
             } else {
                 MatchOutboxEntry(record, MatchOutboxState.STAGED, updatedAt = clock()).also { entry ->
                     result = entry
@@ -256,7 +269,7 @@ class CompletedMatchCommitter(
         if (!transferEnabled && (staged.state == MatchOutboxState.LOCALLY_EXPORTED || staged.state == MatchOutboxState.REMOTELY_VERIFIED)) {
             return@withLock CompletedMatchCommitResult(staged, MatchTransferResult.ALREADY_PRESENT)
         }
-        matches.addIfAbsent(record)
+        matches.upsert(record)
         outbox.transition(record.id, MatchOutboxState.LOCALLY_COMMITTED).let { committed ->
             if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
         }
@@ -264,7 +277,7 @@ class CompletedMatchCommitter(
 
     suspend fun recover(transferEnabled: Boolean): List<CompletedMatchCommitResult> = mutex.withLock {
         outbox.pending().map { entry ->
-            matches.addIfAbsent(entry.match)
+            matches.upsert(entry.match)
             val committed = outbox.transition(entry.match.id, MatchOutboxState.LOCALLY_COMMITTED)
             if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
         }

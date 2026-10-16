@@ -9,6 +9,14 @@ import java.util.UUID
 enum class MatchResult { WIN, LOSS, DRAW }
 
 @Serializable
+data class ResultCorrection(
+    val previous: MatchResult,
+    val corrected: MatchResult,
+    val correctedAt: Long,
+    val method: String = "USER_EDIT",
+)
+
+@Serializable
 enum class MatchSource {
     MANUAL,
     TRACKER,
@@ -55,6 +63,10 @@ data class MatchRecord(
     val source: MatchSource = MatchSource.MANUAL,
     val notes: String = "",
     val timeline: List<TimelineEvent> = emptyList(),
+    /** Increments when a saved record is edited so exports never mask newer content behind an older filename. */
+    val revision: Int = 1,
+    val editedAt: Long? = null,
+    val resultCorrections: List<ResultCorrection> = emptyList(),
 )
 
 data class WinRate(val wins: Int = 0, val losses: Int = 0, val draws: Int = 0) {

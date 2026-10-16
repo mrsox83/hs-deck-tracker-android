@@ -263,6 +263,32 @@ class MiscTest {
     }
 
     @Test
+    fun correctedMatchSupersedesOutboxAndRecoveryExportsLatestRevision() = runTest {
+        val dir = Files.createTempDirectory("hs-outbox-correction").toFile()
+        val original = MatchRecord(id = "match-c", timestamp = 3, result = MatchResult.WIN)
+        val corrected = original.copy(result = MatchResult.LOSS, revision = 2, editedAt = 20)
+        val matches = MatchRepository(dir)
+        val outbox = MatchOutboxRepository(dir, clock = { 10L })
+        CompletedMatchCommitter(matches, outbox) { MatchTransferResult.WRITTEN }
+            .commit(original, transferEnabled = true)
+
+        outbox.stage(corrected)
+        assertEquals(MatchOutboxState.STAGED, MatchOutboxRepository(dir).entries.value.single().state)
+        assertEquals(corrected, MatchOutboxRepository(dir).entries.value.single().match)
+
+        val exported = mutableListOf<MatchRecord>()
+        CompletedMatchCommitter(MatchRepository(dir), MatchOutboxRepository(dir)) {
+            exported += it
+            MatchTransferResult.WRITTEN
+        }.recover(transferEnabled = true)
+
+        assertEquals(listOf(corrected), exported)
+        assertEquals(listOf(corrected), MatchRepository(dir).matches.value)
+        assertEquals(MatchOutboxState.LOCALLY_EXPORTED, MatchOutboxRepository(dir).entries.value.single().state)
+        dir.deleteRecursively()
+    }
+
+    @Test
     fun activeMatchJournalRestoresAndOnlyClearsTheMatchingDraft() = runTest {
         val dir = Files.createTempDirectory("hs-active-match").toFile()
         val draft = TrackerState.empty(now = 100).copy(draftId = "draft-a", turn = 4)
