@@ -7,9 +7,9 @@
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.
 - Last integrated code checkpoint `a81538f` adds the accepted CLOUD-001 passive summary renderer and synthetic tests; publication verification is recorded in the current handoff. Earlier coordination commits and the original launch record remain in history.
 - Four tracker patch ancestors intact. main not modified, nothing merged/deployed.
-- V4 delivered Development/mobile-fusion-r5-manual-export-device-validation-v4, package com.stroexd.hsdecktracker.fusiontestr4, unchanged signer.197ordinary+10private tests/build/signature/alignment pass; phone gate pending.
+- V4 delivered Development/mobile-fusion-r5-manual-export-device-validation-v4, package com.stroexd.hsdecktracker.fusiontestr4, unchanged signer.197ordinary+10private tests/build/signature/alignment pass; bounded phone/artifact gate accepted.
 - Exact18:40:30 game3 raw replay verified: unresolved named player must not inherit opponent owner. Unknown owner/turn indices retained, no parity inference. Old artifacts NOT silently regenerated. New output versions offline-r2/2 and android-r3/2.
-- Next local gate: already-fused game, JSON + accepted-source troubleshooting ZIP without Shizuku; verify actual enclosed source hash. No repeat overlay/five-game campaign.
+- LOCAL-001 accepted: already-fused game exported JSON plus accepted-source troubleshooting ZIP without Shizuku. JSON match `5c41abc7610b32cbfd01993df7592700`, pairing ACCEPTED, accepted source `b9a0140e...a47d07b:2`; ZIP manifest and enclosed Power.log independently match source hash `b9a0140e23b0b3846c579d6e9e2fea13e118acdc541e423655cbd2c34a47d07b`. Owner reopened/uploaded list and confirmed the app shows the match once. Two Drive JSON copies are byte-identical repeated exports, not distinct artifacts; both preserved.
 - Relevant checkpoints: mobile-fusion-manual-export-v4.md, mobile-fusion-chronology-investigation.md, shared-feedback-daily.md. TODO/work log retain fuller history.
 
 ## Shipped-artifact verification
