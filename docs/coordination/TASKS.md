@@ -5,7 +5,7 @@ Coordinator-owned. Updated2026-10-15. Source of truth for development ownership;
 | ID | Owner | Status | Scope / reserved writes | Dependency / acceptance |
 |---|---|---|---|---|
 | LOCAL-001 | Remote/local coordinator | WAITING_PHONE | Android UI, capture/reader, fusion reducer/models/import, export/persistence, all build/signing config, integration branch | v4 phone checks in checkpoints/mobile-fusion-manual-export-v4.md; no new changes merely because waiting |
-| CLOUD-001 | cloud-001-worker-1, single user-launched cloud chat | DISPATCHED_AWAITING_STARTUP_ACK | Only core/src/main/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; core/src/test/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; docs/coordination/reports/CLOUD-001.md | tasks/CLOUD-001.md; launch capsule below; local model/build/interface freeze active |
+| CLOUD-001 | cloud-001-worker-1, single user-launched cloud chat | ACKNOWLEDGED_AWAITING_RESUME_RELAY | Only core/src/main/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; core/src/test/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; docs/coordination/reports/CLOUD-001.md | tasks/CLOUD-001.md; startup owner-relayed; bounded allowance below; local model/build/interface freeze active |
 | COORD-001 | Remote/local coordinator | ACTIVE | AGENTS.md; docs/coordination/** except assigned worker report; TODO.md/WORK_LOG.md/checkpoints/**; approved shared-note publication | Publish startup/task/handoff protocol; no cloud dispatch without verified target |
 
 ## Assignment protocol
@@ -24,6 +24,14 @@ States: READY_NOT_DISPATCHED → DISPATCHED → ACKNOWLEDGED → WORKING → REV
 Code baseline for pilot planning:85fa84b566911bbfa57a2463f4e22b747dc413f2. Exact launch SHA must include these coordination documents and is supplied separately after publication. This is not a floating-start authorization.
 
 ## CLOUD-001 launch record — 2026-10-15 17:36 UTC
+
+### Resume allowance — 2026-10-16 03:18 UTC / October15 Central
+
+Owner relayed successful startup at d71c04e9b6b58125fd9dfe4f353ef24cf7cbdeca on cloud/cloud-001-summary-pilot, toolchain restored, no implementation/tests/push. Worker remains cloud-001-worker-1; no replacement chat authorized. Owner raised current five-hour ceiling to90%; live coordinator read14% used (weekly21%, not the governing ceiling). No reset consumed or authorized here.
+
+Authorize one bounded implementation checkpoint: maximum20minutes elapsed from receipt, one focused test invocation and at most one ordinary core test invocation; stop earlier on completion/blocker/deadline. No repeated repair/test loops or automatic next unit. If incomplete, return partial patch and explicit failing/unrun gates. This is a work bound, NOT a promise of percentage consumption. If live usage becomes available stop at90%; user/coordinator must externally interrupt if shared usage approaches ceiling. Return for fresh coordinator usage check before any continuation. Local coordinator performs no concurrent implementation during this allowance.
+
+Keep original d71c04e launch base; fetch this coordinator amendment for read-only verification via git show, not merge/rebase into the worker branch. Setup baseline must not silently replace it. Startup report file, if present, is the worker's own authorized change; preserve it. All other task restrictions and2026-10-16T17:36:00Z deadline remain. Assignment amendment publication is not evidence the user has delivered it or work has resumed.
 
 Owner reports environment hs-deck-tracker-android published. Supplied setup report verifies baseline339515afcc780e4893ec4e8a96a3506c331df6a7, JDK21/Gradle8.14.3/SDK36/build-tools35.0.0,197 ordinary tests passing and clean checkout. Publication/fresh-task restoration is owner-reported, not directly observed locally; worker must verify restoration before implementation.
 
