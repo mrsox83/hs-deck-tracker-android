@@ -6,7 +6,7 @@ This section is the restart source of truth. `docs/coordination/TASKS.md` owns a
 
 - [x] Repository `mrsox83/hs-deck-tracker-android`, branch `feature/mobile-fusion-offline`; code baseline `85fa84b566911bbfa57a2463f4e22b747dc413f2` with coordination-only commits following it. Verify the live local/remote coordination tip before new work. Codex's sandboxed bundled Git can fail work-tree comparison and must not be treated as repository corruption without an external read-only check.
 - [ ] `LOCAL-001` current phone gate: validate the manual-export V4 delivery named by HANDOFF—export the already-fused game JSON and the exact accepted-source troubleshooting ZIP without requiring a live Shizuku reader; verify the enclosed source/session hash rather than the filename. Do not repeat the closed overlay or five-game campaigns.
-- [ ] `CLOUD-001` is `ACKNOWLEDGED_AWAITING_RESUME_RELAY` to its single recorded worker under the bounded allowance in `docs/coordination/TASKS.md`. Reserved summary paths and shared model/interface/build files remain frozen until coordinator review or an acknowledged stop.
+- [x] `CLOUD-001` passive summary pilot accepted and integrated as `a81538f`: exact allowlist, coordinator source review,14 focused and211 ordinary local tests pass; reservation/freeze released. This foundation does not by itself complete HSC-006/010 or add app integration.
 - [ ] HSC-004 chronology remains broader than the fixed cross-match owner-leak case. HSC-006/010 compact coaching summary acceptance depends on verified chronology and the cloud pilot; neither is complete merely because source or an APK exists.
 - [x] Conservative user-triggered discovery and its bounded search/review/confirm implementation exist. Historical text that says discovery is only queued or unimplemented is superseded.
 - [x] Manual R5 permission/regrant, reconnect, export, persistence and no-duplicate checks were later owner-accepted within their recorded limits. Historical pending manual campaigns are superseded; exact live Binder-death timing and five consecutively instrumented error-free games were not proven.
@@ -17,8 +17,8 @@ This section is the restart source of truth. `docs/coordination/TASKS.md` owns a
 
 - [x] Owner-approved coordinator protocol, task ownership register, handoff and bounded CLOUD-001 contract prepared in `docs/coordination/`; root `AGENTS.md` supplies startup safeguards.
 - [x] Environment hs-deck-tracker-android setup report reviewed: exact339515a baseline,197ordinary tests pass, clean checkout; owner confirms publication. Fresh-task restoration still a startup gate.
-- [x] CLOUD-001 assignment recorded for single cloud-001-worker-1; exact published launch SHA supplied externally. Human relay pending, no execution claimed; model/build/interface freeze active.
-- [ ] Receive startup acknowledgement and returned summary/test/report patch; review locally before integration. No merge/deploy or duplicated local implementation.
+- [x] CLOUD-001 assignment executed by the single recorded worker from exact launch SHA; no duplicate/replacement worker.
+- [x] Returned task commit `f4512ac6` reviewed and integrated as `a81538f`;14 focused and211 ordinary local tests pass. No merge to main or deployment.
 - [ ] Existing manual-export-v4 phone gate remains pending; cloud preparation does not imply phone acceptance or complete HSC-006/010.
 
 ## HSC-004 chronology — 2026-10-14
@@ -27,7 +27,7 @@ This section is the restart source of truth. `docs/coordination/TASKS.md` owns a
 - [x] Exact18:40:30 raw ZIP arrived/hash verified. Game3 has unmapped named player after UNKNOWN HUMAN PLAYER; old reducer carried opponent owner forward. V4 clears unresolved owner/indices and preserves diagnostics, raw turns and existing artifacts. Exact15signal/290event replay passes; fusion versions /2. HSC-004 broader mapping/classification remains open, no parity inference. See checkpoints/mobile-fusion-manual-export-v4.md.
 - [ ] V4 phone: fused-game export-first layout, JSON and exact accepted-source troubleshooting ZIP without reader; Advanced available, cancellation honest. Verify uploaded ZIP's session/hash, not filename. Old artifacts are NOT regenerated. No repeat overlay campaign.
 - [x] Daily shared-feedback check2026-10-15 completed; quiet9AM read-only triage automation active. See checkpoints/shared-feedback-daily.md. No new implementation authority from shared notes.
-- [ ] HSC-006/010 compact coaching companion depends on verified chronology; no summary implementation/acceptance yet.
+- [ ] HSC-006/010 compact coaching companion still depends on verified chronology and later consumer/app acceptance. The accepted CLOUD-001 passive renderer is only a bounded foundation, not coaching-complete coverage.
 
 ## Security audit — 2026-10-14
 

@@ -5,7 +5,7 @@
 ## Verified code and current phone gate
 
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.
-- Last code checkpoint85fa84b566911bbfa57a2463f4e22b747dc413f2, independently pushed/verified. Coordination-only commits follow it; read TASKS and exact launch capsule for task base.
+- Last integrated code checkpoint `a81538f` adds the accepted CLOUD-001 passive summary renderer and synthetic tests; publication verification is recorded in the current handoff. Earlier coordination commits and the original launch record remain in history.
 - Four tracker patch ancestors intact. main not modified, nothing merged/deployed.
 - V4 delivered Development/mobile-fusion-r5-manual-export-device-validation-v4, package com.stroexd.hsdecktracker.fusiontestr4, unchanged signer.197ordinary+10private tests/build/signature/alignment pass; phone gate pending.
 - Exact18:40:30 game3 raw replay verified: unresolved named player must not inherit opponent owner. Unknown owner/turn indices retained, no parity inference. Old artifacts NOT silently regenerated. New output versions offline-r2/2 and android-r3/2.
@@ -25,9 +25,9 @@ Private source remains H:\My Drive\HSReplay. Cloud gets synthetic repo fixtures 
 
 ## Cloud pilot
 
-CLOUD-001 is ACKNOWLEDGED_AWAITING_RESUME_RELAY to cloud-001-worker-1 in owner-published hs-deck-tracker-android; see TASKS for the bounded resume allowance and launch record. Human relay is required; no direct local cloud execution claim. Pure passive summary formatter; no app integration or reconstruction changes. Contract tasks/CLOUD-001.md. Reserved new summary directories have no local implementation; coordinator must not implement the pilot while cloud owns it. Shared model/interface/build changes remain frozen.
+CLOUD-001 is accepted and DONE. The existing worker resumed from exact launch base `d71c04e`, returned task commit `f4512ac6a0659da70ca2624072c5ee35219d1a42`, and changed only its two summary paths plus report. Coordinator review and independent local offline validation passed 14 focused tests and 211 ordinary core tests across36 suites with zero failures/errors/skips. Integration commit is `a81538f`; the reservation and shared model/interface/build freeze are released.
 
-Before dispatch: confirm real cloud repository environment, publish all coordination docs, pin exact SHA and worker/branch, record assignment. No assumptions based on the generic Hearthstone ChatGPT project. If coordinator changes, read register, inspect active workers and reconcile outstanding patches before assigning anything. Don't assume a lost chat means its worker stopped.
+The delivered renderer is a passive deterministic Markdown view over existing `FusedMatch` evidence. It preserves artifact order, unknowns, provenance, diagnostics, separate choice stages and legacy warnings without entity-identity leakage or inferred player perspective/targeting intent. It is not app integration, reconstruction, complete HSC-006/010 acceptance, private/device validation, merge to main or deployment. Worker report: `docs/coordination/reports/CLOUD-001.md`.
 
 ## Return/review
 
