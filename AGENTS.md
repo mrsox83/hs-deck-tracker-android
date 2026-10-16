@@ -9,6 +9,15 @@
 - If instructions, assignment, ownership or base disagree, stop and ask the coordinator. Do not guess.
 - Read current project TODO/work log/checkpoint; use shared HSC IDs, not duplicate cross-project plans.
 
+## Instruction discovery and current-state integrity
+
+- Before installing, configuring or troubleshooting any plugin, MCP server, analysis engine or other tool, read its installed `SKILL.md` or equivalent operator instructions completely, then read every linked installation/recovery reference required for the observed problem. Follow the documented sequence before inventing a workaround.
+- Inspect bundled scripts, templates and version-specific help before manually reproducing their behavior. If a documented path cannot be followed, record the concrete blocker, proposed deviation, risks and rollback before changing configuration. Do not keep changing launchers or repeating setup after the instructions say to inspect a client launch failure.
+- For project state, `docs/coordination/TASKS.md`, `docs/coordination/HANDOFF.md` and the top `Authoritative current state` section of `TODO.md` take precedence over dated historical sections. An old unchecked item is not active merely because it remains in the append-only history.
+- Reconcile contradictions before implementation. Mark an item `resolved` only when its acceptance evidence exists; use `superseded`, `deferred`, `historical unknown` or `out of scope` when that is the truth. Never turn supersession into a fabricated PASS.
+- When local evidence changes the status of a canonical shared HSC bug/feedback entry, update that canonical entry if the coordinator is authorized and the source is available. Otherwise record an explicit pending reconciliation with the HSC ID, old wording, new evidence and access blocker; do not let a local checkpoint masquerade as a canonical update.
+- If sandboxed Git reports an AppContainer/MSYS work-tree failure while repository metadata remains readable, verify `git status` read-only outside the sandbox before modifying `.git`. Treat the sandbox result and host repository state as separate facts.
+
 ## Ownership and publication
 
 - Coordinator alone edits the task register/handoff, grants/revokes assignments and integrates accepted patches.
@@ -44,6 +53,7 @@
 - Core tests: `./gradlew :core:test`; task-specific test filters in the assignment. Ordinary tests exclude private fixtures.
 - Cloud test setup may still require existing Android Gradle plugin/SDK configuration. Report missing toolchains; don't modify build files to hide it.
 - No APK/signing/release CI work in a cloud formatter task. Local coordinator owns private gates and package verification.
+- For every changed APK promoted to phone validation or release-candidate status, run `checkpoints/mobile-fusion-rea-artifact-gate.md`. Preserve its Evidence IDs and limitations, and keep REA static results separate from signature/alignment checks and phone/runtime acceptance.
 - Run proportionate checks; never claim an unexecuted gate passed. Keep tests/source/APK/phone/push distinct.
 - Use apply_patch for edits, preserve unrelated dirty work, no destructive reset/checkout/clean/history rewrite.
 - After local builds, scoped scripts/Cleanup-BuildTemps.ps1 may clear disposable intermediates/tmp; preserve reports/APKs/fixtures/caches. Don't stop unrelated processes.

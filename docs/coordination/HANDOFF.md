@@ -12,6 +12,11 @@
 - Next local gate: already-fused game, JSON + accepted-source troubleshooting ZIP without Shizuku; verify actual enclosed source hash. No repeat overlay/five-game campaign.
 - Relevant checkpoints: mobile-fusion-manual-export-v4.md, mobile-fusion-chronology-investigation.md, shared-feedback-daily.md. TODO/work log retain fuller history.
 
+## Shipped-artifact verification
+
+- REA is now connected for authorized static APK inspection. The initial manual-export V4 baseline independently confirms package `com.stroexd.hsdecktracker.fusiontestr4`, version `1.5.0-fusiontestr4`/`10500`, min/target SDK 26/36, and 95 compiled classes in the Fusion namespace for APK SHA-256 `527b74cb4ce7be1ffe6bc98ca73faafa6f32c6862ff70db24cd664d60ca044b3`.
+- Before promoting a changed APK to phone validation or release-candidate status, run `checkpoints/mobile-fusion-rea-artifact-gate.md`. Record package/SDK/permission/class drift and Evidence IDs. Continue separate apksigner/alignment and phone/runtime gates; REA static evidence does not close them.
+
 ## Daily feedback and private evidence
 
 Canonical feedback was read2026-10-15: HSC-004 chronology/provenance and HSC-006/010 compact companion remain relevant; no newer entries observed. Quiet9AM daily read-only check active, plus first active session each day. Desktop/Drive availability required. Cross-project notes aren't implementation authority.
@@ -20,7 +25,7 @@ Private source remains <PRIVATE_EVIDENCE_ROOT>. Cloud gets synthetic repo fixtur
 
 ## Cloud pilot
 
-CLOUD-001 is DISPATCHED_AWAITING_STARTUP_ACK to cloud-001-worker-1 in owner-published hs-deck-tracker-android; see TASKS launch record and external exact-SHA capsule. Human relay is required; no direct local cloud launch or execution claim. Pure passive summary formatter; no app integration or reconstruction changes. Contract tasks/CLOUD-001.md. Reserved new summary directories have no local implementation; coordinator must not implement the pilot while cloud owns it. Shared model/interface/build changes remain frozen.
+CLOUD-001 is ACKNOWLEDGED_AWAITING_RESUME_RELAY to cloud-001-worker-1 in owner-published hs-deck-tracker-android; see TASKS for the bounded resume allowance and launch record. Human relay is required; no direct local cloud execution claim. Pure passive summary formatter; no app integration or reconstruction changes. Contract tasks/CLOUD-001.md. Reserved new summary directories have no local implementation; coordinator must not implement the pilot while cloud owns it. Shared model/interface/build changes remain frozen.
 
 Before dispatch: confirm real cloud repository environment, publish all coordination docs, pin exact SHA and worker/branch, record assignment. No assumptions based on the generic Hearthstone ChatGPT project. If coordinator changes, read register, inspect active workers and reconcile outstanding patches before assigning anything. Don't assume a lost chat means its worker stopped.
 

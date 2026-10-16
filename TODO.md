@@ -1,5 +1,18 @@
 # Mobile fusion R0–R2
 
+## Authoritative current state — 2026-10-15
+
+This section is the restart source of truth. `docs/coordination/TASKS.md` owns active assignments and reserved paths; `docs/coordination/HANDOFF.md` owns the current integration/phone handoff. The dated sections below are retained as an append-only project history. An unchecked historical item is not active unless it is repeated here or in TASKS/HANDOFF.
+
+- [x] Repository `mrsox83/hs-deck-tracker-android`, branch `feature/mobile-fusion-offline`; code baseline `85fa84b566911bbfa57a2463f4e22b747dc413f2` with coordination-only commits following it. Verify the live local/remote coordination tip before new work. Codex's sandboxed bundled Git can fail work-tree comparison and must not be treated as repository corruption without an external read-only check.
+- [ ] `LOCAL-001` current phone gate: validate the manual-export V4 delivery named by HANDOFF—export the already-fused game JSON and the exact accepted-source troubleshooting ZIP without requiring a live Shizuku reader; verify the enclosed source/session hash rather than the filename. Do not repeat the closed overlay or five-game campaigns.
+- [ ] `CLOUD-001` is `ACKNOWLEDGED_AWAITING_RESUME_RELAY` to its single recorded worker under the bounded allowance in `docs/coordination/TASKS.md`. Reserved summary paths and shared model/interface/build files remain frozen until coordinator review or an acknowledged stop.
+- [ ] HSC-004 chronology remains broader than the fixed cross-match owner-leak case. HSC-006/010 compact coaching summary acceptance depends on verified chronology and the cloud pilot; neither is complete merely because source or an APK exists.
+- [x] Conservative user-triggered discovery and its bounded search/review/confirm implementation exist. Historical text that says discovery is only queued or unimplemented is superseded.
+- [x] Manual R5 permission/regrant, reconnect, export, persistence and no-duplicate checks were later owner-accepted within their recorded limits. Historical pending manual campaigns are superseded; exact live Binder-death timing and five consecutively instrumented error-free games were not proven.
+- [ ] R6/background automatic collection, native Drive upload, merge and deployment remain excluded.
+- [ ] Before each phone-validation or release-candidate APK, run the shipped-artifact REA gate in `checkpoints/mobile-fusion-rea-artifact-gate.md`. This supplements source/build/signature and phone gates; static analysis never substitutes for runtime acceptance.
+
 ## Remote/cloud coordination — 2026-10-15
 
 - [x] Owner-approved coordinator protocol, task ownership register, handoff and bounded CLOUD-001 contract prepared in `docs/coordination/`; root `AGENTS.md` supplies startup safeguards.
@@ -27,12 +40,12 @@
 - [x] Next-build overlay QoL source: minimized bubble moves freely within display bounds, no edge snap; clamps on rotation. Position retained for current overlay lifetime, not a new persisted setting. Phone acceptance pending.
 - [x] Combined-v2 overlay phone acceptance: owner reports overlay issues resolved. No further overlay campaign; exact mechanism/device generality not established. See checkpoints/mobile-fusion-r5-v2-phone-feedback.md.
 - [x] V3 recovery source/tests/APK: Review this game's saved logs immediately reviews all games in chosen saved sessions, no new Shizuku read/collection; warnings/strict pairing retained, Back to all search candidates available.195ordinary/3private tests pass including latest414event/562snapshot upload. See checkpoints/mobile-fusion-r5-saved-review-v3.md.
-- [ ] V3 phone acceptance: explicit saved review after incomplete broad search, separate confirm/fuse, export/reopen/no duplicate. No checkbox/second-search step; ambiguity stays blocked. Null descriptor cause remains unknown. Overlay defects already owner-confirmed resolved; no repeat campaign.
+- [x] **Superseded V3 phone checklist:** later saved-review/discovery builds and the accepted manual campaign replaced this exact gate. Its null-descriptor cause remains an unresolved historical unknown; supersession is not a claim that every V3-specific scenario passed.
 
 - [x] R5 manual acceptance owner-confirmed: denial blocks reads, regrant restores connection/fusion; owner reports restart/reconnect, network recovery, persisted statuses/no duplicates all PASS. Artifact arrival/identity inventory verified separately. See discovery checkpoint; no further manual phone loop requested.
 - [x] Owner approved reviewed user-triggered match-discovery scope on2026-10-12. Core policy/preview and Android search/confirm UI now implemented; discovery phone acceptance pending. Six sessions/64MiB raw/24 matches/60s cooperative budget; no closest-time pairing or score-only winner among plausible games.
 - [x] Discovery integration source/tests/APK: retained per-session search, shared evaluator/reconnect lineage, candidate summaries/manual scope review and explicit confirmed fusion. Limits/cancellation/incomplete states and artifact-preservation guard tested. See mobile-fusion-r5-discovery-integration.md. Local toolchain repaired from verified official archives; no source SDK changes.
-- [ ] Discovery-v1 phone gate: update in place, Find matching logs on an unfused saved game, review/narrow scope if incomplete, confirm only a supported unique candidate, export/reopen/no duplicates; cancellation and honest ambiguity checks. Source/tests/APK readiness does not close this device gate. No R6/background collection.
+- [x] **Superseded discovery-v1 gate:** later discovery/overlay and saved-review deliveries replaced this exact APK checklist. The bounded discovery behavior exists, while any unperformed v1-only scenario remains historical rather than silently passed. No R6/background collection.
 
 - [x] Triage 2026-10-12 Shared Exchange UNASSIGNED modal/export blocker to HS-FUSION: unbounded status consumed the dialog body. Compact status, expandable bounded full details and one scrolling body implemented; artifacts and pairing untouched.
 - [x] Manual-v5 reported modal blocker accepted: owner confirms buttons reachable/full details readable; re-export arrived byte-identical. No blanket enlarged-font/small-window coverage claimed. See r5 acceptance reconciliation checkpoint.
@@ -55,7 +68,7 @@
 - [x] Source/build unit: Stop tracking above the finished-match checkbox, reusing existing tracker/overlay stop. Confirmation remains separate; no collection side effect. Phone validation pending in manual-v2.
 - [x] Owner-authorized manual-v2 export source: explicit Android save picker for retained companion-contract ZIP and match-owned fused JSON, cancellation/failure/provider-write feedback, private originals retained. 167 ordinary tests/one reconnect gate pass; APK result/delivery recorded in export checkpoint. Phone/provider/Drive arrival remains pending; automatic candidate discovery is not included.
 - [x] Screenshot9344 follow-up: v2 fused export rejected valid logical-ID filename. Correct derived-ID guard and regression using actual coordinator/writer; move contrasting status above scrolling controls. v3 build/delivery facts in mobile-fusion-r5-export-v3.md; device export still pending, not successful based on source/tests.
-- [ ] R5 queue — owner approved conservative automatic candidate discovery (2026-10-11): user-triggered bounded search of available sessions, compare tracker time/duration/classes/result and supported event anchors, select only a uniquely evidenced match or supported reconnect pair. Show readable candidate summaries when ambiguous; keep missing/conflicting evidence pending and manual selection as fallback. Define session/byte/time bounds and cancellation before implementation; no closest-time guessing, continuous capture, automatic post-match retrieval or R6. Acceptance: multi-game sessions, cross-session unique candidate, ambiguity/conflict, missing/truncated data, reconnect, repeated search/no duplicates and interrupted reads retain provenance and honest states. Queue entry only, not implemented/tested.
+- [x] **Superseded queue entry:** owner approved conservative automatic candidate discovery (2026-10-11). The later bounded discovery policy, search/review/confirm implementation and integration APK supersede the statement that this was only queued or unimplemented. Remaining phone acceptance is tracked in the authoritative section and the later discovery checkpoints; no closest-time guessing, continuous capture, automatic post-match retrieval or R6 was authorized by this entry.
 
 This section supersedes historical R5-not-authorized statements below. Owner approved the reviewed R5 plan with the existing 90% five-hour ceiling. R6, continuous tailing, merge and deployment remain excluded.
 
@@ -68,10 +81,10 @@ This section supersedes historical R5-not-authorized statements below. Owner app
 - [x] Build/check isolated manual-v1 APK, stage README/checksum in Development/mobile-fusion-r5-manual-device-validation-v1 and alert owner. Staged APK hash matches local build; no claim of phone installation or independently verified cloud sync.
 - [x] Initial phone observation: screenshots show two retained raw logs, zero read failures and Fused locally; owner confirms status survives detail reopen and no duplicate history records. This is bounded manual-path evidence, not full R5 acceptance.
 - [x] Owner confirms background closes dialog, explicit reconnection is required and succeeds without errors; retained retry without reconnect displays Fused locally/no cloud upload. Existing-fused preservation path verified, not interrupted raw regeneration.
-- [ ] Next session after reset and owner resume: refresh usage/branch/shared protocol, then bounded permission/Binder-failure and interrupted raw-only retry gates. Use existing game where possible; request new phone participation explicitly.
+- [x] **Superseded by later acceptance:** the bounded permission/regrant, restart/reconnect and interrupted-retained retry checks were subsequently owner-reported PASS within the limitations recorded above. Exact live Binder death during a copy remains uninstrumented and is not silently promoted to proven.
 - [x] Source preparation: readable session date/time plus selected game's timestamp, and explicit already-fused/retry confirmation. 165 ordinary tests, pinned reconnect gate and Android compilation pass. Not delivered/phone-verified; bundle into next needed APK, not a standalone polish build.
-- [ ] Verify five-match deduplication, interruption/retry and honest missing/truncated/rotated source handling. Saved locally and Drive arrival remain separate facts.
-- [ ] Only after manual acceptance: bounded automatic post-match collection using journal/outbox. Surface R6 separately before entering it.
+- [x] **Superseded by campaign closeout:** six unique accepted exports, retry behavior and separately verified Drive/artifact arrivals closed the requested campaign. This does not claim five consecutively instrumented error-free games or erase per-artifact coverage warnings.
+- [ ] R6 gate: automatic post-match collection using the journal/outbox remains excluded and requires a new explicit phase decision. Manual acceptance and user-triggered discovery do not authorize it.
 
 Paused at owner request, 2026-10-10. Last sampled five-hour usage77%, ceiling90%, reset unused. No automatic resume scheduled. See `checkpoints/mobile-fusion-r5-pause-handoff.md`.
 
@@ -140,9 +153,9 @@ Owner: current Codex session on `feature/mobile-fusion-offline`.
 - [x] R3 checkpoint 3: import selected exporter bundles post-match and persist fusion/outbox status separately from tracker match status.
 - [x] R3 checkpoint 4: expose one visible retry/status flow and complete automated storage/permission/interruption gates.
 - [x] Alert the user when the R3 test APK and physical-device validation script are ready.
-- [ ] Stop and explicitly surface readiness before beginning R4, R5 or R6.
+- [x] Historical transition gate satisfied: R4 and later R5 were separately surfaced and explicitly authorized. R6 remains excluded.
 
-R3 source/build work is complete at the isolated-phone-validation boundary. Physical device acceptance remains pending and is not implied by the passing local gates. Do not begin R4 until the user reports the R3 phone results and explicitly authorizes the transition.
+Historical state at this checkpoint: R3 source/build work had reached the isolated-phone-validation boundary, while physical-device acceptance was still pending. Later sections record that acceptance and the separately authorized R4 transition; passing local gates alone did not establish either fact.
 
 ### R3 device identity correction — 2026-10-09
 
@@ -198,9 +211,9 @@ Implementation sequence:
   - [x] Implement/test pure frame-scoped assessment and explicit external-review references; require distinct human/non-visual sources for accepted, preserve conflicts and unknowns, reject cached OCR/visual descendants/wrong frame and unsupported rules. 141 ordinary tests and three private gates pass. Actual labeled mana assessments are corroborating only; no real accepted observations or automatic tracker-event mutation.
   - [x] Owner chose corroborating-only closeout. No new capture campaign or R5 work to force acceptance. New v6 APK execution remains phone-pending; source/build is not phone acceptance.
 - [x] **R4.4:** owner-approved bounded closeout documented; no further discretionary R4 development. Deferred readers and explicit device/acceptance limits recorded; source-ready/tests-passed/APK-built/pushed are separate from phone-verified/merged/deployed.
-- [ ] HS-FUSION next-session follow-up only: inspect any conveniently returned v6 evidence; record phone behavior without reopening general R4 hardening. Owner retains installation choice.
-- [ ] R5 authorization gate: review post-match-only restricted log adapter proposal in the closeout checkpoint. Do not implement until explicitly authorized; keep companion fallback, source/privacy/ownership and existing Drive route intact.
+- [ ] Optional historical follow-up only: if v6 evidence is conveniently returned, record it without reopening general R4 hardening. This is not an active gate or a request for another phone campaign; owner retains installation choice.
+- [x] Historical R5 authorization gate satisfied by the later explicit owner authorization and bounded implementation recorded above. Companion fallback, source/privacy/ownership and existing Drive route remain intact; this did not authorize R6.
 - [ ] After R4 source and device behavior stabilize—and before any public-release, merge/deployment or broader-distribution planning—remind the owner to consider an optional Codex Security review of MediaProjection boundaries, Android permissions/exported components, URI handling, retained keyframes and cleanup. Do not install or run it without separate authorization, and do not make it a blocker for ordinary R4 work.
-- [ ] Alert the user when physical-device validation is ready and again before moving to R5.
+- [x] Historical alert/transition requirement satisfied before the separately authorized R5 work.
 
-Current restart point (supersedes historical R4 scheduling): R4 is closed to discretionary development under owner-approved corroborating-only scope. Implementation c866fca / v6 delivery is source/test/build verified; v6 phone execution remains pending. Read `checkpoints/mobile-fusion-r4-closeout.md`, refresh usage and local/remote tips, and await explicit R5 authorization. No merge/deployment or automatic phase transition.
+Historical restart point, now superseded by the authoritative current-state section above: R4 was closed to discretionary development under owner-approved corroborating-only scope. Implementation c866fca / v6 delivery was source/test/build verified; v6 phone execution remained pending at that time. No merge/deployment or automatic phase transition was authorized.
