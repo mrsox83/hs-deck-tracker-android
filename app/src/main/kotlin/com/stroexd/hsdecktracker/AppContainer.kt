@@ -497,6 +497,7 @@ class AppContainer(context: Context) {
     @Synchronized
     fun onRecognitionStopped(session: Long): Boolean {
         if (!recognitionSessions.stop(session)) return false
+        tracker.onGameEvent(GameEvent.RecognitionStopped(System.currentTimeMillis()), cards.db)
         currentCaptureMethod = null
         visualEvidenceRecorder.failPending("Visual capture stopped before the bookmark frame arrived")
         visionTracker = null
@@ -542,7 +543,15 @@ class AppContainer(context: Context) {
         val vision = visionTracker ?: VisionGameTracker(index, contextProvider = ::recognitionContext).also { visionTracker = it }
         vision.decisionLog = notes?.let { list -> { note: String -> list += note } }
         val events = vision.onFrame(frame)
-        events.forEach { onGameEvent(it) }
+        var coverage = vision.takeCoverageObservation()
+        events.forEach { event ->
+            if (event is GameEvent.GameEnded) {
+                coverage?.let { onGameEvent(it) }
+                coverage = null
+            }
+            onGameEvent(event)
+        }
+        coverage?.let { onGameEvent(it) }
         if (vision.phase == VisionGameTracker.Phase.IDLE || vision.phase == VisionGameTracker.Phase.ENDED) watchMenus(frame, notes)
         followClientLanguage(vision.gameLocale)
         frameCount++

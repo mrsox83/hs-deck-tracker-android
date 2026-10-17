@@ -46,6 +46,20 @@ data class TimelineEvent(
 )
 
 @Serializable
+enum class RecognitionCoverageState {
+    FRAME_OBSERVED,
+    PLAY_DETECTION_ELIGIBLE,
+    CAPTURE_GAP,
+}
+
+@Serializable
+data class RecognitionCoverageInterval(
+    val startedAt: Long,
+    val endedAt: Long,
+    val state: RecognitionCoverageState,
+)
+
+@Serializable
 data class MatchRecord(
     val id: String = UUID.randomUUID().toString(),
     val timestamp: Long,
@@ -67,6 +81,9 @@ data class MatchRecord(
     val revision: Int = 1,
     val editedAt: Long? = null,
     val resultCorrections: List<ResultCorrection> = emptyList(),
+    /** Observable OCR/capture coverage, not a claim that every gameplay action was recognized. */
+    val recognitionCoverage: List<RecognitionCoverageInterval> = emptyList(),
+    val recognitionCoverageTruncated: Boolean = false,
 )
 
 data class WinRate(val wins: Int = 0, val losses: Int = 0, val draws: Int = 0) {

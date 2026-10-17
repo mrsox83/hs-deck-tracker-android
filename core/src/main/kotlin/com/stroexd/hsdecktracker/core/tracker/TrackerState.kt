@@ -7,6 +7,8 @@ import com.stroexd.hsdecktracker.core.stats.DrawOdds
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.MatchSource
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageInterval
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import com.stroexd.hsdecktracker.core.stats.TimelineEvent
 import com.stroexd.hsdecktracker.core.stats.TimelineType
 import kotlinx.serialization.Serializable
@@ -31,6 +33,8 @@ data class TrackerState(
     val startedAt: Long,
     val autoTracked: Boolean = false,
     val timeline: List<TimelineEvent> = emptyList(),
+    val recognitionCoverage: List<RecognitionCoverageInterval> = emptyList(),
+    val recognitionCoverageTruncated: Boolean = false,
 ) {
     val initialCount: Int get() = deckCards.values.sum()
     val remainingCount: Int get() = remaining.values.sum()
@@ -113,6 +117,49 @@ data class TrackerState(
 
     fun withWentFirst(first: Boolean?): TrackerState = copy(wentFirst = first)
 
+    fun observeRecognitionCoverage(at: Long, state: RecognitionCoverageState): TrackerState {
+        if (at < startedAt) return this
+        val next = recognitionCoverage.toMutableList()
+        val last = next.lastOrNull()
+        if (last != null && at < last.endedAt) return this
+        if (last != null && last.state == RecognitionCoverageState.CAPTURE_GAP) {
+            next[next.lastIndex] = last.copy(endedAt = at)
+        } else if (last != null && at - last.endedAt > COVERAGE_GAP_MILLIS) {
+            next += RecognitionCoverageInterval(last.endedAt, at, RecognitionCoverageState.CAPTURE_GAP)
+        }
+        val current = next.lastOrNull()
+        if (current != null && current.state == state && at >= current.endedAt) {
+            next[next.lastIndex] = current.copy(endedAt = at)
+        } else {
+            next += RecognitionCoverageInterval(at, at, state)
+        }
+        return boundedCoverage(next)
+    }
+
+    fun markRecognitionStopped(at: Long): TrackerState {
+        if (at < startedAt) return this
+        val next = recognitionCoverage.toMutableList()
+        val last = next.lastOrNull()
+        if (last != null && at < last.endedAt) return this
+        if (last?.state == RecognitionCoverageState.CAPTURE_GAP) return this
+        next += RecognitionCoverageInterval(at, at, RecognitionCoverageState.CAPTURE_GAP)
+        return boundedCoverage(next)
+    }
+
+    private fun boundedCoverage(intervals: List<RecognitionCoverageInterval>): TrackerState {
+        if (intervals.size <= MAX_COVERAGE_INTERVALS) return copy(recognitionCoverage = intervals)
+        val retained = intervals.take(KEEP_FIRST_COVERAGE_INTERVALS) +
+            intervals.takeLast(MAX_COVERAGE_INTERVALS - KEEP_FIRST_COVERAGE_INTERVALS)
+        return copy(recognitionCoverage = retained, recognitionCoverageTruncated = true)
+    }
+
+    private fun finalizedCoverage(now: Long): List<RecognitionCoverageInterval> {
+        val last = recognitionCoverage.lastOrNull() ?: return emptyList()
+        return if (last.state == RecognitionCoverageState.CAPTURE_GAP && now > last.endedAt) {
+            recognitionCoverage.dropLast(1) + last.copy(endedAt = now)
+        } else recognitionCoverage
+    }
+
     fun resetForNewGame(now: Long, active: Boolean = true): TrackerState = copy(
         draftId = UUID.randomUUID().toString(),
         draftActive = active,
@@ -125,6 +172,8 @@ data class TrackerState(
         wentFirst = null,
         startedAt = now,
         timeline = emptyList(),
+        recognitionCoverage = emptyList(),
+        recognitionCoverageTruncated = false,
     )
 
     fun toMatchRecord(
@@ -148,9 +197,15 @@ data class TrackerState(
         opponentArchetype = opponentArchetype,
         source = source,
         timeline = timeline,
+        recognitionCoverage = finalizedCoverage(now),
+        recognitionCoverageTruncated = recognitionCoverageTruncated,
     )
 
     companion object {
+        private const val COVERAGE_GAP_MILLIS = 15_000L
+        private const val MAX_COVERAGE_INTERVALS = 512
+        private const val KEEP_FIRST_COVERAGE_INTERVALS = 64
+
         fun start(deck: Deck, now: Long): TrackerState = TrackerState(
             deckId = deck.id,
             deckName = deck.name,

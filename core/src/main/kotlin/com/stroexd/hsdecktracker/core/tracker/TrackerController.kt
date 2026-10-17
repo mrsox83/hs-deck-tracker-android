@@ -92,6 +92,8 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
             is GameEvent.OpponentCardSeen -> onOpponentCardSeen(event.dbfIds, db)
             is GameEvent.TurnChanged -> update { it.copy(turn = ((event.turn + 1) / 2).coerceAtLeast(1)) }
             is GameEvent.TurnOrderDetected -> update { it.withWentFirst(event.friendlyWentFirst) }
+            is GameEvent.RecognitionCoverageObserved -> update { it.observeRecognitionCoverage(event.observedAt, event.state) }
+            is GameEvent.RecognitionStopped -> update { it.markRecognitionStopped(event.stoppedAt) }
             is GameEvent.GameEnded -> return finishGame(event.result)
         }
         return null
@@ -220,6 +222,8 @@ class TrackerController(private val clock: () -> Long = System::currentTimeMilli
             wentFirst = current.wentFirst,
             extraDraws = current.extraDraws.filter { it !in seenIds },
             timeline = current.timeline.filter { it.type == TimelineType.OPPONENT_PLAY || it.type == TimelineType.PLAYER_PLAY },
+            recognitionCoverage = current.recognitionCoverage,
+            recognitionCoverageTruncated = current.recognitionCoverageTruncated,
         )
         for (seen in seenCards) {
             state = state.copy(turn = seen.turn)
