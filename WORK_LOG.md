@@ -2,7 +2,7 @@
 
 ## 2026-10-17 Central — default Fusion APK Drive location
 
-Owner designated `<DEVELOPMENT_ROOT>\mobile-fusion-result-conflict-device-validation-v1` as the default phone-accessible location for validated Fusion APK deliveries. Recorded the default in agent safeguards and the coordinator handoff. Future authorized deliveries include the APK, checksum and bounded phone instructions; different builds use descriptive unique filenames so earlier validated evidence is not silently overwritten, and every Drive copy is reread for size/hash verification. The current APK already occupies this folder and its Drive hash matches the validated local package.
+Owner clarified that the default phone-accessible location for validated Fusion APK deliveries is the root `<DEVELOPMENT_ROOT>\`, not an APK-specific subfolder. Corrected the agent safeguards and coordinator handoff: never upload a Fusion APK into another APK's delivery folder. Moved the current `app-fusionTest.apk` directly into the Development root with uniquely named checksum and phone instructions, removed the mistaken empty subfolder/marker, and retained the validated local package. Future authorized deliveries use descriptive unique APK filenames and root-level supporting files; every Drive copy is reread for size/hash verification.
 
 ## 2026-10-17 Central — result-conflict APK and phone handoff
 
