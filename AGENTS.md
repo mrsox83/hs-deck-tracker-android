@@ -49,7 +49,7 @@
 - Private gameplay fixtures, diagnostics, account identifiers and signing material never enter Git/cloud prompts by default.
 - No API keys/model calls are needed at app runtime. Do not decrypt signing/keys.p12.enc or inspect/copy private keystores.
 - Do not change Drive upload/sync destinations or relocate the synced source tree.
-- Default owner-accessible Fusion APK drop is the root `<DEVELOPMENT_ROOT>\`. Never place a new Fusion APK inside another APK's delivery folder. After all required build, signature, alignment and REA gates pass and the owner authorizes Drive publication, place the APK directly in that root with descriptively named checksum/instructions and reread the Drive copy's hash. Preserve prior deliveries; use a descriptive unique APK filename for a different build rather than silently overwriting validated evidence.
+- Fusion APK packages live as uniquely named sibling folders directly under `<DEVELOPMENT_ROOT>\`, following the established pattern such as `mobile-fusion-r5-manual-export-device-validation-v5`. Create one new versioned folder per build; never put loose APK/support files in the Development root and never place a new APK inside another build's folder. After all required build, signature, alignment and REA gates pass and the owner authorizes Drive publication, include `app-fusionTest.apk`, `README.md`, `SHA256.txt`, and `CHECKPOINT.md`, then reread the Drive APK's hash. Preserve prior build folders without overwrite.
 
 ## Sources and testing
 
