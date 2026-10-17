@@ -224,7 +224,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         result.statusText()
                     }
                 }) { Text(if (selected.isEmpty()) "Find matching logs" else "Find match in selected sessions") }
-                Text("Search starts with 3 ranked sessions. Search next 3 expands on request, reusing saved evidence/results. Total caps: 6 sessions / 64 MiB raw / 24 matches; 60-second cooperative deadline per batch. Closing cancels; slow system reads may take time to return.",
+                Text("Search checks the most likely current session first. If no match is found, Search next 3 expands on request and reuses the saved evidence/results. Total caps: 4 sessions / 64 MiB raw / 24 matches; 60-second cooperative deadline per batch. Closing cancels; slow system reads may take time to return.",
                     style = MaterialTheme.typography.bodySmall)
                 Text("Only inspected sessions support a recommendation, not global uniqueness. If unreadable logs or timeouts block confirmation, review candidate sessions and search an explicitly selected scope.",
                     style = MaterialTheme.typography.bodySmall)

@@ -53,10 +53,16 @@ class PostMatchDiscoveryTest {
     @Test fun crossSessionDuplicatesDeduplicateButPlausibleDistinctSourcesConflict() = runBlocking {
         val repo = PostMatchCollectionRepository(temporary.root)
         val other = "Hearthstone_2026_10_13_11_59_00"
-        val duplicate = PostMatchDiscovery(repo, zone).search(record, listOf(session, other), emptySet()) { name, _ -> snapshot(name) }
+        val duplicateEngine = PostMatchDiscovery(repo, zone)
+        val duplicateInitial = duplicateEngine.search(record, listOf(session, other), emptySet()) { name, _ -> snapshot(name) }
+        val duplicate = duplicateEngine.search(record, listOf(session, other), emptySet(), duplicateInitial) { name, _ -> snapshot(name) }
         assertEquals(PairingStatus.ACCEPTED, duplicate.pairing.status)
         assertEquals(1, duplicate.candidates.size)
-        val ambiguous = PostMatchDiscovery(repo, zone).search(record, listOf(session, other), emptySet()) { name, _ ->
+        val ambiguousEngine = PostMatchDiscovery(repo, zone)
+        val ambiguousInitial = ambiguousEngine.search(record, listOf(session, other), emptySet()) { name, _ ->
+            snapshot(name, if (name == other) raw + "\nignored additional line" else raw)
+        }
+        val ambiguous = ambiguousEngine.search(record, listOf(session, other), emptySet(), ambiguousInitial) { name, _ ->
             snapshot(name, if (name == other) raw + "\nignored additional line" else raw)
         }
         assertEquals(PairingStatus.CONFLICTED, ambiguous.pairing.status)
@@ -66,7 +72,11 @@ class PostMatchDiscoveryTest {
     @Test fun unreadableOtherSessionPreventsUniqueRecommendation() = runBlocking {
         val repo = PostMatchCollectionRepository(temporary.root)
         val other = "Hearthstone_2026_10_13_11_00_00"
-        val result = PostMatchDiscovery(repo, zone).search(record, listOf(session, other), emptySet()) { name, _ ->
+        val engine = PostMatchDiscovery(repo, zone)
+        val initial = engine.search(record, listOf(session, other), emptySet()) { name, _ ->
+            if (name == other) error("Reader lost") else snapshot(name)
+        }
+        val result = engine.search(record, listOf(session, other), emptySet(), initial) { name, _ ->
             if (name == other) error("Reader lost") else snapshot(name)
         }
         assertEquals(PairingStatus.PENDING, result.pairing.status)
@@ -79,7 +89,12 @@ class PostMatchDiscoveryTest {
         val repo = PostMatchCollectionRepository(temporary.root)
         val engine = PostMatchDiscovery(repo, zone)
         var reads = 0
-        val result = engine.search(record, listOf(session, "Hearthstone_2026_10_13_11_00_00"), emptySet()) { name, _ ->
+        val names = listOf(session, "Hearthstone_2026_10_13_11_00_00")
+        val initial = engine.search(record, names, emptySet()) { name, _ ->
+            reads++
+            if (name != session) error("Reader returned no Power.log descriptor") else snapshot(name)
+        }
+        val result = engine.search(record, names, emptySet(), initial) { name, _ ->
             reads++
             if (name != session) error("Reader returned no Power.log descriptor") else snapshot(name)
         }
@@ -146,13 +161,13 @@ class PostMatchDiscoveryTest {
         val names = (1..7).map { "Hearthstone_2026_10_13_12_0${it}_00" }
         var reads = 0
         val limited = PostMatchDiscovery(repo, zone).search(record, names, emptySet()) { name, _ -> reads++; snapshot(name, "no matches") }
-        assertEquals(3, reads)
+        assertEquals(1, reads)
         assertEquals(PairingStatus.PENDING, limited.pairing.status)
         assertEquals(3, limited.pendingSessions.size)
         val expanded = PostMatchDiscovery(repo, zone).search(record, names, emptySet(), limited) { name, _ -> reads++; snapshot(name, "no matches") }
-        assertEquals(6, reads)
+        assertEquals(4, reads)
         assertTrue(expanded.pendingSessions.isEmpty())
-        assertEquals(6, expanded.bundles.size)
+        assertEquals(4, expanded.bundles.size)
     }
 
     @Test fun timeoutKeepsEarlierCandidatesButNeverClaimsAcceptance() = runBlocking {
@@ -160,10 +175,12 @@ class PostMatchDiscoveryTest {
         var reads = 0
         val repo = PostMatchCollectionRepository(temporary.root)
         val other = "Hearthstone_2026_10_13_11_59_00"
-        val result = PostMatchDiscovery(repo, zone) { now }.search(record, listOf(session, other), emptySet()) { name, _ ->
-            reads++
-            if (name == other) now = 60_000
-            snapshot(name)
+        val engine = PostMatchDiscovery(repo, zone) { now }
+        val initial = engine.search(record, listOf(session, other), emptySet()) { name, _ ->
+            reads++; snapshot(name)
+        }
+        val result = engine.search(record, listOf(session, other), emptySet(), initial) { name, _ ->
+            reads++; now = 60_000; snapshot(name)
         }
         assertEquals(2, reads)
         assertEquals(PairingStatus.PENDING, result.pairing.status)
@@ -180,15 +197,15 @@ class PostMatchDiscoveryTest {
         val initial = PostMatchDiscovery(repo, zone).search(record, names, emptySet()) { name, _ ->
             reads += name; snapshot(name, "no matches")
         }
-        assertEquals(order.take(3), reads)
+        assertEquals(order.take(1), reads)
         assertEquals(PairingStatus.PENDING, initial.pairing.status)
         val expanded = PostMatchDiscovery(repo, zone).search(record, names, emptySet(), initial) { name, _ ->
-            reads += name; snapshot(name, if (name == order[3]) raw else "no matches")
+            reads += name; snapshot(name, if (name == order[1]) raw else "no matches")
         }
-        assertEquals(order, reads)
+        assertEquals(order.take(4), reads)
         assertEquals(reads.size, reads.distinct().size)
         assertEquals(PairingStatus.ACCEPTED, expanded.pairing.status, expanded.pairing.toString())
-        assertEquals(6, expanded.bundles.size)
+        assertEquals(4, expanded.bundles.size)
         assertTrue(expanded.pendingSessions.isEmpty())
     }
 
