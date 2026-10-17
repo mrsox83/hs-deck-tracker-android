@@ -6,6 +6,8 @@ Owner resumed after the end-of-day pause. Published source through `9c58860` com
 
 Backlog priority governance is now policy in `docs/coordination/BACKLOG_PRIORITY_STANDARD.md`, root `AGENTS.md`, and the canonical `05 - Coaching × Development Feedback Backlog` Google Doc. Reporting agents may propose severity but must leave priority UNASSESSED. Only coordinator comparison against the complete active queue, or an explicit owner override, can assign/reorder priority; rationale and prior values are retained. The Google Doc policy text and preserved heading hierarchy were export-verified on 2026-10-17.
 
+The owner subsequently approved development action on the October17 HS-COACHING bug report. LOCAL-002 combines Bugs1+2 as S1/P1 capture-coverage provenance work because both block reliable interpretation of absent tracker events. Source tracing places the observed zero-PLAYER_PLAY loss before export serialization, most likely at recognition eligibility or pre-journal interruption; no evidence yet proves recognized events were discarded. Initial containment removes the false `complete=true` claim from tracker fusion sources and adds an explicit diagnostic that absent tracker events are not confirmed inactivity. Observable interval/gap instrumentation and tests remain; no APK, merge or deployment is authorized. Bug3 remains HSC-004/P2 and GAME_RESET remains unclassified/P4 pending raw evidence.
+
 ## Verified code and current phone gate
 
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.

@@ -34,7 +34,9 @@ object EvidenceAdapters {
                 type = SourceType.ANDROID_TRACKER_JSON,
                 captureMethod = "screenshot-recognition",
                 matchAlias = record.id,
-                complete = true,
+                // A completed MatchRecord proves finalization, not continuous screenshot-recognition
+                // coverage. Until the tracker persists observable coverage intervals, keep this unknown.
+                complete = null,
             ),
             record,
         )

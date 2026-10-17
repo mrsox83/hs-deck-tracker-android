@@ -15,7 +15,11 @@ object FusionCoordinator {
         val matchId = stableId("logical", tracker.record.id, *sources.map { it.id }.toTypedArray())
         val incorporated = setOfNotNull(accepted?.source?.id) + accepted?.source?.parentSourceIds.orEmpty()
         val unused = uniquePower.filter { it.source.type != SourceType.DERIVED_FUSION && it.source.id !in incorporated }
-        val coverageWarnings = if (accepted != null && unused.isNotEmpty()) listOf(
+        val trackerCoverageWarning = if (tracker.source.complete == null) listOf(
+            "Tracker match finalization was observed, but screenshot-recognition coverage was not measured. " +
+                "Missing tracker events must not be treated as confirmed player inactivity.",
+        ) else emptyList()
+        val powerCoverageWarnings = if (accepted != null && unused.isNotEmpty()) listOf(
             "Partial reconstruction: ${unused.size} selected Power source(s) retained as provenance but not incorporated into the timeline. " +
                 "They may be unrelated games or unverified reconnect fragments; full reconnect recovery is not established.",
         ) else emptyList()
@@ -29,7 +33,7 @@ object FusionCoordinator {
             entities = accepted?.entities.orEmpty(),
             choices = accepted?.choices.orEmpty(),
             snapshots = accepted?.snapshots.orEmpty(),
-            diagnostics = accepted?.diagnostics.orEmpty() + coverageWarnings,
+            diagnostics = accepted?.diagnostics.orEmpty() + trackerCoverageWarning + powerCoverageWarnings,
             continuations = listOfNotNull(accepted?.continuation),
         )
     }
