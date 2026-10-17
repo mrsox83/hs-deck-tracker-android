@@ -18,19 +18,21 @@ class PostMatchPresentationTest {
 
         val stale = PostMatchPresentation.fusionConsistency(current, entry(1))
         assertEquals(PostMatchPresentation.FusionConsistency.REVISION_STALE, stale.consistency)
-        assertTrue(stale.message.contains("not silently regenerated"))
+        assertEquals("Game edited after fusion", stale.title)
+        assertEquals("This game was edited after fusion. Its result is still WIN, and the original fusion is kept.", stale.message)
 
         val conflict = PostMatchPresentation.fusionConsistency(
             current.copy(result = MatchResult.LOSS, resultCorrections = listOf(
                 com.stroexd.hsdecktracker.core.stats.ResultCorrection(MatchResult.WIN, MatchResult.LOSS, 2),
             )), entry(1, MatchResult.WIN))
         assertEquals(PostMatchPresentation.FusionConsistency.RESULT_CONFLICT, conflict.consistency)
-        assertTrue(conflict.message.contains("preserved fusion used WIN"))
-        assertTrue(conflict.message.contains("current saved revision 2 is LOSS"))
-        assertTrue(conflict.message.contains("Both values"))
+        assertEquals("Game result changed", conflict.title)
+        assertEquals("This fusion says WIN, but the saved game now says LOSS. Both copies are kept. Export the saved game for the current result.", conflict.message)
 
-        assertEquals(PostMatchPresentation.FusionConsistency.UNKNOWN_LEGACY,
-            PostMatchPresentation.fusionConsistency(current, entry(null, null)).consistency)
+        val legacy = PostMatchPresentation.fusionConsistency(current, entry(null, null))
+        assertEquals(PostMatchPresentation.FusionConsistency.UNKNOWN_LEGACY, legacy.consistency)
+        assertEquals("Older fusion", legacy.title)
+        assertEquals("This fusion was saved by an older app version. It is still available, but the app cannot confirm whether its result matches the saved game.", legacy.message)
     }
     @Test fun longCoverageStatusIsCompactWithoutChangingFullEvidence() {
         val warning = "Partial reconstruction: 3 selected Power sources retained as provenance. " + "Unverified reconnect. ".repeat(100)

@@ -171,8 +171,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         shape = MaterialTheme.shapes.medium,
                     ) {
                         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(if (conflicted) "Saved result conflicts with preserved fusion" else "Fusion provenance",
-                                style = MaterialTheme.typography.titleSmall)
+                            Text(fusionConsistency?.title.orEmpty(), style = MaterialTheme.typography.titleSmall)
                             Text(fusionConsistency?.message.orEmpty(), style = MaterialTheme.typography.bodySmall)
                         }
                     }
