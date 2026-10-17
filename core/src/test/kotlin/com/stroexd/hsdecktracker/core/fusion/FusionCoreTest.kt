@@ -106,6 +106,8 @@ class FusionCoreTest {
 
         assertEquals(FusionImportState.FUSED_LOCAL, result.entry.state, result.entry.pairing.toString())
         assertEquals(1, result.entry.attempts)
+        assertEquals(record.revision, result.entry.fusedRecordRevision)
+        assertEquals(record.result, result.entry.fusedRecordResult)
         assertNotNull(result.entry.artifactFile)
         val artifact = File(dir, "fused-matches/${result.entry.artifactFile}")
         assertTrue(artifact.isFile)

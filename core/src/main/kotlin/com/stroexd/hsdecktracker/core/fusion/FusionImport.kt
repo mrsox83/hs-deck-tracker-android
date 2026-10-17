@@ -2,6 +2,7 @@ package com.stroexd.hsdecktracker.core.fusion
 
 import com.stroexd.hsdecktracker.core.data.JsonFileStore
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
+import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.util.AppJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -31,6 +32,9 @@ data class FusionImportEntry(
     val lastError: String? = null,
     val updatedAt: Long,
     val coverageWarnings: List<String> = emptyList(),
+    /** Saved-match identity used when the immutable fused artifact was assembled. Null for legacy entries. */
+    val fusedRecordRevision: Int? = null,
+    val fusedRecordResult: MatchResult? = null,
 )
 
 class FusionImportRepository(
@@ -104,6 +108,8 @@ class FusionImportRepository(
         artifactFile: String? = null,
         error: String? = null,
         coverageWarnings: List<String>? = null,
+        fusedRecordRevision: Int? = null,
+        fusedRecordResult: MatchResult? = null,
     ): FusionImportEntry = update(matchId) { previous ->
         requireNotNull(previous) { "Unknown fusion import $matchId" }.copy(
             state = state,
@@ -111,6 +117,8 @@ class FusionImportRepository(
             artifactFile = artifactFile ?: previous.artifactFile,
             lastError = error,
             coverageWarnings = coverageWarnings ?: previous.coverageWarnings,
+            fusedRecordRevision = fusedRecordRevision ?: previous.fusedRecordRevision,
+            fusedRecordResult = fusedRecordResult ?: previous.fusedRecordResult,
             updatedAt = clock(),
         )
     }
@@ -212,6 +220,8 @@ class FusionImporter(
                         if (fused.diagnostics.any { it.startsWith("Turn owner unresolved") })
                             listOf("Partial reconstruction: turn ownership or per-player indices remain unknown; see artifact diagnostics.")
                         else emptyList(),
+                    fusedRecordRevision = record.revision,
+                    fusedRecordResult = record.result,
                 ),
                 diagnostics,
             )

@@ -46,6 +46,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
     val collections by container.postMatchCollections.entries.collectAsStateWithLifecycle()
     val imports by container.fusionImports.entries.collectAsStateWithLifecycle()
     val fusedEntry = imports.firstOrNull { it.matchId == match.id && it.state == FusionImportState.FUSED_LOCAL }
+    val fusionConsistency = fusedEntry?.let { PostMatchPresentation.fusionConsistency(match, it) }
     var sessions by remember { mutableStateOf(emptyList<String>()) }
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var discovery by remember { mutableStateOf<PostMatchDiscoveryResult?>(null) }
@@ -164,10 +165,24 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 Text("Selected game: ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(Date(match.timestamp))} (phone local time)")
                 Text("${match.playerClass} vs ${match.opponentClass} • ${match.result} • ${match.deckName}")
                 if (fusedEntry != null) {
-                    Text("Ready to export — fusion already saved. Do not search or retry again.", style = MaterialTheme.typography.titleSmall)
+                    val conflicted = fusionConsistency?.consistency == PostMatchPresentation.FusionConsistency.RESULT_CONFLICT
+                    Surface(
+                        color = if (conflicted) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer,
+                        shape = MaterialTheme.shapes.medium,
+                    ) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(if (conflicted) "Saved result conflicts with preserved fusion" else "Fusion provenance",
+                                style = MaterialTheme.typography.titleSmall)
+                            Text(fusionConsistency?.message.orEmpty(), style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    Text(if (conflicted)
+                        "Historical fusion remains available for evidence export. Do not treat it as the current saved result or retry blindly. Use the match-detail download action for the current revisioned match JSON."
+                    else "Ready to export — fusion already saved. Do not search or retry again.",
+                        style = MaterialTheme.typography.titleSmall)
                     Button(modifier = Modifier.fillMaxWidth(), enabled = !busy, onClick = {
                         exportEvidence { withContext(Dispatchers.IO) { container.fusionImports.artifactForExport(match.id) } }
-                    }) { Text("Save fused game (JSON) to Drive / folder") }
+                    }) { Text(if (conflicted) "Save preserved historical fusion (JSON)" else "Save fused game (JSON) to Drive / folder") }
                     OutlinedButton(modifier = Modifier.fillMaxWidth(), enabled = !busy, onClick = {
                         val date = java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(Date(match.timestamp))
                         exportEvidence("HS-game-$date-${match.id.take(8)}-logs.zip") { container.exportFusedGameLogs(match) }
