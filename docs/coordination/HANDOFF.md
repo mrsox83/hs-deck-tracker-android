@@ -2,7 +2,7 @@
 
 2026-10-16. Human owner retains scope/approval authority. Remote/local chat coordinates. Only one assigned worker per task; records, not chat memory, carry ownership across sessions.
 
-Owner resumed after the end-of-day pause. Live usage and canonical backlog were refreshed. The corrected-result export unit is published as `3c35301`. The follow-up result-conflict/manual-shell source unit now records the saved revision/result used by new fused artifacts and visibly separates current, stale, conflicted and legacy-unverified fusion without rewriting preserved evidence. Focused tests, the 214-test core suite and Android Kotlin compilation pass. APK/phone acceptance remains separate. No merge/deployment/R6.
+Owner resumed after the end-of-day pause. Live usage and canonical backlog were refreshed. The corrected-result export unit is published as `3c35301`; the follow-up result-conflict/manual-shell source is published as `22f91eb`. The latter records the saved revision/result used by new fused artifacts and visibly separates current, stale, conflicted and legacy-unverified fusion without rewriting preserved evidence. Focused tests, the 214-test core suite, Android compilation, APK assembly/signature/package/permission/ZIP/native-alignment gates, and REA shipped-artifact inspection pass. The exact APK is locally staged for a bounded phone gate; runtime acceptance remains separate. No merge/deployment/R6.
 
 Backlog priority governance is now policy in `docs/coordination/BACKLOG_PRIORITY_STANDARD.md`, root `AGENTS.md`, and the canonical `05 - Coaching × Development Feedback Backlog` Google Doc. Reporting agents may propose severity but must leave priority UNASSESSED. Only coordinator comparison against the complete active queue, or an explicit owner override, can assign/reorder priority; rationale and prior values are retained. The Google Doc policy text and preserved heading hierarchy were export-verified on 2026-10-17.
 
@@ -21,6 +21,15 @@ Backlog priority governance is now policy in `docs/coordination/BACKLOG_PRIORITY
 
 - REA is now connected for authorized static APK inspection. The initial manual-export V4 baseline independently confirms package `com.stroexd.hsdecktracker.fusiontestr4`, version `1.5.0-fusiontestr4`/`10500`, min/target SDK 26/36, and 95 compiled classes in the Fusion namespace for APK SHA-256 `527b74cb4ce7be1ffe6bc98ca73faafa6f32c6862ff70db24cd664d60ca044b3`.
 - Before promoting a changed APK to phone validation or release-candidate status, run `checkpoints/mobile-fusion-rea-artifact-gate.md`. Record package/SDK/permission/class drift and Evidence IDs. Continue separate apksigner/alignment and phone/runtime gates; REA static evidence does not close them.
+- Result-conflict APK: SHA-256 `c2fa1d59a483302e07febc92d9c6521a979cd35de36a8532c40b90c134b7bc9f`, 68,309,161 bytes, unchanged R4 test identity/signer/permissions, all native libraries 16 KiB aligned. REA observes 22,556 classes / 553 resources and complete Fusion-namespace coverage including new `PostMatchPresentation`; Evidence IDs `ev_a4b41ab27a9b45b47563ae1be05b7648b6e9d1cf8c1f07be26ee035c8811f0bd` and `ev_abae1a425af413fca330f5cca69ef228407b478af263ce50b5b9ae9801a8f445`. Static evidence does not prove phone behavior.
+
+## Current phone gate
+
+- Local delivery: `C:\Users\Xs_da\Documents\SoxCoachExporter\Matches\mobile-fusion-result-conflict-device-validation-v1`.
+- Install only if Android offers an update to **HS Deck Tracker Fusion R4 Test**; do not uninstall or clear data. Confirm history remains.
+- Using an existing fused match, change the saved result to its opposite and confirm match detail plus Game logs & export show the preserved fusion revision/result against the current saved revision/result as a historical conflict.
+- Export the current revisioned match JSON and the preserved fused JSON separately. Confirm neither replaces the other and the existing fused artifact remains available. A suitable saved match is enough; no new game is requested.
+- Legacy artifacts, if encountered, must say unverified rather than infer agreement. Report exact wording or screenshots if any step differs.
 
 ## Daily feedback and private evidence
 
