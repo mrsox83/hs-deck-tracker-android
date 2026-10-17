@@ -31,6 +31,7 @@ Backlog priority governance is now policy in `docs/coordination/BACKLOG_PRIORITY
 - Using an existing fused match, change the saved result to its opposite and confirm match detail plus Game logs & export show the preserved fusion revision/result against the current saved revision/result as a historical conflict.
 - Export the current revisioned match JSON and the preserved fused JSON separately. Confirm neither replaces the other and the existing fused artifact remains available. A suitable saved match is enough; no new game is requested.
 - Legacy artifacts, if encountered, must say unverified rather than infer agreement. Report exact wording or screenshots if any step differs.
+- Non-blocking observation: owner screenshot `9530.jpg` shows the successful update still labeled **HS Deck Tracker Fusion R4 Test**. Owner assigned this cosmetic cleanup low priority. Keep it separate from current runtime acceptance; a later durable display-name change must preserve the installed package/signer/data boundary unless separately authorized.
 
 ## Daily feedback and private evidence
 

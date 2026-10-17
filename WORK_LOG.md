@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-17 Central — owner-reported stale installed label
+
+Owner screenshot `9530.jpg` confirms Android successfully updated the intended app but still displays **HS Deck Tracker Fusion R4 Test**. Source inspection confirms the visible `fusionTest` application label and background-tracking label remain R4-branded; package/version suffixes also retain the established R4 isolation identity. Owner classified this as low priority and non-blocking. Recorded a cosmetic naming cleanup without changing the current APK or phone gate. Any later fix should choose a durable visible channel name while preserving the installed package ID, signer and app data unless a separately reviewed migration is explicitly authorized.
+
 ## 2026-10-17 Central — default Fusion APK Drive location
 
 Owner clarified the established package convention after two incorrect interpretations: `H:\My Drive\HSReplay\Development\` is the parent, and every validated build gets its own uniquely named/versioned sibling folder under it. APK/support files must not be loose in the root or nested inside another build's folder. Inspected the current directory pattern, then moved this build into `mobile-fusion-r5-manual-export-device-validation-v5` with `app-fusionTest.apk`, `README.md`, `SHA256.txt`, and `CHECKPOINT.md`. Future authorized deliveries follow the same `mobile-fusion-rX-...-device-validation-vX` structure, preserve older folders, and reread the copied APK for size/hash verification.
