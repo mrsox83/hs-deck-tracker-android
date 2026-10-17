@@ -1,5 +1,6 @@
 package com.stroexd.hsdecktracker.core.fusion
 
+import com.stroexd.hsdecktracker.core.stats.MatchRecord
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.ResolverStyle
@@ -11,6 +12,32 @@ object PostMatchPresentation {
     private val input = DateTimeFormatter.ofPattern("uuuu_MM_dd_HH_mm_ss", Locale.ROOT)
         .withResolverStyle(ResolverStyle.STRICT)
     private val output = DateTimeFormatter.ofPattern("MMM d, uuuu • h:mm:ss a", Locale.US)
+
+    enum class FusionConsistency { CURRENT, REVISION_STALE, RESULT_CONFLICT, UNKNOWN_LEGACY }
+
+    data class FusionConsistencyNotice(val consistency: FusionConsistency, val message: String)
+
+    /** Compares saved truth with the immutable tracker record incorporated at fusion time. */
+    fun fusionConsistency(record: MatchRecord, entry: FusionImportEntry): FusionConsistencyNotice {
+        val fusedRevision = entry.fusedRecordRevision
+        val fusedResult = entry.fusedRecordResult
+        if (fusedRevision == null || fusedResult == null) return FusionConsistencyNotice(
+            FusionConsistency.UNKNOWN_LEGACY,
+            "Fusion provenance predates saved-result revision tracking. The artifact is preserved, but current-result agreement is unverified.",
+        )
+        if (fusedResult != record.result) return FusionConsistencyNotice(
+            FusionConsistency.RESULT_CONFLICT,
+            "Result conflict: preserved fusion used $fusedResult from saved revision $fusedRevision; current saved revision ${record.revision} is ${record.result}. Both values and the user-edit history remain preserved. A separately approved re-fusion path would be required before treating the artifact as current.",
+        )
+        if (fusedRevision != record.revision) return FusionConsistencyNotice(
+            FusionConsistency.REVISION_STALE,
+            "Saved match changed after fusion (artifact revision $fusedRevision; current revision ${record.revision}). Result remains ${record.result}; the preserved artifact is not silently regenerated.",
+        )
+        return FusionConsistencyNotice(
+            FusionConsistency.CURRENT,
+            "Fusion matches saved revision ${record.revision} and result ${record.result}.",
+        )
+    }
 
     /** Compact UI label only; the full original message remains available in status details. */
     fun statusSummary(message: String): String {

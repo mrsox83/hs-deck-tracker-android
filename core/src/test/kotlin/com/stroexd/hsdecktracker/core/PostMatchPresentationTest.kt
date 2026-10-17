@@ -1,9 +1,37 @@
 package com.stroexd.hsdecktracker.core
 
 import com.stroexd.hsdecktracker.core.fusion.*
+import com.stroexd.hsdecktracker.core.stats.MatchRecord
+import com.stroexd.hsdecktracker.core.stats.MatchResult
 import kotlin.test.*
 
 class PostMatchPresentationTest {
+    private fun entry(revision: Int? = 1, result: MatchResult? = MatchResult.WIN) = FusionImportEntry(
+        matchId = "match", bundleSha256 = emptyList(), state = FusionImportState.FUSED_LOCAL,
+        updatedAt = 1, fusedRecordRevision = revision, fusedRecordResult = result,
+    )
+
+    @Test fun fusionConsistencySeparatesCurrentStaleConflictAndLegacyEvidence() {
+        val current = MatchRecord(id = "match", timestamp = 1, result = MatchResult.WIN, revision = 2)
+        assertEquals(PostMatchPresentation.FusionConsistency.CURRENT,
+            PostMatchPresentation.fusionConsistency(current, entry(2)).consistency)
+
+        val stale = PostMatchPresentation.fusionConsistency(current, entry(1))
+        assertEquals(PostMatchPresentation.FusionConsistency.REVISION_STALE, stale.consistency)
+        assertTrue(stale.message.contains("not silently regenerated"))
+
+        val conflict = PostMatchPresentation.fusionConsistency(
+            current.copy(result = MatchResult.LOSS, resultCorrections = listOf(
+                com.stroexd.hsdecktracker.core.stats.ResultCorrection(MatchResult.WIN, MatchResult.LOSS, 2),
+            )), entry(1, MatchResult.WIN))
+        assertEquals(PostMatchPresentation.FusionConsistency.RESULT_CONFLICT, conflict.consistency)
+        assertTrue(conflict.message.contains("preserved fusion used WIN"))
+        assertTrue(conflict.message.contains("current saved revision 2 is LOSS"))
+        assertTrue(conflict.message.contains("Both values"))
+
+        assertEquals(PostMatchPresentation.FusionConsistency.UNKNOWN_LEGACY,
+            PostMatchPresentation.fusionConsistency(current, entry(null, null)).consistency)
+    }
     @Test fun longCoverageStatusIsCompactWithoutChangingFullEvidence() {
         val warning = "Partial reconstruction: 3 selected Power sources retained as provenance. " + "Unverified reconnect. ".repeat(100)
         val full = PostMatchPresentation.resultText(FusionImportState.FUSED_LOCAL, null, true, listOf(warning))

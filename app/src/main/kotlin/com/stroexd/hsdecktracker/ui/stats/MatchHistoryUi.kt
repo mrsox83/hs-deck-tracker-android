@@ -85,6 +85,7 @@ import com.stroexd.hsdecktracker.core.deck.DeckAnalysis
 import com.stroexd.hsdecktracker.core.meta.OpponentPredictor
 import com.stroexd.hsdecktracker.core.fusion.FusionImportState
 import com.stroexd.hsdecktracker.core.fusion.FusionBundleLoader
+import com.stroexd.hsdecktracker.core.fusion.PostMatchPresentation
 import com.stroexd.hsdecktracker.core.stats.MatchExporter
 import com.stroexd.hsdecktracker.core.stats.MatchHistory
 import com.stroexd.hsdecktracker.core.stats.MatchQuery
@@ -621,6 +622,15 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                         entry.coverageWarnings.forEach { warning ->
                             Text(warning, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error)
+                        }
+                        if (entry.state == FusionImportState.FUSED_LOCAL) {
+                            val consistency = PostMatchPresentation.fusionConsistency(match, entry)
+                            Text(
+                                consistency.message,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (consistency.consistency == PostMatchPresentation.FusionConsistency.RESULT_CONFLICT)
+                                    MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                         if (!detail.isNullOrBlank()) {
                             Text(

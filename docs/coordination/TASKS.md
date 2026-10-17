@@ -6,7 +6,7 @@ Coordinator-owned. Updated2026-10-16. Source of truth for development ownership;
 |---|---|---|---|---|
 | LOCAL-001 | Remote/local coordinator | DONE | Android UI, capture/reader, fusion reducer/models/import, export/persistence, all build/signing config, integration branch | Manual-export V4 phone/artifact gate accepted; exact source hash verified and one app history entry confirmed |
 | CLOUD-001 | cloud-001-worker-1, single user-launched cloud chat | DONE | Only core/src/main/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; core/src/test/kotlin/com/stroexd/hsdecktracker/core/fusion/summary/**; docs/coordination/reports/CLOUD-001.md | Accepted and integrated as `a81538f`; 14 focused and 211 ordinary tests pass locally; reservation released |
-| COORD-001 | Remote/local coordinator | WORKING | AGENTS.md; docs/coordination/** except assigned worker report; TODO.md/WORK_LOG.md/checkpoints/**; approved shared-note publication | Corrected-result export unit reviewed, validated and published as `3c35301`; separate fusion contradiction/manual-shell unit is the next approval gate |
+| COORD-001 | Remote/local coordinator | WORKING | AGENTS.md; docs/coordination/** except assigned worker report; TODO.md/WORK_LOG.md/checkpoints/**; approved shared-note publication | Result-conflict/manual-shell source and validation complete; publication pending. APK/phone acceptance remains separate |
 
 ## Assignment protocol
 
