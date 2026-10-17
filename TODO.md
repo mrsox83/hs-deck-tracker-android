@@ -18,6 +18,7 @@ This section is the restart source of truth. `docs/coordination/TASKS.md` owns a
 - [ ] R6/background automatic collection, native Drive upload, merge and deployment remain excluded.
 - [ ] Before each phone-validation or release-candidate APK, run the shipped-artifact REA gate in `checkpoints/mobile-fusion-rea-artifact-gate.md`. This supplements source/build/signature and phone gates; static analysis never substitutes for runtime acceptance.
 - [ ] Low-priority tooling maintenance: identify the process locking Gradle/Kotlin outputs before cleanup. Fresh build directories remain the safe workaround. Inventory reports/APKs before removing roughly706.6MiB of likely disposable historical validation data; leftover unregistered review directory also remains.
+- [ ] Owner-assigned low-priority naming cleanup: Android update confirmation still displays **HS Deck Tracker Fusion R4 Test** for current R5 builds because the `fusionTest` application and background-service labels, package suffix and version suffix retain the R4 isolation identity. This is cosmetic and does not block the current phone gate. Before changing it, choose a durable channel label; preserve `com.stroexd.hsdecktracker.fusiontestr4`, signer and app data unless a separately reviewed migration is authorized.
 
 ## Remote/cloud coordination — 2026-10-15
 
