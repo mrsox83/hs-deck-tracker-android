@@ -2,6 +2,7 @@ package com.stroexd.hsdecktracker.core.tracker
 
 import com.stroexd.hsdecktracker.core.cards.HsClass
 import com.stroexd.hsdecktracker.core.stats.MatchResult
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 
 /** What the screen recognition observed. Cards are candidate dbfIds (e.g. Core and Legacy printing). */
 sealed interface GameEvent {
@@ -17,5 +18,7 @@ sealed interface GameEvent {
     /** Counts the turns of both players. */
     data class TurnChanged(val turn: Int) : GameEvent
     data class TurnOrderDetected(val friendlyWentFirst: Boolean) : GameEvent
+    data class RecognitionCoverageObserved(val observedAt: Long, val state: RecognitionCoverageState) : GameEvent
+    data class RecognitionStopped(val stoppedAt: Long) : GameEvent
     data class GameEnded(val result: MatchResult) : GameEvent
 }

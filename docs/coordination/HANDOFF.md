@@ -8,6 +8,8 @@ Backlog priority governance is now policy in `docs/coordination/BACKLOG_PRIORITY
 
 The owner subsequently approved development action on the October17 HS-COACHING bug report. LOCAL-002 combines Bugs1+2 as S1/P1 capture-coverage provenance work because both block reliable interpretation of absent tracker events. Source tracing places the observed zero-PLAYER_PLAY loss before export serialization, most likely at recognition eligibility or pre-journal interruption; no evidence yet proves recognized events were discarded. Initial containment removes the false `complete=true` claim from tracker fusion sources and adds an explicit diagnostic that absent tracker events are not confirmed inactivity. Observable interval/gap instrumentation and tests remain; no APK, merge or deployment is authorized. Bug3 remains HSC-004/P2 and GAME_RESET remains unclassified/P4 pending raw evidence.
 
+LOCAL-002 source instrumentation now persists bounded recognition coverage as `FRAME_OBSERVED`, `PLAY_DETECTION_ELIGIBLE` or `CAPTURE_GAP`, including explicit capture-stop/finalization handling and truncation disclosure. Coverage is a side channel and does not alter gameplay-event replay. Legacy records decode with empty/unknown coverage. All219 ordinary core tests across36 suites and `:app:compileFusionTestKotlin` pass; no APK assembly was run. The issue deliberately remains open: the connector reset is pending, H: currently exposes no Drive contents, and the cited raw tracker/fusion/Power.log files must be reviewed before resolution or an APK build.
+
 ## Verified code and current phone gate
 
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.

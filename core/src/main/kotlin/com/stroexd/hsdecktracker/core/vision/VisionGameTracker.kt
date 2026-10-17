@@ -2,6 +2,7 @@ package com.stroexd.hsdecktracker.core.vision
 
 import com.stroexd.hsdecktracker.core.cards.HsClass
 import com.stroexd.hsdecktracker.core.stats.MatchResult
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import com.stroexd.hsdecktracker.core.tracker.GameEvent
 import kotlin.math.abs
 import kotlin.math.max
@@ -103,6 +104,11 @@ class VisionGameTracker(
     private var endedAt = 0L
     private val buttonHistory = ArrayDeque<Boolean>()
     private val localeVotes = ArrayDeque<String>()
+    private var lastCoverageState: RecognitionCoverageState? = null
+    private var lastCoverageEmittedAt = 0L
+    private var pendingCoverage: GameEvent.RecognitionCoverageObserved? = null
+
+    fun takeCoverageObservation(): GameEvent.RecognitionCoverageObserved? = pendingCoverage.also { pendingCoverage = null }
 
     /** Client language read from UI texts (e.g. the turn button), null until it is clear. */
     var gameLocale: String? = null
@@ -154,11 +160,13 @@ class VisionGameTracker(
         buttonHistory.addLast(f.turn != null)
         if (buttonHistory.size > BUTTON_WINDOW) buttonHistory.removeFirst()
 
-        if (phase == Phase.PLAYING || phase == Phase.MULLIGAN) {
+        val wasTracking = phase == Phase.PLAYING || phase == Phase.MULLIGAN
+        if (wasTracking) {
             if (f.result != null) {
                 game.resultStreak = if (f.result == game.lastResult) game.resultStreak + 1 else 1
                 game.lastResult = f.result
                 if (game.resultStreak >= 2) {
+                    queueCoverage(f, now, force = true)
                     // Very short "games" are misrecognitions and don't belong in the match history
                     if (phase == Phase.PLAYING && (game.turnCounter >= 2 || now - game.startedAt >= minGameMillis)) {
                         events += GameEvent.GameEnded(f.result)
@@ -195,6 +203,7 @@ class VisionGameTracker(
             Phase.MULLIGAN -> onMulliganFrame(f, now, events)
             Phase.PLAYING -> onPlayingFrame(f, now, events)
         }
+        if (wasTracking || phase == Phase.PLAYING || phase == Phase.MULLIGAN) queueCoverage(f, now)
         return events
     }
 
@@ -315,6 +324,23 @@ class VisionGameTracker(
         events += GameEvent.GameStarted
         game = Game(now)
         lastActivity = now
+        lastCoverageState = null
+        lastCoverageEmittedAt = 0L
+    }
+
+    private fun queueCoverage(f: FrameInfo, now: Long, force: Boolean = false) {
+        val rowCounts = f.cards.filter { ScreenRegions.isHandZoomRow(it.line) }.groupingBy { it.key }.eachCount()
+        val eligible = phase == Phase.PLAYING && game.turnState == true && !f.choice &&
+            game.stableHandEstablished && rowCounts.values.sum() >= MIN_HAND_ROW_SIZE &&
+            game.pendingHandCounts == rowCounts && game.pendingHandFrames >= HAND_FRAMES_FOR_PLAYED &&
+            now - game.pendingHandSince >= PLAYED_MIN_MILLIS
+        val state = if (eligible) RecognitionCoverageState.PLAY_DETECTION_ELIGIBLE
+            else RecognitionCoverageState.FRAME_OBSERVED
+        if (force || state != lastCoverageState || now - lastCoverageEmittedAt >= COVERAGE_HEARTBEAT_MILLIS) {
+            pendingCoverage = GameEvent.RecognitionCoverageObserved(now, state)
+            lastCoverageState = state
+            lastCoverageEmittedAt = now
+        }
     }
 
     private fun updateClasses(f: FrameInfo, events: MutableList<GameEvent>) {
@@ -532,6 +558,7 @@ class VisionGameTracker(
         private const val MIN_HAND_ROW_SIZE = 3
         private const val HAND_FRAMES_FOR_PLAYED = 4
         private const val PLAYED_MIN_MILLIS = 2_000L
+        private const val COVERAGE_HEARTBEAT_MILLIS = 5_000L
         private const val RESTART_COOLDOWN_MILLIS = 15_000L
         private const val MID_GAME_AFTER_END_MILLIS = 120_000L
         private const val MULLIGAN_TIMEOUT_MILLIS = 60_000L

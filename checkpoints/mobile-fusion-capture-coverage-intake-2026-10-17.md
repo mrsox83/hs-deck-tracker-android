@@ -29,9 +29,10 @@ This containment is backward-compatible with existing tracker JSON and does not 
 
 ## Remaining LOCAL-002 work
 
-- Design and persist observable recognition-coverage intervals/gaps with bounded size and backward-compatible serialization.
-- Distinguish capture unavailable/interrupted, frames observed but hand row ineligible, and recognizer-active intervals without implying that all actions were recognized.
-- Add synthetic lifecycle/restart and eventless-turn tests proving missing evidence differs from confirmed inactivity.
+- [x] Persist bounded, backward-compatible recognition-coverage intervals in active journals and completed match JSON.
+- [x] Distinguish capture gaps, frames observed without play-detection eligibility, and play-detection-eligible intervals without claiming every action was recognized. Explicit recognition stops open a gap; a later observation or match finalization closes it. Gaps longer than 15 seconds are also made explicit. At most 512 intervals are retained, preserving the first 64 and newest 448 while setting a truncation flag.
+- [x] Keep coverage metadata out of the gameplay-event return stream; Android applies the side-channel observation after game start and before game finalization. This prevents coverage bookkeeping from changing replay/gameplay event semantics.
+- [x] Add synthetic coverage, stop/finalization, long-gap, legacy decode and bounded-retention tests. All 219 ordinary core tests pass across 36 suites; `:app:compileFusionTestKotlin` passes using SDK36. No APK assembly task was run.
 - Recheck the cited October 16–17 artifacts when the mapped Drive surface or connector is available; current H: Drive contents were unavailable during this checkpoint.
-- Focused `FusionCoreTest` and the full ordinary core suite pass: 216 tests across 36 suites, zero failures/errors/skips. No APK is warranted until interval instrumentation is implemented and source gates pass.
+- Do not classify LOCAL-002 as resolved or build an APK until the cited raw tracker, fusion and Power.log artifacts are reviewed against the source findings.
 
