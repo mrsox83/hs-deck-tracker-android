@@ -28,3 +28,10 @@ Date: 2026-10-17 Central
 - Phone layout/runtime behavior remains unverified. Install as an update only; do not uninstall or clear app data.
 - Legacy fused entries deliberately report result agreement as unverified rather than inferring it.
 - No private fixtures, merge, deployment, R6/background collection, or existing-artifact rewrite.
+
+## Phone observation and queued wording follow-up
+
+- Owner screenshot `9530.jpg` confirms Android updated the intended existing test app and retained its data boundary.
+- Owner screenshot `9531.jpg` confirms the legacy/unverified warning appears in **Game logs & export**. The warning behavior is present, but its provenance/revision wording was too technical for an incidental user notice.
+- Source now uses plain-language titles and messages for current, edited, result-changed, and older-fusion states. Detailed failure/error text remains unchanged for troubleshooting. Focused `PostMatchPresentationTest` passes using isolated output.
+- Per owner direction, this wording-only source change does not trigger a new APK. It will be included in the next otherwise-needed build; the installed v5 package still contains the older wording.

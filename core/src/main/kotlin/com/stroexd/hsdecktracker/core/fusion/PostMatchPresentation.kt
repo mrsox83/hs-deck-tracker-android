@@ -15,7 +15,11 @@ object PostMatchPresentation {
 
     enum class FusionConsistency { CURRENT, REVISION_STALE, RESULT_CONFLICT, UNKNOWN_LEGACY }
 
-    data class FusionConsistencyNotice(val consistency: FusionConsistency, val message: String)
+    data class FusionConsistencyNotice(
+        val consistency: FusionConsistency,
+        val title: String,
+        val message: String,
+    )
 
     /** Compares saved truth with the immutable tracker record incorporated at fusion time. */
     fun fusionConsistency(record: MatchRecord, entry: FusionImportEntry): FusionConsistencyNotice {
@@ -23,19 +27,23 @@ object PostMatchPresentation {
         val fusedResult = entry.fusedRecordResult
         if (fusedRevision == null || fusedResult == null) return FusionConsistencyNotice(
             FusionConsistency.UNKNOWN_LEGACY,
-            "Fusion provenance predates saved-result revision tracking. The artifact is preserved, but current-result agreement is unverified.",
+            "Older fusion",
+            "This fusion was saved by an older app version. It is still available, but the app cannot confirm whether its result matches the saved game.",
         )
         if (fusedResult != record.result) return FusionConsistencyNotice(
             FusionConsistency.RESULT_CONFLICT,
-            "Result conflict: preserved fusion used $fusedResult from saved revision $fusedRevision; current saved revision ${record.revision} is ${record.result}. Both values and the user-edit history remain preserved. A separately approved re-fusion path would be required before treating the artifact as current.",
+            "Game result changed",
+            "This fusion says $fusedResult, but the saved game now says ${record.result}. Both copies are kept. Export the saved game for the current result.",
         )
         if (fusedRevision != record.revision) return FusionConsistencyNotice(
             FusionConsistency.REVISION_STALE,
-            "Saved match changed after fusion (artifact revision $fusedRevision; current revision ${record.revision}). Result remains ${record.result}; the preserved artifact is not silently regenerated.",
+            "Game edited after fusion",
+            "This game was edited after fusion. Its result is still ${record.result}, and the original fusion is kept.",
         )
         return FusionConsistencyNotice(
             FusionConsistency.CURRENT,
-            "Fusion matches saved revision ${record.revision} and result ${record.result}.",
+            "Fusion is up to date",
+            "This fusion matches the saved game.",
         )
     }
 

@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-17 Central — plain-language incidental warnings
+
+Owner screenshot `9531.jpg` confirms the legacy-warning path appears in Game logs & export, but the message used developer-facing provenance/revision language. Replaced incidental fusion consistency notices with concise end-user titles and explanations: older fusion, game edited after fusion, game result changed, and fusion up to date. Detailed failure/error messages remain unchanged for troubleshooting. Focused `PostMatchPresentationTest` passes with the known fresh-output workaround after the normal core output was Windows-locked. Owner explicitly directed that this small wording change must not produce a standalone APK; no APK was assembled or uploaded, and the change is queued for the next otherwise-needed build.
+
 ## 2026-10-17 Central — owner-reported stale installed label
 
 Owner screenshot `9530.jpg` confirms Android successfully updated the intended app but still displays **HS Deck Tracker Fusion R4 Test**. Source inspection confirms the visible `fusionTest` application label and background-tracking label remain R4-branded; package/version suffixes also retain the established R4 isolation identity. Owner classified this as low priority and non-blocking. Recorded a cosmetic naming cleanup without changing the current APK or phone gate. Any later fix should choose a durable visible channel name while preserving the installed package ID, signer and app data unless a separately reviewed migration is explicitly authorized.
