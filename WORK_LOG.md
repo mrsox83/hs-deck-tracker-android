@@ -2,7 +2,7 @@
 
 ## 2026-10-17 Central — default Fusion APK Drive location
 
-Owner clarified that the default phone-accessible location for validated Fusion APK deliveries is the root `H:\My Drive\HSReplay\Development\`, not an APK-specific subfolder. Corrected the agent safeguards and coordinator handoff: never upload a Fusion APK into another APK's delivery folder. Moved the current `app-fusionTest.apk` directly into the Development root with uniquely named checksum and phone instructions, removed the mistaken empty subfolder/marker, and retained the validated local package. Future authorized deliveries use descriptive unique APK filenames and root-level supporting files; every Drive copy is reread for size/hash verification.
+Owner clarified the established package convention after two incorrect interpretations: `H:\My Drive\HSReplay\Development\` is the parent, and every validated build gets its own uniquely named/versioned sibling folder under it. APK/support files must not be loose in the root or nested inside another build's folder. Inspected the current directory pattern, then moved this build into `mobile-fusion-r5-manual-export-device-validation-v5` with `app-fusionTest.apk`, `README.md`, `SHA256.txt`, and `CHECKPOINT.md`. Future authorized deliveries follow the same `mobile-fusion-rX-...-device-validation-vX` structure, preserve older folders, and reread the copied APK for size/hash verification.
 
 ## 2026-10-17 Central — result-conflict APK and phone handoff
 
