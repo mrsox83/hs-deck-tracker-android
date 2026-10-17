@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-17 Central — current-session-first discovery
+
+Owner requested a faster manual discovery path for the next build. The initial search now reads only the highest-ranked current/most-likely session. If it does not yield an accepted candidate, the existing explicit action searches the next three sessions while reusing the first session's saved bundle/reduced evidence and never rereading it. Total automatic scope is reduced from six sessions to four; raw/decoded byte caps, 24-match cap, 60-second per-action deadline, incomplete/ambiguity handling, provenance, confirmation gate and manual one/two-session recovery remain unchanged. Updated UI guidance and focused regressions; all 13 `PostMatchDiscoveryTest` tests pass with isolated output. Source-only for the next otherwise-needed build: no APK assembled/uploaded, phone claim, merge, deployment or R6.
+
 ## 2026-10-17 Central — plain-language incidental warnings
 
 Owner screenshot `9531.jpg` confirms the legacy-warning path appears in Game logs & export, but the message used developer-facing provenance/revision language. Replaced incidental fusion consistency notices with concise end-user titles and explanations: older fusion, game edited after fusion, game result changed, and fusion up to date. Detailed failure/error messages remain unchanged for troubleshooting. Focused `PostMatchPresentationTest` passes with the known fresh-output workaround after the normal core output was Windows-locked. Owner explicitly directed that this small wording change must not produce a standalone APK; no APK was assembled or uploaded, and the change is queued for the next otherwise-needed build.

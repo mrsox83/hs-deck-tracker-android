@@ -96,7 +96,9 @@ class PostMatchDiscovery(private val repository: PostMatchCollectionRepository, 
             if (elapsedMillis() - start >= FusionDiscoveryPolicy.DEADLINE_MILLIS) throw SearchLimit("60-second search deadline reached")
         }
         val remainingSessions = previous?.pendingSessions ?: FusionDiscoveryPolicy.sessions(names, record.timestamp, zone)
-        val plan = remainingSessions.take(FusionDiscoveryPolicy.BATCH_SIZE)
+        val batchSize = if (previous == null) FusionDiscoveryPolicy.INITIAL_BATCH_SIZE
+            else FusionDiscoveryPolicy.EXPANSION_BATCH_SIZE
+        val plan = remainingSessions.take(batchSize)
         val bundles = previous?.bundles.orEmpty().toMutableList()
         val powers = previous?.reduced.orEmpty().toMutableList()
         val notes = previous?.notes.orEmpty().filterNot { it.startsWith("Inspected ") || it.startsWith("Search scope:") }.toMutableList()
