@@ -26,6 +26,7 @@ Backlog priority governance is now policy in `docs/coordination/BACKLOG_PRIORITY
 ## Current phone gate
 
 - Local delivery: `C:\Users\Xs_da\Documents\SoxCoachExporter\Matches\mobile-fusion-result-conflict-device-validation-v1`.
+- Owner-designated default Drive location for current and future validated Fusion phone APKs: `H:\My Drive\HSReplay\Development\mobile-fusion-result-conflict-device-validation-v1`. Each different build must retain its own descriptive filename/checksum/instructions rather than silently replacing prior evidence. Drive copies must be hash-verified after sync/copy.
 - Install only if Android offers an update to **HS Deck Tracker Fusion R4 Test**; do not uninstall or clear data. Confirm history remains.
 - Using an existing fused match, change the saved result to its opposite and confirm match detail plus Game logs & export show the preserved fusion revision/result against the current saved revision/result as a historical conflict.
 - Export the current revisioned match JSON and the preserved fused JSON separately. Confirm neither replaces the other and the existing fused artifact remains available. A suitable saved match is enough; no new game is requested.
