@@ -299,8 +299,9 @@ class AppContainer(context: Context) {
         }
     }
 
-    suspend fun exportSavedMatch(record: MatchRecord): CompletedMatchExporter.Result {
+    suspend fun exportSavedMatch(matchId: String): CompletedMatchExporter.Result {
         checkNotNull(settings.value.matchExportFolder) { appContext.getString(R.string.match_export_folder_missing) }
+        val record = checkNotNull(matches.get(matchId)) { "Saved match not found" }
         val result = completedMatchCommitter.commit(record, transferEnabled = true)
         if (result.entry.state == MatchOutboxState.TRANSFER_FAILED) error(result.entry.lastError ?: "Match export failed")
         return when (result.transferResult) {
