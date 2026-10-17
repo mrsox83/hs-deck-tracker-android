@@ -142,6 +142,8 @@ class MatchRepository(dir: File) {
 
     fun contains(id: String): Boolean = store.value.any { it.id == id }
 
+    fun get(id: String): MatchRecord? = store.value.firstOrNull { it.id == id }
+
     suspend fun add(record: MatchRecord) {
         store.update { it + record }
     }

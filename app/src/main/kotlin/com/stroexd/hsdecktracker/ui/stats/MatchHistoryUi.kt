@@ -543,7 +543,7 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                         IconButton(
                             onClick = {
                                 scope.launch {
-                                    runCatching { container.exportSavedMatch(match) }
+                                    runCatching { container.exportSavedMatch(match.id) }
                                         .onSuccess { result ->
                                             val message = when (result) {
                                                 CompletedMatchExporter.Result.WRITTEN -> R.string.match_export_success
@@ -730,25 +730,34 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
         }
     }
 
+    var savingEdit by remember { mutableStateOf(false) }
     if (editing && match != null) {
         EditMatchDialog(
             match = match,
-            onDismiss = { editing = false },
+            saving = savingEdit,
+            onDismiss = { if (!savingEdit) editing = false },
             onSave = { updated ->
-                editing = false
-                if (updated != match) {
+                if (updated == match) {
+                    editing = false
+                } else if (!savingEdit) {
                     val editedAt = System.currentTimeMillis()
                     val corrections = if (updated.result != match.result) {
                         match.resultCorrections + ResultCorrection(match.result, updated.result, editedAt)
                     } else match.resultCorrections
+                    savingEdit = true
                     scope.launch {
-                        container.matches.update(
-                            updated.copy(
-                                revision = match.revision + 1,
-                                editedAt = editedAt,
-                                resultCorrections = corrections,
-                            ),
-                        )
+                        try {
+                            container.matches.update(
+                                updated.copy(
+                                    revision = match.revision + 1,
+                                    editedAt = editedAt,
+                                    resultCorrections = corrections,
+                                ),
+                            )
+                            editing = false
+                        } finally {
+                            savingEdit = false
+                        }
                     }
                 }
             },
@@ -843,7 +852,7 @@ private fun TimelineLine(@StringRes label: Int, text: String, color: Color) {
 }
 
 @Composable
-private fun EditMatchDialog(match: MatchRecord, onDismiss: () -> Unit, onSave: (MatchRecord) -> Unit) {
+private fun EditMatchDialog(match: MatchRecord, saving: Boolean, onDismiss: () -> Unit, onSave: (MatchRecord) -> Unit) {
     var result by remember { mutableStateOf(match.result) }
     var opponent by remember { mutableStateOf(match.opponentClass) }
     var archetype by remember { mutableStateOf(match.opponentArchetype.orEmpty()) }
@@ -889,18 +898,21 @@ private fun EditMatchDialog(match: MatchRecord, onDismiss: () -> Unit, onSave: (
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onSave(
-                    match.copy(
-                        result = result,
-                        opponentClass = opponent,
-                        opponentArchetype = archetype.trim().ifBlank { null },
-                        wentFirst = wentFirst,
-                        notes = notes.trim(),
-                    ),
-                )
-            }) { Text(stringResource(R.string.save)) }
+            Button(
+                enabled = !saving,
+                onClick = {
+                    onSave(
+                        match.copy(
+                            result = result,
+                            opponentClass = opponent,
+                            opponentArchetype = archetype.trim().ifBlank { null },
+                            wentFirst = wentFirst,
+                            notes = notes.trim(),
+                        ),
+                    )
+                },
+            ) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !saving) { Text(stringResource(R.string.cancel)) } },
     )
 }

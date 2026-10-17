@@ -289,6 +289,20 @@ class MiscTest {
     }
 
     @Test
+    fun matchRepositoryGetReturnsLatestSavedRevision() = runTest {
+        val dir = Files.createTempDirectory("hs-match-get").toFile()
+        val original = MatchRecord(id = "match-current", timestamp = 3, result = MatchResult.WIN)
+        val corrected = original.copy(result = MatchResult.LOSS, revision = 2, editedAt = 20)
+        val matches = MatchRepository(dir)
+        matches.add(original)
+        matches.update(corrected)
+
+        assertEquals(corrected, matches.get(original.id))
+        assertNull(matches.get("missing"))
+        dir.deleteRecursively()
+    }
+
+    @Test
     fun activeMatchJournalRestoresAndOnlyClearsTheMatchingDraft() = runTest {
         val dir = Files.createTempDirectory("hs-active-match").toFile()
         val draft = TrackerState.empty(now = 100).copy(draftId = "draft-a", turn = 4)
