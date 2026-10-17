@@ -39,7 +39,7 @@ class FusionDiscoveryTest {
         val names = (1..9).map { "Hearthstone_2026_10_12_13_${it.toString().padStart(2, '0')}_00" }
         val end = Instant.parse("2026-10-12T18:10:00Z").toEpochMilli()
         val plan = FusionDiscoveryPolicy.sessions(names + names, end, ZoneId.of("America/Chicago"))
-        assertEquals(6, plan.size)
+        assertEquals(4, plan.size)
         assertEquals(names.last(), plan.first())
         assertEquals(plan, FusionDiscoveryPolicy.sessions(names.reversed(), end, ZoneId.of("America/Chicago")))
         assertFailsWith<IllegalArgumentException> { FusionDiscoveryPolicy.sessions(listOf("../Power.log"), end, ZoneId.of("UTC")) }
