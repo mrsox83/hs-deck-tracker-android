@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-17 Central — default Fusion APK Drive location
+
+Owner designated `<DEVELOPMENT_ROOT>\mobile-fusion-result-conflict-device-validation-v1` as the default phone-accessible location for validated Fusion APK deliveries. Recorded the default in agent safeguards and the coordinator handoff. Future authorized deliveries include the APK, checksum and bounded phone instructions; different builds use descriptive unique filenames so earlier validated evidence is not silently overwritten, and every Drive copy is reread for size/hash verification. The current APK already occupies this folder and its Drive hash matches the validated local package.
+
 ## 2026-10-17 Central — result-conflict APK and phone handoff
 
 Owner approved artifact packaging and the next bounded phone gate. Built `fusionTest` from published source `22f91eb`; the 68,309,161-byte APK SHA-256 is `c2fa1d59a483302e07febc92d9c6521a979cd35de36a8532c40b90c134b7bc9f`. Package/version/SDK/permissions and signer match the accepted R4 test baseline. `apksigner`, ZIP alignment and all packaged native 16 KiB alignment checks pass. REA/JADX shipped-artifact inspection reports 22,556 classes and 553 resources with complete Fusion-namespace coverage and observes the new `PostMatchPresentation`; Evidence IDs are recorded in the checkpoint. REA remains static evidence only. The exact APK, checksum and update/data-retention plus current-vs-historical conflict checklist are staged locally in `mobile-fusion-result-conflict-device-validation-v1`. Live usage after staging was 78% five-hour / 80% weekly, below the authorized 90% five-hour ceiling; the available reset remains unused. Phone behavior is pending; no Drive copy, merge, deployment, R6/background collection or existing-artifact rewrite.

@@ -49,6 +49,7 @@
 - Private gameplay fixtures, diagnostics, account identifiers and signing material never enter Git/cloud prompts by default.
 - No API keys/model calls are needed at app runtime. Do not decrypt signing/keys.p12.enc or inspect/copy private keystores.
 - Do not change Drive upload/sync destinations or relocate the synced source tree.
+- Default owner-accessible Fusion APK drop: `<DEVELOPMENT_ROOT>\mobile-fusion-result-conflict-device-validation-v1`. After all required build, signature, alignment and REA gates pass and the owner authorizes Drive publication, place the APK, checksum and bounded phone instructions there and reread the Drive copy's hash. Preserve prior deliveries; use a descriptive unique filename for a different build rather than silently overwriting validated evidence.
 
 ## Sources and testing
 
