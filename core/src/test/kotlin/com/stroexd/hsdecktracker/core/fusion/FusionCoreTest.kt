@@ -9,6 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import java.time.Instant
 import java.time.ZoneId
@@ -515,6 +516,19 @@ class FusionCoreTest {
         assertEquals(fused, FusionArtifactCodec.decode(FusionArtifactCodec.encode(fused)))
         val single = FusionCoordinator.assemble(tracker(), listOf(accepted), evidencedDecision(accepted))
         assertFalse(single.diagnostics.any { it.startsWith("Partial reconstruction:") })
+    }
+
+    @Test
+    fun `tracker finalization does not claim continuous recognition coverage`() {
+        val tracker = tracker()
+        assertNull(tracker.source.complete)
+
+        val power = reducedPower()
+        val fused = FusionCoordinator.assemble(tracker, listOf(power), evidencedDecision(power))
+        assertTrue(fused.diagnostics.any {
+            it.contains("screenshot-recognition coverage was not measured") &&
+                it.contains("must not be treated as confirmed player inactivity")
+        })
     }
 
     private fun tracker(): TrackerEvidence {
