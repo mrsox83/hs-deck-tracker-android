@@ -47,6 +47,8 @@ object PowerEvidenceReducer {
         var turnIndicesComplete = true
         var rawTurn: Int? = null
         var chronologyEpoch = 0
+        val entityEpochs = mutableListOf<EntityEpoch>()
+        val resetLines = mutableListOf<Int>()
         var lastEvidence: EvidenceRef? = null
         var previousSnapshotState: SnapshotState? = null
 
@@ -142,14 +144,20 @@ object PowerEvidenceReducer {
                     observeDescriptor(mutableEntities, targetText, evidence, aliases)
                     if (blockStack.isEmpty()) captureSnapshot(sequence, "BEFORE_ACTION", false, evidence)
                     if (kind == "GAME_RESET") {
-                        val rewindObserved = actor?.let { mutableEntities[it] }?.history?.lastOrNull {
-                            it.name == "USED_REWIND"
-                        }?.let { it.value == "1" && it.sequence == sequence - 1 } == true
+                        val actorHistory = actor?.let { mutableEntities[it] }?.history.orEmpty()
+                        val rewindObserved = actorHistory.lastOrNull { it.name == "USED_REWIND" }?.let { marker ->
+                            marker.value == "1" && marker.logTime == time && sequence - marker.sequence in 1..3 &&
+                                ((marker.sequence + 1) until sequence).all { between ->
+                                    actorHistory.any { it.sequence == between && it.logTime == time }
+                                }
+                        } == true
                         if (blockStack.isNotEmpty())
                             diagnostics += "Nested GAME_RESET at source line $line; prior block ancestry was closed at the epoch boundary"
                         outputEvents.replaceAll { prior -> prior.copy(chronologyState = ChronologyState.HISTORICAL) }
                         snapshots.replaceAll { prior -> prior.copy(chronologyState = ChronologyState.HISTORICAL) }
                         chronologyEpoch += 1
+                        resetLines += line
+                        entityEpochs += EntityEpoch(chronologyEpoch - 1, mutableEntities.mapValues { it.value.freeze() })
                         blockStack.clear()
                         activeController = null
                         rawTurn = null
@@ -192,7 +200,8 @@ object PowerEvidenceReducer {
         if (blockStack.isNotEmpty()) diagnostics += "${blockStack.size} unterminated block(s); final snapshot is unresolved"
         if (lastEvidence != null) captureSnapshot(Int.MAX_VALUE, "LAST_VALID", blockStack.isNotEmpty(), lastEvidence)
 
-        val choices = match["choices"]?.jsonArray.orEmpty().map { choice(source, it.jsonObject) }
+        val choices = match["choices"]?.jsonArray.orEmpty().map { choice(source, it.jsonObject, resetLines) }
+        entityEpochs += EntityEpoch(chronologyEpoch, mutableEntities.mapValues { it.value.freeze() })
         val endedEvidence = match["events"]?.jsonArray.orEmpty().asSequence().map { it.jsonObject }.lastOrNull { event ->
             event.string("tag") == "STEP" && event.string("value") == "FINAL_GAMEOVER"
         }?.let { event ->
@@ -211,6 +220,7 @@ object PowerEvidenceReducer {
             choices = choices,
             snapshots = snapshots,
             diagnostics = diagnostics,
+            entityEpochs = entityEpochs,
         )
     }
 
@@ -345,7 +355,7 @@ object PowerEvidenceReducer {
             )
         }
 
-    private fun choice(source: FusionSource, value: JsonObject): FusedChoice {
+    private fun choice(source: FusionSource, value: JsonObject, resetLines: List<Int>): FusedChoice {
         fun stage(field: String, timeField: String, methods: Set<String>): ChoiceStage {
             val refs = value[field]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull } ?: emptyList()
             val evidence = value["evidence"]?.jsonArray.orEmpty().mapNotNull { item ->
@@ -354,7 +364,9 @@ object PowerEvidenceReducer {
                     source.id, obj.int("source_line"), observedTime = obj.string("log_time"), rule = "power-choice/1",
                 )
             }
-            return ChoiceStage(refs, value.string(timeField), evidence)
+            val epochs = evidence.mapNotNull { ref -> ref.sourceLine?.let { line -> resetLines.count { it <= line } } }.distinct()
+            val epoch = epochs.singleOrNull()?.takeIf { evidence.all { it.sourceLine != null } }
+            return ChoiceStage(refs, value.string(timeField), evidence, epoch)
         }
         val id = value.string("choice_id") ?: "unknown"
         return FusedChoice(

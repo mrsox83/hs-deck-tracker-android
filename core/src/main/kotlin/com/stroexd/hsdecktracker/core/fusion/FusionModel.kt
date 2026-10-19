@@ -115,6 +115,14 @@ data class ChoiceStage(
     val entityRefs: List<String> = emptyList(),
     val observedTime: String? = null,
     val evidence: List<EvidenceRef> = emptyList(),
+    /** Null means unlocated or spanning reset boundaries. */
+    val chronologyEpoch: Int? = null,
+)
+
+@Serializable
+data class EntityEpoch(
+    val chronologyEpoch: Int,
+    val entities: Map<String, EntityState>,
 )
 
 @Serializable
@@ -193,6 +201,7 @@ data class ReducedPowerMatch(
     val snapshots: List<FusionSnapshot>,
     val diagnostics: List<String> = emptyList(),
     val continuation: PowerContinuationDecision? = null,
+    val entityEpochs: List<EntityEpoch> = emptyList(),
 )
 
 @Serializable
@@ -230,4 +239,5 @@ data class FusedMatch(
     val unknownFields: Map<String, JsonElement> = emptyMap(),
     val diagnostics: List<String> = emptyList(),
     val continuations: List<PowerContinuationDecision> = emptyList(),
+    val entityEpochs: List<EntityEpoch> = emptyList(),
 )

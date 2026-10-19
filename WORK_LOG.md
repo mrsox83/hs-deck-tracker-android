@@ -1,5 +1,13 @@
 # Mobile fusion work log
 
+## 2026-10-19 — HSC-004 raw rewind/reconnect replay
+
+Owner approved exact raw acceptance. Hash-verified six-rewind Power.log replay passes seven entity archive epochs and located choice stages. Raw evidence exposed intervening numeric tags between USED_REWIND and GAME_RESET; bounded same-actor/same-time classification now accommodates those observations. Existing reconnect pairing/stitch/choice/provenance fixture passes. Final 226 ordinary plus two private tests pass. No APK, commit, push, merge or deployment; temporary test-routing script removed. See checkpoints/mobile-fusion-hsc004-entity-history.md.
+
+## 2026-10-19 — HSC-004 entity history and choice boundaries
+
+Owner approved the follow-up preservation correction. EntityState records are archived by chronology epoch before reset and propagated into fused artifacts. Current entities cannot inherit earlier-source values across a later reset. Choice stages receive nullable epochs from exact source lines; reset-bearing continuations do not merge reused choice IDs. Summary output exposes these limitations. Both ordinary core validation runs pass; final suite contains 226 tests. Temporary output-routing script removed. No APK, artifact rewrite, commit, push, merge or deployment. See checkpoints/mobile-fusion-hsc004-entity-history.md.
+
 ## 2026-10-18 Central — HSC-004 reset chronology bounded unit
 
 After the post-reset read-only restart review, the owner approved the smallest HSC-004 chronology unit without an APK. Added backward-compatible event/snapshot chronology epochs: each observed GAME_RESET retains prior epochs as HISTORICAL evidence and makes only the final epoch CURRENT. Reset boundaries clear raw turn, active owner, per-player indices and mutable entity state; the first post-reset snapshot is FULL and contains only re-observed state. Rewind classification now requires a fresh adjacent USED_REWIND=1 observation for the reset actor; otherwise cause remains unclassified. Nested reset ancestry is closed explicitly, stitched continuations retain monotonic epochs, and provenance validation rejects backward epochs, incorrect state, non-FULL epoch baselines and cross-state parents. The passive summary exposes epoch/state and warns against double-counting historical actions.

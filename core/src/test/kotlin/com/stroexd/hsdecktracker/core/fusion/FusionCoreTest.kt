@@ -520,6 +520,9 @@ class FusionCoreTest {
         val stitched = PowerContinuationStitcher.stitch(earlier, later, decision)
 
         assertTrue(stitched.events.take(earlier.events.size).all { it.chronologyState == ChronologyState.HISTORICAL })
+        val withHistoricalOnlyEntity = earlier.copy(entities = earlier.entities + ("historical-only" to EntityState("historical-only")))
+        val restitched = PowerContinuationStitcher.stitch(withHistoricalOnlyEntity, later, decision)
+        assertFalse("historical-only" in restitched.entities)
         val laterStitched = stitched.events.drop(earlier.events.size)
         assertEquals(ChronologyState.HISTORICAL, laterStitched.first().chronologyState)
         assertEquals(0, laterStitched.first().chronologyEpoch)
