@@ -314,16 +314,21 @@ class FusionCoreTest {
     }
 
     @Test
-    fun `legacy artifacts without snapshot state mode decode as full snapshots`() {
+    fun `legacy artifacts without snapshot mode or chronology decode with conservative defaults`() {
         val power = reducedPower()
         val fullSnapshots = FusionSnapshotMaterializer.materialize(power.snapshots).toList()
         val fused = FusionCoordinator.assemble(tracker(), listOf(power.copy(snapshots = fullSnapshots)), evidencedDecision(power))
-        val legacyJson = FusionArtifactCodec.encode(fused).replace(",\"stateMode\":\"FULL\"", "")
+        val legacyJson = FusionArtifactCodec.encode(fused)
+            .replace(",\"stateMode\":\"FULL\"", "")
+            .replace(",\"chronologyEpoch\":0", "")
+            .replace(",\"chronologyState\":\"CURRENT\"", "")
 
         val decoded = FusionArtifactCodec.decode(legacyJson)
 
         assertTrue(decoded.snapshots.isNotEmpty())
         assertTrue(decoded.snapshots.all { it.stateMode == SnapshotStateMode.FULL })
+        assertTrue(decoded.snapshots.all { it.chronologyEpoch == 0 && it.chronologyState == ChronologyState.CURRENT })
+        assertTrue(decoded.events.all { it.chronologyEpoch == 0 && it.chronologyState == ChronologyState.CURRENT })
         assertEquals(fullSnapshots, decoded.snapshots)
     }
 
@@ -491,6 +496,35 @@ class FusionCoreTest {
         assertFalse(fused.diagnostics.any { it.startsWith("Partial reconstruction:") })
         assertTrue(FusionProvenanceValidator.validate(fused).isEmpty())
         assertEquals(fused, FusionArtifactCodec.decode(FusionArtifactCodec.encode(fused)))
+    }
+
+    @Test
+    fun `reset in later continuation advances epoch and makes earlier segment historical`() {
+        val base = reducedPower()
+        val earlier = base.copy(completed = false, endedLogTime = null, endedEvidence = null)
+        val later = base.copy(
+            source = base.source.copy(id = "power:later-reset"),
+            events = base.events.mapIndexed { index, event -> if (index == 0)
+                event.copy(chronologyState = ChronologyState.HISTORICAL)
+            else event.copy(chronologyEpoch = 1) },
+            snapshots = base.snapshots.mapIndexed { index, snapshot -> if (index == 0)
+                snapshot.copy(chronologyState = ChronologyState.HISTORICAL)
+            else snapshot.copy(chronologyEpoch = 1) },
+        )
+        val decision = PowerContinuationDecision(
+            ContinuationStatus.ACCEPTED, earlier.source.id, later.source.id,
+            listOf("synthetic reset continuation"),
+            listOf(EvidenceRef(later.source.id, sourceLine = 1, rule = "test/1")),
+        )
+
+        val stitched = PowerContinuationStitcher.stitch(earlier, later, decision)
+
+        assertTrue(stitched.events.take(earlier.events.size).all { it.chronologyState == ChronologyState.HISTORICAL })
+        val laterStitched = stitched.events.drop(earlier.events.size)
+        assertEquals(ChronologyState.HISTORICAL, laterStitched.first().chronologyState)
+        assertEquals(0, laterStitched.first().chronologyEpoch)
+        assertTrue(laterStitched.drop(1).all { it.chronologyEpoch == 1 && it.chronologyState == ChronologyState.CURRENT })
+        assertTrue(stitched.snapshots.take(earlier.snapshots.size).all { it.chronologyState == ChronologyState.HISTORICAL })
     }
 
     @Test

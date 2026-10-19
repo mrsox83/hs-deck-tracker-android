@@ -37,7 +37,24 @@ object FusionProvenanceValidator {
                 evidence("continuations[$index]", continuation.evidence)
             }
         }
-        match.events.forEachIndexed { index, event -> evidence("events[$index]", event.evidence) }
+        val maxEventEpoch = match.events.maxOfOrNull { it.chronologyEpoch } ?: 0
+        val eventById = match.events.associateBy { it.id }
+        var priorEventEpoch = 0
+        match.events.forEachIndexed { index, event ->
+            evidence("events[$index]", event.evidence)
+            if (event.chronologyEpoch < 0) errors += "events[$index] has negative chronology epoch"
+            if (event.chronologyEpoch < priorEventEpoch) errors += "events[$index] chronology epoch moves backward"
+            if (event.chronologyEpoch < maxEventEpoch && event.chronologyState != ChronologyState.HISTORICAL)
+                errors += "events[$index] earlier chronology epoch must be HISTORICAL"
+            if (event.chronologyEpoch == maxEventEpoch && event.chronologyState != ChronologyState.CURRENT)
+                errors += "events[$index] final chronology epoch must be CURRENT"
+            event.parentEventId?.let { parentId ->
+                val parent = eventById[parentId]
+                if (parent != null && parent.chronologyState != event.chronologyState)
+                    errors += "events[$index] parent crosses chronology state"
+            }
+            priorEventEpoch = event.chronologyEpoch
+        }
         match.entities.forEach { (id, entity) ->
             claim("entities[$id].cardId", entity.cardId)
             claim("entities[$id].controller", entity.controller)
@@ -72,8 +89,20 @@ object FusionProvenanceValidator {
         if (match.snapshots.firstOrNull()?.stateMode == SnapshotStateMode.DELTA) {
             errors += "snapshots[0] must contain FULL state"
         }
+        val maxSnapshotEpoch = match.snapshots.maxOfOrNull { it.chronologyEpoch } ?: 0
+        var priorSnapshotEpoch = 0
+        val seenSnapshotEpochs = mutableSetOf<Int>()
         match.snapshots.forEachIndexed { index, snapshot ->
             evidence("snapshots[$index]", snapshot.evidence)
+            if (snapshot.chronologyEpoch < 0) errors += "snapshots[$index] has negative chronology epoch"
+            if (snapshot.chronologyEpoch < priorSnapshotEpoch) errors += "snapshots[$index] chronology epoch moves backward"
+            if (snapshot.chronologyEpoch < maxSnapshotEpoch && snapshot.chronologyState != ChronologyState.HISTORICAL)
+                errors += "snapshots[$index] earlier chronology epoch must be HISTORICAL"
+            if (snapshot.chronologyEpoch == maxSnapshotEpoch && snapshot.chronologyState != ChronologyState.CURRENT)
+                errors += "snapshots[$index] final chronology epoch must be CURRENT"
+            if (seenSnapshotEpochs.add(snapshot.chronologyEpoch) && snapshot.stateMode != SnapshotStateMode.FULL)
+                errors += "snapshots[$index] must begin chronology epoch with FULL state"
+            priorSnapshotEpoch = snapshot.chronologyEpoch
             snapshot.counters.forEach { (entity, counters) ->
                 counters.forEach { (name, value) -> claim("snapshots[$index].counters[$entity][$name]", value) }
             }

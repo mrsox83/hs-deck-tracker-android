@@ -125,7 +125,17 @@ object PowerContinuationStitcher {
             artifactAliases = (earlier.source.artifactAliases + earlier.source.artifactSha256 +
                 later.source.artifactAliases + later.source.artifactSha256).distinct().sorted(),
         )
-        val events = (earlier.events + later.events).mapIndexed { index, event -> event.copy(sequence = index + 1) }
+        val epochOffset = earlier.events.maxOfOrNull { it.chronologyEpoch } ?: 0
+        val laterContainsResetEpoch = later.events.any { it.chronologyEpoch > 0 }
+        val earlierEvents = if (laterContainsResetEpoch) earlier.events.map {
+            it.copy(chronologyState = ChronologyState.HISTORICAL)
+        } else earlier.events
+        val laterEvents = later.events.map { it.copy(chronologyEpoch = it.chronologyEpoch + epochOffset) }
+        val events = (earlierEvents + laterEvents).mapIndexed { index, event -> event.copy(sequence = index + 1) }
+        val earlierSnapshots = if (laterContainsResetEpoch) earlier.snapshots.map {
+            it.copy(chronologyState = ChronologyState.HISTORICAL)
+        } else earlier.snapshots
+        val laterSnapshots = later.snapshots.map { it.copy(chronologyEpoch = it.chronologyEpoch + epochOffset) }
         val entities = (earlier.entities.keys + later.entities.keys).associateWith { id ->
             mergeEntity(earlier.entities[id], later.entities[id])
         }
@@ -143,7 +153,7 @@ object PowerContinuationStitcher {
             events = events,
             entities = entities,
             choices = choices,
-            snapshots = earlier.snapshots + later.snapshots,
+            snapshots = earlierSnapshots + laterSnapshots,
             diagnostics = earlier.diagnostics + later.diagnostics + listOf(
                 "Observed source-session gap retained between ${earlier.source.id} and ${later.source.id}",
             ),

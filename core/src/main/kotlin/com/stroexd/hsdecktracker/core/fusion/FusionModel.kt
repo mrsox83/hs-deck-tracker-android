@@ -89,6 +89,9 @@ data class EntityState(
 )
 
 @Serializable
+enum class ChronologyState { CURRENT, HISTORICAL }
+
+@Serializable
 data class CanonicalEvent(
     val id: String,
     val sequence: Int,
@@ -101,6 +104,10 @@ data class CanonicalEvent(
     val activeController: Int? = null,
     val playerTurnIndex: Int? = null,
     val evidence: List<EvidenceRef>,
+    /** Monotonic source-order segment. GAME_RESET starts a new segment. */
+    val chronologyEpoch: Int = 0,
+    /** CURRENT only for the final observed segment; prior segments remain as evidence. */
+    val chronologyState: ChronologyState = ChronologyState.CURRENT,
 )
 
 @Serializable
@@ -167,6 +174,8 @@ data class FusionSnapshot(
     val players: Map<Int, PlayerSnapshot> = emptyMap(),
     val quests: Map<String, QuestSnapshot> = emptyMap(),
     val evidence: List<EvidenceRef>,
+    val chronologyEpoch: Int = 0,
+    val chronologyState: ChronologyState = ChronologyState.CURRENT,
 )
 
 @Serializable
