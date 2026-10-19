@@ -208,7 +208,7 @@ class FusionImporter(
                     diagnostics,
                 )
             }
-            val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = "android-r3/2")
+            val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = "android-r3/3")
             val artifact = repository.writeArtifact(fused)
             FusionImportResult(
                 repository.transition(

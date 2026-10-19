@@ -8,7 +8,7 @@ object FusionCoordinator {
         tracker: TrackerEvidence,
         powerMatches: List<ReducedPowerMatch>,
         pairing: PairingDecision,
-        fusionVersion: String = "offline-r2/2",
+        fusionVersion: String = "offline-r2/3",
     ): FusedMatch {
         val uniquePower = powerMatches.distinctBy { it.source.id }.sortedBy { it.source.id }
         val accepted = uniquePower.singleOrNull { it.source.id == pairing.acceptedSourceId }
