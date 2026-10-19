@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-18 Central — corrected capture-coverage v2 built
+
+Built the owner-approved fusion diagnostic correction from `3c692a7`. All 220 core tests across 36 suites and SDK36 assembly pass. The APK is 68,318,573 bytes with SHA-256 `14862adaa3c6a3a12c64685379538a5edeaabc3a15290623c6bbab65390f14e8`; package/version/signer are unchanged. APK v2 signature, ZIP alignment and all eight native-library 16 KiB checks pass. REA static evidence confirms the expected package surface and shipped `FusionCoordinator.trackerCoverageDiagnostics` method; runtime remains a phone gate. Stage as `mobile-fusion-r5-capture-coverage-device-validation-v2` for update-install and re-fusion of one preserved instrumented record. No new match, source push, merge or deployment.
+
 ## 2026-10-18 Central — phone coverage received; fusion diagnostic integration fixed
 
 Mounted Drive review found three new post-build tracker records with 5, 13 and 17 non-truncated recognition-coverage intervals and populated timelines. Each contains frame-observed and play-detection-eligible states; no natural capture gap occurred. Corresponding fused artifacts still said coverage was not measured. Source tracing found the coordinator checked `tracker.source.complete`, which intentionally remains unknown, rather than the new `MatchRecord.recognitionCoverage`. With owner approval, fusion now emits measured state counts and truncation disclosure from record telemetry while retaining the legacy missing-telemetry warning and never claiming continuous or complete recognition. The focused FusionCoreTest and all 220 ordinary core tests across 36 suites pass with zero failures/errors/skips. No replacement APK, push, merge or deployment yet; one existing uploaded record can be re-fused after rebuild, so another played game is unnecessary.

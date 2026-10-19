@@ -14,6 +14,8 @@ The owner approved that prospective gate on 2026-10-18. The resulting APK passed
 
 Phone use produced three new completed records with 5, 13 and 17 non-truncated coverage intervals and normal populated timelines. All contain `FRAME_OBSERVED` and `PLAY_DETECTION_ELIGIBLE`; none contains a naturally occurring `CAPTURE_GAP`. Their fused artifacts exposed a bounded integration defect: fusion still emitted the legacy “coverage was not measured” diagnostic because it checked the deliberately unknown generic source-completeness flag instead of the tracker record's interval telemetry. The owner approved the correction. Fusion now reports measured interval counts and truncation conservatively while leaving generic completeness unknown; legacy records without telemetry retain the old warning. The focused test and all 220 ordinary core tests across 36 suites pass. Source is ready for a rebuild/re-fusion gate; no replacement APK, push, merge or deployment yet.
 
+Corrected v2 is now built from `3c692a7`. The 68,318,573-byte APK SHA-256 is `14862adaa3c6a3a12c64685379538a5edeaabc3a15290623c6bbab65390f14e8`; 220 core tests, SDK36 assembly, signature, ZIP/native 16 KiB alignment, and REA static-artifact gates pass. Package/version/signer remain unchanged. REA confirms the shipped `FusionCoordinator.trackerCoverageDiagnostics` method but does not establish runtime behavior. Device acceptance needs only update-install and re-fusion/export of one preserved instrumented record; no new game is required. No source push, merge or deployment.
+
 ## Verified code and current phone gate
 
 - Repository mrsox83/hs-deck-tracker-android; integration feature/mobile-fusion-offline.
