@@ -81,6 +81,26 @@ object FusionProvenanceValidator {
             }
             entity.entityLinks.forEach { (name, link) -> claim("entities[$id].links[$name]", link) }
         }
+        val archiveEpochs = match.entityEpochs.map { it.chronologyEpoch }
+        if (archiveEpochs.any { it < 0 } || archiveEpochs != archiveEpochs.distinct().sorted())
+            errors += "entityEpochs must have distinct nonnegative increasing epochs"
+        val chronologyMax = (match.events.map { it.chronologyEpoch } + match.snapshots.map { it.chronologyEpoch }).maxOrNull()
+        if (archiveEpochs.isNotEmpty() && archiveEpochs != (0..(chronologyMax ?: archiveEpochs.last())).toList())
+            errors += "entityEpochs must cover every chronology epoch from zero through the final epoch"
+        if (match.fusionVersion.endsWith("/3") && match.pairing.status == PairingStatus.ACCEPTED &&
+            match.events.isNotEmpty() && archiveEpochs.isEmpty())
+            errors += "/3 accepted chronology requires entity epoch archives"
+        match.entityEpochs.forEachIndexed { index, archive ->
+            // Reuse the complete entity evidence checks without recursively visiting archives.
+            val archiveErrors = validate(match.copy(
+                entities = archive.entities, entityEpochs = emptyList(), events = emptyList(),
+                snapshots = emptyList(), choices = emptyList(), continuations = emptyList(),
+                pairing = PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "archive validation"),
+            ))
+            errors += archiveErrors.filter { it.startsWith("entities[") }.map { "entityEpochs[$index].$it" }
+        }
+        if (match.entityEpochs.isNotEmpty() && match.entities != match.entityEpochs.last().entities)
+            errors += "entities must equal the final entity epoch"
         match.choices.forEachIndexed { index, choice ->
             if (choice.offered.entityRefs.isNotEmpty()) evidence("choices[$index].offered", choice.offered.evidence)
             if (choice.submitted.entityRefs.isNotEmpty()) evidence("choices[$index].submitted", choice.submitted.evidence)

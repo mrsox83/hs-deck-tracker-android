@@ -15,6 +15,110 @@ import java.time.ZoneId
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
 
+    @Test fun explicitLocalWentSecondPairRetainsRawOwnedTurnCounts() {
+        val zone = ZoneId.of("America/Chicago")
+        val trackerNames = listOf("match_20261008T210742979Z_2d002b13fdc7b8819a62d26100dc81bf7e53e3b83d9d9066915564dca160dcc0.json")
+        val trackers = trackerNames.map { name ->
+            val bytes = Files.readAllBytes(fixtureDir.resolve(name))
+            assertEquals(trackerFixtureHashes.getValue(name), EvidenceAdapters.sha256(bytes))
+            name to EvidenceAdapters.tracker(bytes)
+        }.filter { it.second.record.wentFirst == false }
+        assertTrue(trackers.isNotEmpty(), "Existing inventory must include explicit went-second records")
+        data class Candidate(val bundle: String, val tracker: String, val power: ReducedPowerMatch, val controller: Int, val facts: PowerPairingFacts)
+        val candidates = mutableListOf<Candidate>()
+        val bundleNames = listOf("HS-export-20261008-161122-04f747f4.zip")
+        for (bundleName in bundleNames) {
+            val bytes = Files.readAllBytes(fixtureDir.resolve(bundleName))
+            assertEquals(exporterFixtureHashes.getValue(bundleName), EvidenceAdapters.sha256(bytes))
+            for ((source, document) in EvidenceAdapters.exporterBundle(bytes).matches) {
+                val match = document.getValue("match").jsonObject
+                val endText = match["ended_log_time"]?.toString()?.trim('"') ?: continue
+                val end = PowerClock.resolve(source.sessionAlias ?: continue, endText, zone) ?: continue
+                val nearby = trackers.filter { kotlin.math.abs(end.toEpochMilli() - it.second.record.timestamp) <= 120_000 }
+                if (nearby.isEmpty()) continue
+                val power = PowerEvidenceReducer.reduce(source, document)
+                if (power.entityEpochs.size != 1) continue
+                for ((trackerName, tracker) in nearby) for (controller in 1..2) {
+                    val observedFacts = PowerPairingFacts.fromReduced(power, end, controller)
+                    val openingOwners = power.snapshots.filter { it.phase == "TURN_SIGNAL" }.take(2).map { it.activeController }
+                    val firstPlayer = power.entities.values.singleOrNull { it.tags["FIRST_PLAYER"] == "1" }
+                    val explicitFirst = firstPlayer?.tagHistory?.lastOrNull { it.name == "FIRST_PLAYER" && it.value == "1" }?.evidence
+                    val observedSecond = openingOwners == listOf(3 - controller, controller) &&
+                        firstPlayer?.tags?.get("PLAYER_ID") == (3 - controller).toString() && explicitFirst != null
+                    if (!observedSecond || observedFacts.result != tracker.record.result) continue
+                    // Both opening CURRENT_PLAYER signals are observed; no default-zero or parity inference.
+                    val facts = observedFacts.copy(wentFirst = false, wentFirstEvidence = listOfNotNull(explicitFirst) +
+                        power.snapshots.filter { it.phase == "TURN_SIGNAL" }.take(2).flatMap { it.evidence })
+                    val decision = FusionPairing.decide(tracker, listOf(facts))
+                    if (decision.status == PairingStatus.ACCEPTED && facts.wentFirstEvidence.isNotEmpty())
+                        candidates += Candidate(bundleName, trackerName, power, controller, facts)
+                }
+            }
+        }
+        val selected = candidates.groupBy { it.tracker }.values.firstOrNull { matches ->
+            matches.distinctBy { it.power.source.id to it.controller }.size == 1 &&
+                matches.first().power.snapshots.count { it.phase == "TURN_SIGNAL" } >= 4
+        }?.first() ?: error("No uniquely paired explicit local went-second capture found")
+        val power = selected.power
+        assertEquals("power:b3f2f5c912db77f821b47cfa2611d32ba51366c686813eb4646c831c06ea0ed4:1", power.source.id)
+        assertEquals(1, selected.controller)
+        assertEquals(listOf(466, 465, 2192), selected.facts.wentFirstEvidence.map { it.sourceLine })
+        assertEquals(listOf(54759), selected.facts.resultEvidence.map { it.sourceLine })
+        val signals = power.snapshots.filter { it.phase == "TURN_SIGNAL" }
+        assertEquals(30, signals.size)
+        val rawEvents = EvidenceAdapters.exporterBundle(Files.readAllBytes(fixtureDir.resolve(selected.bundle))).matches
+            .single { it.first.id == power.source.id }.second.getValue("match").jsonObject.getValue("events").jsonArray
+            .map { it.jsonObject }.associateBy { it.getValue("source_line").toString().toInt() }
+        assertEquals(3 - selected.controller, signals.first().activeController)
+        assertEquals(1, signals.first { it.activeController == selected.controller }.playerTurnIndices[selected.controller])
+        val counts = mutableMapOf<Int, Int>()
+        var last: Int? = null
+        var complete = true
+        for (signal in signals) {
+            val owner = signal.activeController
+            if (owner == null) { complete = false; counts.clear(); last = null; continue }
+            if (complete && owner != last) counts[owner] = (counts[owner] ?: 0) + 1
+            assertEquals(counts, signal.playerTurnIndices)
+            val player = power.entities.values.single { it.tags["PLAYER_ID"] == owner.toString() }
+            val line = signal.evidence.single().sourceLine!!
+            assertTrue(player.tagHistory.any { it.name == "PLAYER_ID" && it.sourceLine <= line })
+            val rawSignal = rawEvents.getValue(line)
+            assertEquals("\"CURRENT_PLAYER\"", rawSignal["tag"].toString())
+            assertEquals("\"1\"", rawSignal["value"].toString())
+            val namedEntity = rawSignal.getValue("entity").toString().trim('"')
+            val directId = Regex("(?:id|entity)=([0-9]+)").find(namedEntity)?.groupValues?.get(1)
+                ?: namedEntity.takeIf { it.all(Char::isDigit) }
+            assertTrue(directId == player.id || player.aliasHistory.any {
+                it.value == namedEntity && (it.evidence.sourceLine ?: Int.MAX_VALUE) <= line
+            }, "Raw owner must resolve through direct ID or an already-observed alias at $line")
+            last = owner
+        }
+        println("HSC004_LOCAL_SECOND tracker=${selected.tracker} trackerHash=${EvidenceAdapters.sha256(Files.readAllBytes(fixtureDir.resolve(selected.tracker)))} bundle=${selected.bundle} bundleHash=${EvidenceAdapters.sha256(Files.readAllBytes(fixtureDir.resolve(selected.bundle)))} source=${power.source.id} controller=${selected.controller} turnSignals=${signals.size} firstEvidence=${selected.facts.wentFirstEvidence} resultEvidence=${selected.facts.resultEvidence}")
+    }
+
+    @Test fun rawFirstPlayerAndCurrentOwnerAgreeForBothStartingControllers() {
+        val starts = mutableSetOf<Int>()
+        for ((name, hash) in exporterFixtureHashes) {
+            val bytes = Files.readAllBytes(fixtureDir.resolve(name))
+            assertEquals(hash, EvidenceAdapters.sha256(bytes))
+            for ((source, document) in EvidenceAdapters.exporterBundle(bytes).matches) {
+                val reduced = PowerEvidenceReducer.reduce(source, document)
+                if (reduced.entityEpochs.size != 1) continue
+                val firstPlayer = reduced.entities.values.singleOrNull { it.tags["FIRST_PLAYER"] == "1" }
+                    ?: continue
+                val controller = firstPlayer.tags["PLAYER_ID"]?.toIntOrNull() ?: continue
+                val firstSignal = reduced.snapshots.firstOrNull { it.phase == "TURN_SIGNAL" } ?: continue
+                if (firstSignal.activeController == null) continue
+                assertEquals(controller, firstSignal.activeController, "$name first-player tag versus first current-player signal")
+                assertEquals(1, firstSignal.playerTurnIndices[controller])
+                starts += controller
+                println("HSC004_START controller=$controller bundle=$name source=${source.id} line=${firstSignal.evidence.first().sourceLine}")
+            }
+            if (starts.containsAll(listOf(1, 2))) break
+        }
+        assertEquals(setOf(1, 2), starts, "Raw corpus must exercise both controller starting positions")
+    }
+
     @Test fun sixRewindsPreserveSevenEntityEpochsAndLocatedChoiceStages() {
         val bundle = EvidenceAdapters.exporterBundle(Files.readAllBytes(fixtureDir.resolve(
             "fusion-test-589424a4-7b2c-48e1-a879-80ed5adf1fba-73cfa31b-853f-4567-bb99-14bd35b52ee4.zip")))

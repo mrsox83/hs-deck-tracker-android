@@ -19,3 +19,5 @@ This contract does not yet authorize hand reconstruction, hidden-information inf
 Entity archives (`entityEpochs`) preserve complete observed identities, tags and histories separately for each epoch. The legacy `entities` view contains only final-epoch observations for newly reduced records. Missing archives in legacy artifacts mean historical epoch coverage is unknown.
 
 Each choice stage has its own nullable epoch, derived from exact source lines. Missing locations or observations spanning boundaries produce UNKNOWN. An offer and confirmation in different epochs do not prove a completed current choice. Reset-bearing source continuations preserve separate choices even when IDs repeat; no cross-reset ID merge is permitted.
+
+New output versions are `offline-r2/3` and `android-r3/3`; the additive schema stays `hs-fused-match/1`. Legacy artifacts are preserved. Empty epoch archives trigger an explicit unverified-history warning. HistoricalIdentity resolves card identity only within the requested epoch, source and source-line cutoff, with no fallback to later or other-source final claims.

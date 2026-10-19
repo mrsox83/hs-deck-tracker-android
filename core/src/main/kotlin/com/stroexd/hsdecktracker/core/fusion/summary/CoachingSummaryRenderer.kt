@@ -30,6 +30,7 @@ object CoachingSummaryRenderer {
             if (match.fusionVersion.endsWith("/1")) {
                 appendLine("WARNING: Legacy /1 ownership fields are not retrospectively validated; do not grade by them.")
             }
+            if (match.entityEpochs.isEmpty()) appendLine("WARNING: Entity epoch archives are unavailable; reset-aware identity history is unverified.")
             appendLine("Pairing state is ${match.pairing.status}; coverage is not established by source count or empty event lists.")
             if (match.diagnostics.isEmpty()) appendLine("Diagnostics: none recorded (not proof of complete coverage).")
             match.diagnostics.forEach { appendLine("- Diagnostic: ${data(it)}") }

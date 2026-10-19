@@ -1,5 +1,13 @@
 # Mobile fusion work log
 
+## 2026-10-19 — HSC-004 local-went-second witness accepted
+
+Approved existing-capture search found a unique corroborated October8 tracker/raw pair. Strict FIRST_PLAYER=0 search found none; direct observed opening owners controller2 then local controller1 plus explicit opponent FIRST_PLAYER=1, matching local result and evidenced endpoint support the went-second relation. Independent review accepted this non-parity argument and requested exact fixture pinning. Pinned tracker/bundle hashes, inner source, controller and key lines now assert 30 owner signals, raw IDs/observed aliases and conservative per-player counts. Final pinned private test passes. This adds one private witness to prior 229 ordinary + three private checks; no production code changed in this follow-up, no APK, commit, push, merge or deployment. See checkpoints/mobile-fusion-hsc004-acceptance.md.
+
+## 2026-10-19 — HSC-004 acceptance safeguards
+
+Owner approved remaining acceptance checks. Added complete archive evidence validation, epoch coverage alignment, /3 producer versions and archive-absence warnings, plus conservative historical identity lookup by epoch/source/line with same-line conflicts unknown. Independent review identified and corrected incomplete epoch coverage, absent /3 archives and duplicate source-error attribution. 229 ordinary and three private tests pass. Raw fixture covers both starting controller labels; it does not prove both local-player perspectives. Rafaam tracker wentFirst=true, reconnect tracker wentFirst=null, so local went-second remains an explicit open acceptance criterion. No APK, commit/push, merge or deployment. See checkpoints/mobile-fusion-hsc004-acceptance.md.
+
 ## 2026-10-19 — HSC-004 raw rewind/reconnect replay
 
 Owner approved exact raw acceptance. Hash-verified six-rewind Power.log replay passes seven entity archive epochs and located choice stages. Raw evidence exposed intervening numeric tags between USED_REWIND and GAME_RESET; bounded same-actor/same-time classification now accommodates those observations. Existing reconnect pairing/stitch/choice/provenance fixture passes. Final 226 ordinary plus two private tests pass. No APK, commit, push, merge or deployment; temporary test-routing script removed. See checkpoints/mobile-fusion-hsc004-entity-history.md.
