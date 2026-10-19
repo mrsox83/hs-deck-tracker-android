@@ -57,6 +57,17 @@ class CoachingSummaryRendererTest {
         assertTrue(output[4].startsWith("| 7 | UNKNOWN | UNKNOWN |"))
     }
 
+    @Test fun `reset chronology remains visible and historical activity is not presented as current`() {
+        val output = render(match(listOf(
+            event(1).copy(chronologyEpoch = 0, chronologyState = ChronologyState.HISTORICAL),
+            event(2).copy(kind = "GAME_RESET", chronologyEpoch = 1),
+        )))
+        val rows = rows(output)
+        assertTrue(rows[0].endsWith("| 0 | HISTORICAL |"))
+        assertTrue(rows[1].endsWith("| 1 | CURRENT |"))
+        assertTrue(output.contains("must not be counted as additional current activity"))
+    }
+
     @Test fun `multiple sources remain provenance for one logical match`() {
         val output = render(match().copy(sources = listOf(source("a"), source("b"), source("c"))))
         assertTrue(output.contains("Logical match ID: logical"))

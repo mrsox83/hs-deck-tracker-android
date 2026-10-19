@@ -1,5 +1,11 @@
 # Mobile fusion work log
 
+## 2026-10-18 Central — HSC-004 reset chronology bounded unit
+
+After the post-reset read-only restart review, the owner approved the smallest HSC-004 chronology unit without an APK. Added backward-compatible event/snapshot chronology epochs: each observed GAME_RESET retains prior epochs as HISTORICAL evidence and makes only the final epoch CURRENT. Reset boundaries clear raw turn, active owner, per-player indices and mutable entity state; the first post-reset snapshot is FULL and contains only re-observed state. Rewind classification now requires a fresh adjacent USED_REWIND=1 observation for the reset actor; otherwise cause remains unclassified. Nested reset ancestry is closed explicitly, stitched continuations retain monotonic epochs, and provenance validation rejects backward epochs, incorrect state, non-FULL epoch baselines and cross-state parents. The passive summary exposes epoch/state and warns against double-counting historical actions.
+
+An independent cloud-agent read-only review identified stale post-reset state and sticky rewind-classification risks; both were corrected before acceptance. It also confirmed choices and final aggregate entity history remain unsegmented, so the written contract explicitly excludes them from chronology-safe current-state reconstruction. Focused chronology/continuation/codec/summary tests pass, followed by all 225 ordinary core tests across37 suites with zero failures/errors/skips using fresh isolated output after normal and first isolated outputs were Windows-locked. No APK, artifact rewrite, commit, push, merge or deployment in this unit yet.
+
 ## 2026-10-18 Central — session close and reset handoff
 
 Remote publication verified: local and `origin/feature/mobile-fusion-offline` both pointed to `52738fbc431baf1b51d22fda9f1da2ef171a3c85`, with a clean working tree before closeout documentation. LOCAL-002 is accepted; corrected APK/package, Shared Exchange acceptance note and receipt ledger are verified. No merge/deployment. Five-hour usage reached 76% of the authorized 90% ceiling, so substantial work stops. A post-reset follow-up may perform read-only restart checks and present bounded next choices, but must not implement HSC-004 or HSC-006/010 without fresh owner approval.

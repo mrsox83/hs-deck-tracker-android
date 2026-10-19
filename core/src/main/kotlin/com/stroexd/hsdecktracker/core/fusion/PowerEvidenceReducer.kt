@@ -46,6 +46,7 @@ object PowerEvidenceReducer {
         var activeController: Int? = null
         var turnIndicesComplete = true
         var rawTurn: Int? = null
+        var chronologyEpoch = 0
         var lastEvidence: EvidenceRef? = null
         var previousSnapshotState: SnapshotState? = null
 
@@ -53,6 +54,7 @@ object PowerEvidenceReducer {
             val (snapshot, state) = snapshot(
                 source, sequence, phase, activeController, rawTurn, playerTurnIndices,
                 unresolved, mutableEntities, evidence, previousSnapshotState,
+                chronologyEpoch,
             )
             snapshots += snapshot
             previousSnapshotState = state
@@ -139,10 +141,33 @@ object PowerEvidenceReducer {
                     observeDescriptor(mutableEntities, actorText, evidence, aliases)
                     observeDescriptor(mutableEntities, targetText, evidence, aliases)
                     if (blockStack.isEmpty()) captureSnapshot(sequence, "BEFORE_ACTION", false, evidence)
+                    if (kind == "GAME_RESET") {
+                        val rewindObserved = actor?.let { mutableEntities[it] }?.history?.lastOrNull {
+                            it.name == "USED_REWIND"
+                        }?.let { it.value == "1" && it.sequence == sequence - 1 } == true
+                        if (blockStack.isNotEmpty())
+                            diagnostics += "Nested GAME_RESET at source line $line; prior block ancestry was closed at the epoch boundary"
+                        outputEvents.replaceAll { prior -> prior.copy(chronologyState = ChronologyState.HISTORICAL) }
+                        snapshots.replaceAll { prior -> prior.copy(chronologyState = ChronologyState.HISTORICAL) }
+                        chronologyEpoch += 1
+                        blockStack.clear()
+                        activeController = null
+                        rawTurn = null
+                        turnIndicesComplete = false
+                        playerTurnIndices.clear()
+                        previousSnapshotState = null
+                        mutableEntities.clear()
+                        aliases.clear()
+                        pendingEntity = null
+                        diagnostics += if (rewindObserved)
+                            "Chronology epoch $chronologyEpoch begins at source line $line after an observed gameplay rewind"
+                        else
+                            "Chronology epoch $chronologyEpoch begins at source line $line after GAME_RESET; reset cause is unclassified"
+                    }
                     outputEvents += CanonicalEvent(
                         id, outputEvents.size + 1, sequence, kind, actor, target,
                         blockStack.lastOrNull(), rawTurn, activeController,
-                        activeController?.let { playerTurnIndices[it] }, listOf(evidence),
+                        activeController?.let { playerTurnIndices[it] }, listOf(evidence), chronologyEpoch,
                     )
                     blockStack.addLast(id)
                 }
@@ -204,7 +229,7 @@ object PowerEvidenceReducer {
 
     private fun snapshot(
         source: FusionSource, sequence: Int, phase: String, controller: Int?, turn: Int?, turnIndices: Map<Int, Int>, unresolved: Boolean,
-        entities: Map<String, MutableEntity>, evidence: EvidenceRef, previous: SnapshotState?,
+        entities: Map<String, MutableEntity>, evidence: EvidenceRef, previous: SnapshotState?, chronologyEpoch: Int,
     ): Pair<FusionSnapshot, SnapshotState> {
         val current = SnapshotState(
             entityTags = entities.mapValues { it.value.tags.toMap() },
@@ -240,6 +265,7 @@ object PowerEvidenceReducer {
             players = if (isFull) current.players else mapDelta(current.players, previous!!.players),
             quests = if (isFull) current.quests else mapDelta(current.quests, previous!!.quests),
             evidence = listOf(evidence),
+            chronologyEpoch = chronologyEpoch,
         )
         return snapshot to current
     }
