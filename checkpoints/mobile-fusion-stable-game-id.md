@@ -1,5 +1,7 @@
 # Fresh fusion identity — 2026-10-19
 
+Publication update: owner approved commit/push; source46cdd69cb7317cc293bf1b05dec714ab246e6afd was pushed and independently verified at origin/feature/mobile-fusion-offline. Earlier local/unpublished descriptions below are historical. No APK, phone runtime acceptance, artifact migration, merge or deployment. Resource Exchange patch notes reflect published source only;241 ordinary/10 private checks and corrected independent review are the recorded source evidence.
+
 Owner approved this bounded follow-up after growing-prefix candidate review. Branch feature/mobile-fusion-offline, baseline3117f992c249e630490a14b2bacf460c42f00072, preserving pre-existing local changes. No APK, old-history rewrite, source publication, merge or deployment.
 
 ## Policy and compatibility

@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-19 — owner-approved source publication verified
+
+Published46cdd69cb7317cc293bf1b05dec714ab246e6afd (20 reviewed source/test/coordination files) to origin/feature/mobile-fusion-offline. Preflight remote matched baseline3117f99; post-push independent ls-remote matched exact local46cdd69. Rechecked recorded241 ordinary/10 private zero-failure reports; no production changes since corrected-code test/review, no test rerun for documentation. Excluded and preserved untracked temporary growing-prefix-fix.init.gradle; no raw evidence, build outputs, signing material or other-project records committed. Removed a duplicate coordinator-added build-notes instruction while retaining full Resource Exchange wording. Shared patch notes updated in place to SOURCE-PUBLISHED at46cdd69, explicitly no new APK/phone validation. Handoff/checkpoints record publication separately from acceptance. Current authorized ceiling90%, live preflight59%five-hour/48%weekly, no reset. No APK, merge, deployment, history migration or canonical issue closure. Next: review hand-consumer/canonical reconciliation proposals or obtain a separate /4 build/phone authorization.
+
 ## 2026-10-19 — stable fresh game identity locally verified
 
 Owner approved fresh-ID correction. New tracker-record/1 domain-tagged128bit identity uses exact saved tracker ID independently of raw source selection, order, result edits/revisions and timestamps. Existing32hex lookup/path shape and hs-fused-match/1 schema retained; new default producers offline-r2/4/android-r3/4 preserve >=3 archive validation. Opaque legacy IDs accepted; blank/padded/control/malformed-Unicode input rejected without normalization. Independent reviewer found lone-surrogate UTF8 replacement collision; explicit encoder validation plus invalid/valid supplementary Unicode tests corrected it. Reviewer confirms no remaining blocking finding; no reviewer tests/private reads claimed.
