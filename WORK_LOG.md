@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-19 — published acceptance and session close
+
+Owner approved commit/push and closeout. HSC-004 acceptance commit `b9220b0` pushed after the recorded 229 ordinary and four private acceptance checks across separate runs. Local first/second, raw reset and reconnect witnesses remain bounded; HSC-006/010 reconstruction and /3 APK validation are not implied. Usage80% five-hour/39%weekly against90% ceiling, no reset consumed. Current handoff and restart checkpoint prepared; no further substantive work before restart review. Canonical shared HSC-004 status reconciliation remains explicitly pending. No APK, merge or deployment.
+
 ## 2026-10-19 — HSC-004 local-went-second witness accepted
 
 Approved existing-capture search found a unique corroborated October8 tracker/raw pair. Strict FIRST_PLAYER=0 search found none; direct observed opening owners controller2 then local controller1 plus explicit opponent FIRST_PLAYER=1, matching local result and evidenced endpoint support the went-second relation. Independent review accepted this non-parity argument and requested exact fixture pinning. Pinned tracker/bundle hashes, inner source, controller and key lines now assert 30 owner signals, raw IDs/observed aliases and conservative per-player counts. Final pinned private test passes. This adds one private witness to prior 229 ordinary + three private checks; no production code changed in this follow-up, no APK, commit, push, merge or deployment. See checkpoints/mobile-fusion-hsc004-acceptance.md.
