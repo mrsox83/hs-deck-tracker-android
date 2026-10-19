@@ -1,5 +1,7 @@
 # Growing-log prefix characterization — 2026-10-19
 
+Publication update: owner-approved source46cdd69cb7317cc293bf1b05dec714ab246e6afd pushed and independent remote feature tip matched. Includes the separately verified stable-ID follow-up,241 ordinary/10 private passes and corrected independent review; earlier uncommitted/no-publication statements describe prior checkpoints. No new APK/runtime acceptance, phone-history rewrite, merge or deployment. Resource Exchange patch notes distinguish this source publication from delivery.
+
 ## Current implementation — owner-approved bounded correction
 
 Subsequent owner-approved fresh-ID follow-up is implemented locally under tracker-record/1 with /4 producer defaults. Its tests/review and non-overwrite/legacy-preservation gates are recorded separately in checkpoints/mobile-fusion-stable-game-id.md. Older statements below that fresh IDs still differ describe the completed earlier candidate-only unit; they do not describe this follow-up's current policy. No historical artifact migration or APK is implied.
