@@ -123,17 +123,55 @@ class FusionImportRepository(
         )
     }
 
-    suspend fun writeArtifact(match: FusedMatch): String = withContext(Dispatchers.IO) {
+    suspend fun writeArtifact(match: FusedMatch): String = artifactWriteMutex.withLock { withContext(Dispatchers.IO) {
+        require(match.matchId.matches(Regex("[0-9a-f]{32}"))) { "Invalid fused artifact identity" }
         val artifacts = File(dir, "fused-matches").apply { mkdirs() }
         val target = File(artifacts, "${match.matchId}.json")
         val temporary = File(artifacts, "${match.matchId}.json.tmp")
         try {
             temporary.outputStream().buffered().use { FusionArtifactCodec.encodeToStream(match, it) }
-            Files.move(temporary.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+            if (target.exists()) {
+                if (!sameBytes(target, temporary)) throw FusionArtifactException(
+                    "A different fused artifact already exists for this game identity; the original was preserved. An explicit revision workflow is required.")
+            } else {
+                // All in-process repository writers share the mutex; never request replacement.
+                Files.move(temporary.toPath(), target.toPath(), StandardCopyOption.ATOMIC_MOVE)
+            }
         } finally {
             temporary.delete()
         }
         target.name
+    } }
+
+    private suspend fun sameBytes(first: File, second: File): Boolean {
+        if (first.length() != second.length()) return false
+        val caller = kotlinx.coroutines.currentCoroutineContext()
+        fun chunk(input: InputStream, buffer: ByteArray): Int {
+            var size = 0
+            while (size < buffer.size) {
+                val read = input.read(buffer, size, buffer.size - size)
+                if (read < 0) break
+                size += read
+            }
+            return size
+        }
+        return first.inputStream().use { a -> second.inputStream().use compare@{ b ->
+            val left = ByteArray(32 * 1024)
+            val right = ByteArray(left.size)
+            while (true) {
+                caller.ensureActive()
+                val count = chunk(a, left)
+                if (count != chunk(b, right)) return@compare false
+                if (count == 0) return@compare true
+                for (index in 0 until count) if (left[index] != right[index]) return@compare false
+            }
+            @Suppress("UNREACHABLE_CODE") false
+        } }
+    }
+
+    private companion object {
+        // The Android app uses one process; include multiple repository instances in that boundary.
+        val artifactWriteMutex = Mutex()
     }
 
     private suspend fun update(matchId: String, transform: (FusionImportEntry?) -> FusionImportEntry): FusionImportEntry {
@@ -190,12 +228,12 @@ class FusionImporter(
         try {
             val trackerBytes = AppJson.encodeToString(MatchRecord.serializer(), record).toByteArray()
             val tracker = EvidenceAdapters.tracker(trackerBytes)
-            val parsed = bundles.map(EvidenceAdapters::exporterBundle)
+            val caller = kotlinx.coroutines.currentCoroutineContext()
+            val parsed = bundles.map { EvidenceAdapters.exporterBundle(it) { caller.ensureActive() } }
             val diagnostics = parsed.flatMap { it.diagnostics }
             val originals = parsed.flatMap { bundle -> bundle.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) } }
                 .distinctBy { it.source.id }
             require(originals.isNotEmpty()) { "Selected files contain no exporter match evidence" }
-            val caller = kotlinx.coroutines.currentCoroutineContext()
             val evaluation = FusionEvaluator.evaluate(tracker, originals, zoneId, trackerCardIds) { caller.ensureActive() }
             val powers = evaluation.powers
             val pairing = if (confirmedSourceId == null) evaluation.manualDecision() else evaluation.discoveryDecision(true)
@@ -208,7 +246,7 @@ class FusionImporter(
                     diagnostics,
                 )
             }
-            val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = "android-r3/3")
+            val fused = FusionCoordinator.assemble(tracker, powers, pairing, fusionVersion = ANDROID_FUSION_VERSION)
             val artifact = repository.writeArtifact(fused)
             FusionImportResult(
                 repository.transition(

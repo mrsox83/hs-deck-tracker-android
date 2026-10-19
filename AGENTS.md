@@ -62,6 +62,7 @@
 - Cloud test setup may still require existing Android Gradle plugin/SDK configuration. Report missing toolchains; don't modify build files to hide it.
 - No APK/signing/release CI work in a cloud formatter task. Local coordinator owns private gates and package verification.
 - For every changed APK promoted to phone validation or release-candidate status, run `checkpoints/mobile-fusion-rea-artifact-gate.md`. Preserve its Evidence IDs and limitations, and keep REA static results separate from signature/alignment checks and phone/runtime acceptance.
+- For every new APK package and source-only fix handoff, follow `docs/coordination/BUILD_NOTES_STANDARD.md`: update the single HS-FUSION-PATCH-NOTES.md in Resource Exchange (existing Shared Exchange folder), keep its verified link in Resource Exchange START_HERE, distinguish delivered/phone-accepted from source-only work, and check affected build identity before treating a recurring report as a new defect. Use the full Resource Exchange name in replies/docs; recognize the owner's Re/RE shorthand. Never suppress new evidence or self-close canonical HSC issues from a changelog claim.
 - Run proportionate checks; never claim an unexecuted gate passed. Keep tests/source/APK/phone/push distinct.
 - Use apply_patch for edits, preserve unrelated dirty work, no destructive reset/checkout/clean/history rewrite.
 - After local builds, scoped scripts/Cleanup-BuildTemps.ps1 may clear disposable intermediates/tmp; preserve reports/APKs/fixtures/caches. Don't stop unrelated processes.

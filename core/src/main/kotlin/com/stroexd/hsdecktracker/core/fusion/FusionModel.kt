@@ -48,6 +48,8 @@ data class FusionSource(
     val parentSourceIds: List<String> = emptyList(),
     val contentSha256: Map<String, String> = emptyMap(),
     val artifactAliases: List<String> = emptyList(),
+    /** Ingestion-only proof; never trust a value supplied by serialized evidence. */
+    @kotlinx.serialization.Transient val verifiedCompletedMatchKey: String? = null,
 )
 
 @Serializable

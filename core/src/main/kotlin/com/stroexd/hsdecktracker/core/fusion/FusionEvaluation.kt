@@ -24,8 +24,9 @@ object FusionEvaluator {
     fun evaluate(tracker: TrackerEvidence, originals: List<ReducedPowerMatch>, zone: ZoneId,
         trackerCardIds: Set<String> = emptySet(), check: () -> Unit = {}): FusionEvaluation {
         val unique = originals.distinctBy { it.source.id }
+        val representatives = CompletedMatchEquivalence.representatives(unique)
         val stitched = mutableListOf<ReducedPowerMatch>()
-        for (earlier in unique) for (later in unique) {
+        for (earlier in representatives) for (later in representatives) {
             check()
             if (earlier === later) continue
             val decision = PowerContinuationStitcher.evaluate(earlier, later, tracker, zone)
@@ -33,6 +34,7 @@ object FusionEvaluator {
                 stitched += PowerContinuationStitcher.stitch(earlier, later, decision)
         }
         val powers = unique + stitched.distinctBy { it.source.id }
+        val candidates = representatives + stitched.distinctBy { it.source.id }
         val controllers = powers.flatMap { it.entities.values.mapNotNull { entity -> entity.controller.value } }
             .filter { it > 0 }.toSet().ifEmpty { setOf(1, 2) }
         fun decisionsFor(matches: List<ReducedPowerMatch>) = controllers.map { controller ->
@@ -43,7 +45,7 @@ object FusionEvaluator {
                 PowerPairingFacts.fromReduced(power, end, controller)
             }, trackerCardIds)
         }
-        val decisions = decisionsFor(powers)
+        val decisions = decisionsFor(candidates)
         // Re-evaluate after collapsing a verified, viable stitch's parents. Merely filtering
         // candidates from a CONFLICTED decision would leave a false ambiguity status behind.
         val viableIds = decisions.flatMap { it.candidates }.filter {
@@ -51,7 +53,7 @@ object FusionEvaluator {
         }.map { it.powerSourceId }.toSet()
         val superseded = powers.filter { it.continuation != null && it.source.id in viableIds }
             .flatMap { it.source.parentSourceIds }.toSet()
-        val discovery = if (superseded.isEmpty()) decisions else decisionsFor(powers.filterNot { it.source.id in superseded })
+        val discovery = if (superseded.isEmpty()) decisions else decisionsFor(candidates.filterNot { it.source.id in superseded })
         return FusionEvaluation(powers, decisions, discovery)
     }
 }
