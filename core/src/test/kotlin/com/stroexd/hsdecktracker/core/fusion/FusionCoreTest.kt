@@ -24,6 +24,75 @@ import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.test.runTest
 
 class FusionCoreTest {
+    @Test fun `fresh logical identity follows saved record not source selection or result revision`() {
+        val tracker = tracker()
+        val power = reducedPower()
+        val decision = evidencedDecision(power)
+        val first = FusionCoordinator.assemble(tracker, listOf(power), decision)
+        assertEquals("7f8a574011965aa9d7bd81abf66055e6", first.matchId, "Pin tracker-record/1 domain, separator, encoding and truncation")
+        val unrelated = power.copy(source = power.source.copy(id = "power:unrelated"))
+        val added = FusionCoordinator.assemble(tracker, listOf(unrelated, power), decision)
+        val reordered = FusionCoordinator.assemble(tracker, listOf(power, unrelated), decision)
+        val editedRecord = tracker.record.copy(result = MatchResult.LOSS, revision = 9, notes = "edited", timestamp = 123)
+        val edited = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), editedRecord).toByteArray())
+        val revision = FusionCoordinator.assemble(edited, listOf(power), decision)
+        assertEquals(first.matchId, added.matchId)
+        assertEquals(first.matchId, reordered.matchId)
+        assertEquals(first.matchId, revision.matchId)
+        assertEquals(3, added.sources.size)
+        assertTrue(first.matchId.matches(Regex("[0-9a-f]{32}")))
+        assertEquals("offline-r2/4", first.fusionVersion)
+        assertTrue(first.diagnostics.any { it.startsWith("Logical match identity: tracker-record/1") })
+        val otherRecord = tracker.record.copy(id = "different-saved-game")
+        val other = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), otherRecord).toByteArray())
+        assertFalse(first.matchId == FusionCoordinator.assemble(other, listOf(power), decision).matchId)
+    }
+
+    @Test fun `missing and padded tracker identities fail rather than guessing or normalizing`() {
+        val tracker = tracker()
+        for (id in listOf("", " ", " tracker-match", "tracker-match ", "a\u0000b", "a\nb", "\uD800", "\uD801", "\uDC00")) {
+            assertFailsWith<IllegalArgumentException> {
+                FusionCoordinator.assemble(tracker.copy(record = tracker.record.copy(id = id)), emptyList(),
+                    PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "test"))
+            }
+        }
+        val pending = PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "test")
+        val unicodeId = FusionCoordinator.assemble(tracker.copy(record = tracker.record.copy(id = "game-\uD83D\uDE00")), emptyList(), pending).matchId
+        val literalId = FusionCoordinator.assemble(tracker.copy(record = tracker.record.copy(id = "game-?")), emptyList(), pending).matchId
+        assertFalse(unicodeId == literalId, "Valid Unicode is preserved exactly, not replaced or normalized")
+    }
+
+    @Test fun `same identity never replaces a different existing artifact including across repositories`() = runTest {
+        val dir = Files.createTempDirectory("hs-fusion-fixed-id").toFile()
+        try {
+            val repository = FusionImportRepository(dir)
+            val power = reducedPower()
+            val fused = FusionCoordinator.assemble(tracker(), listOf(power), evidencedDecision(power))
+            val name = repository.writeArtifact(fused)
+            val target = File(dir, "fused-matches/$name")
+            val before = target.readBytes()
+            val modifiedTime = target.lastModified()
+            assertEquals(name, FusionImportRepository(dir).writeArtifact(fused))
+            assertEquals(modifiedTime, target.lastModified(), "Identical retry does not rewrite the original")
+            assertFailsWith<FusionArtifactException> {
+                FusionImportRepository(dir).writeArtifact(fused.copy(diagnostics = fused.diagnostics + "different evidence"))
+            }
+            assertTrue(before.contentEquals(target.readBytes()))
+            assertFalse(File(dir, "fused-matches/${fused.matchId}.json.tmp").exists())
+            assertFailsWith<IllegalArgumentException> { repository.writeArtifact(fused.copy(matchId = "../escape")) }
+        } finally { dir.deleteRecursively() }
+    }
+
+    @Test fun `new producer retains archive validation and serializes without schema migration`() {
+        val power = reducedPower()
+        val fused = FusionCoordinator.assemble(tracker(), listOf(power), evidencedDecision(power))
+        assertEquals(fused, FusionArtifactCodec.decode(FusionArtifactCodec.encode(fused)))
+        assertEquals(FUSION_SCHEMA, fused.schema)
+        assertTrue(FusionProvenanceValidator.validate(fused.copy(entityEpochs = emptyList())).any {
+            it.contains("accepted chronology requires entity epoch archives")
+        })
+    }
+
     @Test
     fun `interrupted fusion status becomes visible and retryable after restart`() = runTest {
         val dir = Files.createTempDirectory("hs-fusion-interrupted").toFile()

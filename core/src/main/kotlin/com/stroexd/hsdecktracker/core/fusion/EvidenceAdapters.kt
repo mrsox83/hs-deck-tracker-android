@@ -46,7 +46,9 @@ object EvidenceAdapters {
         return powerDocument(bytes, sha256(bytes), emptyMap())
     }
 
-    fun exporterBundle(bytes: ByteArray): ExporterBundleEvidence {
+    fun exporterBundle(bytes: ByteArray): ExporterBundleEvidence = exporterBundle(bytes) {}
+
+    fun exporterBundle(bytes: ByteArray, check: () -> Unit): ExporterBundleEvidence {
         val artifactHash = sha256(bytes)
         val matchEntries = linkedMapOf<String, ByteArray>()
         val contentHashes = linkedMapOf<String, String>()
@@ -55,6 +57,7 @@ object EvidenceAdapters {
         var manifest: JsonObject? = null
         ZipInputStream(bytes.inputStream()).use { zip ->
             while (true) {
+                check()
                 val entry = zip.nextEntry ?: break
                 if (entry.isDirectory) continue
                 when {
@@ -66,6 +69,7 @@ object EvidenceAdapters {
                         var markerLine: Int? = null
                         val mappings = mutableListOf<PlayerNameMapping>()
                         raw.toString(Charsets.UTF_8).lineSequence().forEachIndexed { index, line ->
+                            check()
                             if (markerLine == null && line.contains("Truncating log, which has reached the size limit")) markerLine = index + 1
                             val match = playerNameLine.find(line)
                             if (match != null) {
@@ -128,7 +132,9 @@ object EvidenceAdapters {
             }
             parsed.first to JsonObject(rootFields)
         }
-        return ExporterBundleEvidence(artifactHash, manifest?.get("schema")?.jsonPrimitive?.contentOrNull, matches, diagnostics)
+        val verified = if (diagnostics.any { it.startsWith("Power.log hash mismatch") }) matches
+            else CompletedMatchEquivalence.attach(bytes, matches, check)
+        return ExporterBundleEvidence(artifactHash, manifest?.get("schema")?.jsonPrimitive?.contentOrNull, verified, diagnostics)
     }
 
     private fun powerDocument(bytes: ByteArray, artifactHash: String, contentHashes: Map<String, String>): Pair<FusionSource, JsonObject> {

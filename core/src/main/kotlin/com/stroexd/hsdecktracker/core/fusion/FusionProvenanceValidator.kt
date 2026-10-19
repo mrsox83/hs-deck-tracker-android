@@ -87,9 +87,9 @@ object FusionProvenanceValidator {
         val chronologyMax = (match.events.map { it.chronologyEpoch } + match.snapshots.map { it.chronologyEpoch }).maxOrNull()
         if (archiveEpochs.isNotEmpty() && archiveEpochs != (0..(chronologyMax ?: archiveEpochs.last())).toList())
             errors += "entityEpochs must cover every chronology epoch from zero through the final epoch"
-        if (match.fusionVersion.endsWith("/3") && match.pairing.status == PairingStatus.ACCEPTED &&
+        if ((match.fusionVersion.substringAfterLast('/').toIntOrNull() ?: 0) >= 3 && match.pairing.status == PairingStatus.ACCEPTED &&
             match.events.isNotEmpty() && archiveEpochs.isEmpty())
-            errors += "/3 accepted chronology requires entity epoch archives"
+            errors += "/3+ accepted chronology requires entity epoch archives"
         match.entityEpochs.forEachIndexed { index, archive ->
             // Reuse the complete entity evidence checks without recursively visiting archives.
             val archiveErrors = validate(match.copy(

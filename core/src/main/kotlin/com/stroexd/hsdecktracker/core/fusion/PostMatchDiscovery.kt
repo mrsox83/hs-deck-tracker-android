@@ -48,7 +48,7 @@ class PostMatchDiscovery(private val repository: PostMatchCollectionRepository, 
             }
             val bytes = withContext(Dispatchers.IO) { bundle.file.readBytes() }
             require(EvidenceAdapters.sha256(bytes) == bundle.sha256) { "Saved search evidence changed; start a new search" }
-            val parsed = withContext(Dispatchers.Default) { EvidenceAdapters.exporterBundle(bytes) }
+            val parsed = withContext(Dispatchers.Default) { EvidenceAdapters.exporterBundle(bytes, ::check) }
             val aliases = parsed.matches.mapNotNull { it.first.sessionAlias }.toSet()
             if (aliases.none { it in scope }) continue
             require(aliases.all { it in scope }) { "Saved bundle includes sessions outside the chosen scope" }
@@ -135,7 +135,7 @@ class PostMatchDiscovery(private val repository: PostMatchCollectionRepository, 
                 val bytes = withContext(Dispatchers.IO) { bundle.readBytes() }
                 bundles += DiscoveryBundle(entry.id, bundle, EvidenceAdapters.sha256(bytes))
                 check()
-                val parsed = withContext(Dispatchers.Default) { EvidenceAdapters.exporterBundle(bytes) }
+                val parsed = withContext(Dispatchers.Default) { EvidenceAdapters.exporterBundle(bytes, ::check) }
                 notes += parsed.diagnostics
                 require(parsed.diagnostics.none { it.contains("hash mismatch", true) }) { "Bundle hash mismatch" }
                 // RAW_ONLY_PARSE_FAILED must not masquerade as an empty unrelated session.

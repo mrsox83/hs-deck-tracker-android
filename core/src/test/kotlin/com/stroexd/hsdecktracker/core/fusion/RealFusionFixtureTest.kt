@@ -15,6 +15,85 @@ import java.time.ZoneId
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
 
+    @Test fun growingLogPrefixIdentityCharacterization() {
+        fun bytes(name: String, hash: String): ByteArray = Files.readAllBytes(fixtureDir.resolve(name)).also {
+            assertEquals(hash, EvidenceAdapters.sha256(it))
+        }
+        val earlyBytes = bytes("HS-game-20261018-225042-27dda0c7-logs.zip", "68a83dd54506a0bffeb5a0da995fec262d09944ce9ad8069b3b56cad2e03b451")
+        val lateBytes = bytes("HS-game-20261018-230613-90920e7a-logs.zip", "f634d5ff447b73a3b71bc14065ed91663ddd801d032132a65257b94580ba1df1")
+        val dk = EvidenceAdapters.tracker(bytes("match_20261019T035042027Z_c8a04179877cd4067982473cce92da34072a987446d6bb1aa5e4bd150cb43e3c.json", "46d22ade4924283bc0f45b612d2183e0556997ceb817506a2d391efe96448a31"))
+        val priest = EvidenceAdapters.tracker(bytes("match_20261019T040613874Z_dfcbcbd8a6861693d9cd7072fe5dedb77c13caa5ed213bc0f3c77f60fbe1d406.json", "a320a53c4951fd0f5a243142e88e4a3a2968af26fc3f0ff0f58f2b8e3d13694d"))
+        val early = EvidenceAdapters.exporterBundle(earlyBytes)
+        val late = EvidenceAdapters.exporterBundle(lateBytes)
+        assertEquals(1, early.matches.size)
+        assertEquals(2, late.matches.size)
+        assertEquals(early.matches.single().second.getValue("match"), late.matches.first().second.getValue("match"))
+        assertFalse(early.matches.single().first.id == late.matches.first().first.id)
+        val earlyPower = early.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) }
+        val latePower = late.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) }
+        fun decision(tracker: TrackerEvidence, powers: List<ReducedPowerMatch>) = FusionEvaluator.evaluate(
+            tracker, powers, ZoneId.of("America/Chicago"), tracker.record.timeline.mapNotNull { it.cardId }.toSet(),
+        ).manualDecision()
+        val dkEarly = decision(dk, earlyPower)
+        val dkLate = decision(dk, latePower)
+        val dkTogether = decision(dk, earlyPower + latePower)
+        val dkReversed = decision(dk, latePower + earlyPower)
+        val priestTogether = decision(priest, earlyPower + latePower)
+        println("GROWING_PREFIX dkEarly=${dkEarly.status} dkLate=${dkLate.status} dkTogether=${dkTogether.status} dkReversed=${dkReversed.status} priestTogether=${priestTogether.status}")
+        println("GROWING_PREFIX priestCandidates=" + priestTogether.candidates.map { "${it.powerSourceId} score=${it.score} reasons=${it.reasons} rejected=${it.rejectedReasons}" })
+        assertEquals(PairingStatus.ACCEPTED, dkEarly.status)
+        assertEquals(PairingStatus.ACCEPTED, dkLate.status)
+        assertEquals(dkTogether.status, dkReversed.status)
+        assertEquals(PairingStatus.ACCEPTED, dkTogether.status)
+        assertEquals(dkTogether.acceptedSourceId, dkReversed.acceptedSourceId)
+        val combined = FusionEvaluator.evaluate(dk, earlyPower + latePower, ZoneId.of("America/Chicago"),
+            dk.record.timeline.mapNotNull { it.cardId }.toSet())
+        assertEquals(PairingStatus.ACCEPTED, combined.discoveryDecision(true).status)
+        assertEquals(3, combined.powers.size, "All raw sources, including the separate Priest game, remain retained")
+        val combinedArtifact = FusionCoordinator.assemble(dk, combined.powers, combined.manualDecision())
+        assertEquals(4, combinedArtifact.sources.size, "Tracker plus all three original Power sources")
+        assertTrue(combinedArtifact.sources.all { it.verifiedCompletedMatchKey == null }, "Ingestion-only proof does not leak into artifact model")
+        assertTrue(FusionProvenanceValidator.validate(combinedArtifact).isEmpty())
+        assertTrue(combinedArtifact.diagnostics.any { it.startsWith("Partial reconstruction: 1 selected Power") })
+        assertEquals(1, combinedArtifact.diagnostics.count { it.startsWith("Equivalent completed Power evidence:") })
+        assertEquals(PairingStatus.PENDING, priestTogether.status, "Characterizes current behavior, not desired acceptance")
+        val firstArtifact = FusionCoordinator.assemble(dk, earlyPower, dkEarly)
+        val laterArtifact = FusionCoordinator.assemble(dk, latePower, dkLate)
+        println("GROWING_PREFIX dkLogicalIdEarly=${firstArtifact.matchId} dkLogicalIdLate=${laterArtifact.matchId}")
+        assertEquals(firstArtifact.matchId, laterArtifact.matchId)
+        assertEquals(firstArtifact.matchId, combinedArtifact.matchId)
+        kotlinx.coroutines.runBlocking {
+            val dir = Files.createTempDirectory("hs-growing-prefix-").toFile()
+            try {
+                val repository = FusionImportRepository(dir)
+                val importer = FusionImporter(repository, ZoneId.of("America/Chicago"))
+                val original = importer.import(dk.record, listOf(earlyBytes))
+                val savedBytes = repository.artifactForExport(dk.record.id).readBytes()
+                val repeated = importer.import(dk.record, listOf(lateBytes))
+                assertEquals(FusionImportState.FUSED_LOCAL, original.entry.state)
+                assertEquals(original.entry, repeated.entry)
+                assertEquals(1, repository.entries.value.size)
+                assertTrue(savedBytes.contentEquals(repository.artifactForExport(dk.record.id).readBytes()))
+                val legacyRepository = FusionImportRepository(java.io.File(dir, "legacy"))
+                val legacy = firstArtifact.copy(matchId = "973af1e15211bbf43047a9719ce6a50c", fusionVersion = "android-r3/3")
+                val legacyName = legacyRepository.writeArtifact(legacy)
+                legacyRepository.begin(dk.record.id, listOf(early.artifactSha256))
+                val legacyEntry = legacyRepository.transition(dk.record.id, FusionImportState.FUSED_LOCAL,
+                    artifactFile = legacyName, fusedRecordRevision = dk.record.revision, fusedRecordResult = dk.record.result)
+                val legacyBytes = legacyRepository.artifactForExport(dk.record.id).readBytes()
+                val legacyRetry = FusionImporter(legacyRepository, ZoneId.of("America/Chicago"))
+                    .import(dk.record.copy(result = MatchResult.LOSS, revision = dk.record.revision + 1), listOf(lateBytes))
+                assertEquals(legacyEntry, legacyRetry.entry)
+                assertEquals(legacyName, legacyRepository.artifactForExport(dk.record.id).name)
+                assertTrue(legacyBytes.contentEquals(legacyRepository.artifactForExport(dk.record.id).readBytes()))
+                assertEquals(1, java.io.File(dir, "legacy/fused-matches").listFiles()!!.size)
+                assertTrue(legacy.matchId != firstArtifact.matchId)
+                println("STABLE_GAME_ID legacyPathAndBytesPreserved=true newPolicy=${firstArtifact.fusionVersion}")
+                println("GROWING_PREFIX existingHistoryEntries=${repository.entries.value.size} originalPreserved=true")
+            } finally { dir.deleteRecursively() }
+        }
+    }
+
     @Test fun explicitLocalWentSecondPairRetainsRawOwnedTurnCounts() {
         val zone = ZoneId.of("America/Chicago")
         val trackerNames = listOf("match_20261008T210742979Z_2d002b13fdc7b8819a62d26100dc81bf7e53e3b83d9d9066915564dca160dcc0.json")
@@ -174,6 +253,10 @@ class RealFusionFixtureTest {
             schemas[bundle.schema ?: "missing"] = schemas.getOrDefault(bundle.schema ?: "missing", 0) + 1
             bundle.matches.forEach { (source, document) ->
                 val reduced = PowerEvidenceReducer.reduce(source, document)
+                // Cover every inventoried match, including rewinds, with equivalence disabled.
+                assertEquals(reduced.diagnostics, PowerEvidenceReducer.reduce(
+                    source.copy(verifiedCompletedMatchKey = null), document,
+                ).diagnostics, "Ingestion-only equivalence proof must not change reducer diagnostics")
                 matchCount++
                 eventCount += reduced.events.size
                 snapshotCount += reduced.snapshots.size
@@ -212,7 +295,14 @@ class RealFusionFixtureTest {
         )
         assertEquals(
             linkedMapOf(
-                "Turn owner unresolved at source line <n>; per-player turn indices remain unknown" to 400,
+                // Old golden predates the published HSC-004 reset/rewind chronology implementation.
+                "Turn owner unresolved at source line <n>; per-player turn indices remain unknown" to 437,
+                "Chronology epoch 1 begins at source line <n> after an observed gameplay rewind" to 3,
+                "Chronology epoch 2 begins at source line <n> after an observed gameplay rewind" to 2,
+                "Chronology epoch 3 begins at source line <n> after an observed gameplay rewind" to 2,
+                "Chronology epoch 4 begins at source line <n> after an observed gameplay rewind" to 2,
+                "Chronology epoch 5 begins at source line <n> after an observed gameplay rewind" to 2,
+                "Chronology epoch 1 begins at source line <n> after GAME_RESET; reset cause is unclassified" to 4,
                 "Unmatched BLOCK_END at source line <n>" to 6,
                 "<n> unterminated block(s); final snapshot is unresolved" to 1,
             ),
