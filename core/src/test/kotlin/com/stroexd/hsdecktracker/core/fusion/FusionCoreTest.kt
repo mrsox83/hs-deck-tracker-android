@@ -3,6 +3,8 @@ package com.stroexd.hsdecktracker.core.fusion
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import com.stroexd.hsdecktracker.core.stats.MatchSource
 import com.stroexd.hsdecktracker.core.stats.MatchRecord
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageInterval
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import com.stroexd.hsdecktracker.core.util.AppJson
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -528,6 +530,38 @@ class FusionCoreTest {
         assertTrue(fused.diagnostics.any {
             it.contains("screenshot-recognition coverage was not measured") &&
                 it.contains("must not be treated as confirmed player inactivity")
+        })
+    }
+
+    @Test
+    fun `measured tracker coverage replaces legacy unmeasured warning without claiming completeness`() {
+        val record = MatchRecord(
+            id = "tracker-with-coverage",
+            timestamp = 1_791_401_186_774,
+            result = MatchResult.WIN,
+            source = MatchSource.AUTO,
+            recognitionCoverage = listOf(
+                RecognitionCoverageInterval(1_000L, 2_000L, RecognitionCoverageState.FRAME_OBSERVED),
+                RecognitionCoverageInterval(2_001L, 2_001L, RecognitionCoverageState.PLAY_DETECTION_ELIGIBLE),
+                RecognitionCoverageInterval(2_002L, 4_000L, RecognitionCoverageState.CAPTURE_GAP),
+            ),
+            recognitionCoverageTruncated = true,
+        )
+        val tracker = EvidenceAdapters.tracker(
+            AppJson.encodeToString(MatchRecord.serializer(), record).toByteArray(),
+        )
+        assertNull(tracker.source.complete)
+
+        val power = reducedPower()
+        val fused = FusionCoordinator.assemble(tracker, listOf(power), evidencedDecision(power))
+        assertFalse(fused.diagnostics.any { it.contains("coverage was not measured") })
+        assertTrue(fused.diagnostics.any {
+            it.contains("coverage was measured across 3 interval(s)") &&
+                it.contains("1 frame-observed") &&
+                it.contains("1 play-detection-eligible") &&
+                it.contains("1 capture-gap") &&
+                it.contains("not proof that every gameplay action was recognized") &&
+                it.contains("interval list was truncated")
         })
     }
 

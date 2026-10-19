@@ -1,5 +1,6 @@
 package com.stroexd.hsdecktracker.core.fusion
 
+import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import java.security.MessageDigest
 
 object FusionCoordinator {
@@ -15,10 +16,7 @@ object FusionCoordinator {
         val matchId = stableId("logical", tracker.record.id, *sources.map { it.id }.toTypedArray())
         val incorporated = setOfNotNull(accepted?.source?.id) + accepted?.source?.parentSourceIds.orEmpty()
         val unused = uniquePower.filter { it.source.type != SourceType.DERIVED_FUSION && it.source.id !in incorporated }
-        val trackerCoverageWarning = if (tracker.source.complete == null) listOf(
-            "Tracker match finalization was observed, but screenshot-recognition coverage was not measured. " +
-                "Missing tracker events must not be treated as confirmed player inactivity.",
-        ) else emptyList()
+        val trackerCoverageDiagnostics = trackerCoverageDiagnostics(tracker)
         val powerCoverageWarnings = if (accepted != null && unused.isNotEmpty()) listOf(
             "Partial reconstruction: ${unused.size} selected Power source(s) retained as provenance but not incorporated into the timeline. " +
                 "They may be unrelated games or unverified reconnect fragments; full reconnect recovery is not established.",
@@ -33,8 +31,29 @@ object FusionCoordinator {
             entities = accepted?.entities.orEmpty(),
             choices = accepted?.choices.orEmpty(),
             snapshots = accepted?.snapshots.orEmpty(),
-            diagnostics = accepted?.diagnostics.orEmpty() + trackerCoverageWarning + powerCoverageWarnings,
+            diagnostics = accepted?.diagnostics.orEmpty() + trackerCoverageDiagnostics + powerCoverageWarnings,
             continuations = listOfNotNull(accepted?.continuation),
+        )
+    }
+
+    private fun trackerCoverageDiagnostics(tracker: TrackerEvidence): List<String> {
+        val intervals = tracker.record.recognitionCoverage
+        if (intervals.isEmpty()) return listOf(
+            "Tracker match finalization was observed, but screenshot-recognition coverage was not measured. " +
+                "Missing tracker events must not be treated as confirmed player inactivity.",
+        )
+        val counts = RecognitionCoverageState.entries.associateWith { state ->
+            intervals.count { it.state == state }
+        }
+        val truncation = if (tracker.record.recognitionCoverageTruncated) {
+            " The interval list was truncated; omitted coverage must remain unknown."
+        } else ""
+        return listOf(
+            "Tracker screenshot-recognition coverage was measured across ${intervals.size} interval(s): " +
+                "${counts.getValue(RecognitionCoverageState.FRAME_OBSERVED)} frame-observed, " +
+                "${counts.getValue(RecognitionCoverageState.PLAY_DETECTION_ELIGIBLE)} play-detection-eligible, and " +
+                "${counts.getValue(RecognitionCoverageState.CAPTURE_GAP)} capture-gap. " +
+                "Coverage describes observation eligibility, not proof that every gameplay action was recognized." + truncation,
         )
     }
 
