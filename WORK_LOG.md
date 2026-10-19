@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-18 Central — session close and reset handoff
+
+Remote publication verified: local and `origin/feature/mobile-fusion-offline` both pointed to `52738fbc431baf1b51d22fda9f1da2ef171a3c85`, with a clean working tree before closeout documentation. LOCAL-002 is accepted; corrected APK/package, Shared Exchange acceptance note and receipt ledger are verified. No merge/deployment. Five-hour usage reached 76% of the authorized 90% ceiling, so substantial work stops. A post-reset follow-up may perform read-only restart checks and present bounded next choices, but must not implement HSC-004 or HSC-006/010 without fresh owner approval.
+
 ## 2026-10-18 Central — LOCAL-002 accepted with immutable-phone-history-safe replay
 
 The updated app would not overwrite an existing fused artifact; re-upload correctly returned the preserved v1 JSON with its old warning. To avoid deleting phone history, development ran a fresh local import from the exact 7:48 PM Rogue/Priest tracker JSON and matching `HS-game-20261018-194833-274c9561-logs.zip`. The corrected core produced logical fusion `50ea73800f48026f27927d6504ea0f1b`, 571 events and the measured diagnostic for 17 intervals (9 frame-observed, 8 play-detection-eligible, 0 capture-gap), with no legacy unmeasured warning. Local private validation artifact SHA-256 is `76bca958d93af95f27ed82b630eed6b01139b7a1e79a886a36412883dbfebc74`; it is not a release upload. Phone capture persistence, exact evidence replay, 220 automated tests and shipped-APK gates together complete LOCAL-002. No further phone game, source push, merge or deployment.
