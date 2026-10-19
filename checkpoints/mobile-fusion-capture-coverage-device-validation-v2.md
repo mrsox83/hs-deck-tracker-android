@@ -3,7 +3,7 @@
 Date: 2026-10-18 Central  
 Task: LOCAL-002  
 Source: `3c692a7`  
-Status: corrected APK/static gates passed; existing-record re-fusion pending
+Status: accepted through phone capture plus exact-evidence local re-fusion
 
 ## Correction
 
@@ -34,3 +34,9 @@ V2 reports measured counts for `FRAME_OBSERVED`, `PLAY_DETECTION_ELIGIBLE`, and 
 5. Acceptance requires a measured coverage diagnostic with interval counts and no false “coverage was not measured” message.
 
 No source push, merge, deployment, R6 work or HSC-006/010 hand reconstruction is authorized by this checkpoint.
+
+## Acceptance result
+
+The phone correctly preserved its existing immutable v1 fusion, so re-upload could not rebuild it. The exact phone-exported 7:48 PM Rogue/Priest tracker JSON and matching troubleshooting ZIP were therefore imported into a fresh local repository through the corrected core. Output retained logical fusion ID `50ea73800f48026f27927d6504ea0f1b`, contained 571 events, and reported 17 measured intervals: 9 frame-observed, 8 play-detection-eligible and 0 capture-gap. The false unmeasured warning was absent. Output SHA-256: `76bca958d93af95f27ed82b630eed6b01139b7a1e79a886a36412883dbfebc74` (local/private validation evidence, not published as a release artifact).
+
+This accepts LOCAL-002 without deleting or rewriting phone history. It does not claim every action was recognized and does not close HSC-004 or HSC-006/010.

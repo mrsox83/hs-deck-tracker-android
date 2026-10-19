@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-18 Central — LOCAL-002 accepted with immutable-phone-history-safe replay
+
+The updated app would not overwrite an existing fused artifact; re-upload correctly returned the preserved v1 JSON with its old warning. To avoid deleting phone history, development ran a fresh local import from the exact 7:48 PM Rogue/Priest tracker JSON and matching `HS-game-20261018-194833-274c9561-logs.zip`. The corrected core produced logical fusion `50ea73800f48026f27927d6504ea0f1b`, 571 events and the measured diagnostic for 17 intervals (9 frame-observed, 8 play-detection-eligible, 0 capture-gap), with no legacy unmeasured warning. Local private validation artifact SHA-256 is `76bca958d93af95f27ed82b630eed6b01139b7a1e79a886a36412883dbfebc74`; it is not a release upload. Phone capture persistence, exact evidence replay, 220 automated tests and shipped-APK gates together complete LOCAL-002. No further phone game, source push, merge or deployment.
+
 ## 2026-10-18 Central — corrected capture-coverage v2 built
 
 Built the owner-approved fusion diagnostic correction from `3c692a7`. All 220 core tests across 36 suites and SDK36 assembly pass. The APK is 68,318,573 bytes with SHA-256 `14862adaa3c6a3a12c64685379538a5edeaabc3a15290623c6bbab65390f14e8`; package/version/signer are unchanged. APK v2 signature, ZIP alignment and all eight native-library 16 KiB checks pass. REA static evidence confirms the expected package surface and shipped `FusionCoordinator.trackerCoverageDiagnostics` method; runtime remains a phone gate. Stage as `mobile-fusion-r5-capture-coverage-device-validation-v2` for update-install and re-fusion of one preserved instrumented record. No new match, source push, merge or deployment.
