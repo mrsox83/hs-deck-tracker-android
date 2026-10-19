@@ -31,6 +31,7 @@ object FusionCoordinator {
             entities = accepted?.entities.orEmpty(),
             choices = accepted?.choices.orEmpty(),
             snapshots = accepted?.snapshots.orEmpty(),
+            entityEpochs = accepted?.entityEpochs.orEmpty(),
             diagnostics = accepted?.diagnostics.orEmpty() + trackerCoverageDiagnostics + powerCoverageWarnings,
             continuations = listOfNotNull(accepted?.continuation),
         )

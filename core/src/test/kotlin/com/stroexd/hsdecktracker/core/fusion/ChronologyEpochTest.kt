@@ -5,9 +5,24 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ChronologyEpochTest {
+    @Test fun choiceStagesKeepTheirOwnEpochAcrossReset() {
+        val json = """{"schema":"hs-power-evidence/0.3","source_session":"session-a","match":{"index":1,"events":[
+            {"sequence":1,"source_line":10,"raw":"BLOCK_START","block_type":"GAME_RESET"},
+            {"sequence":2,"source_line":11,"raw":"BLOCK_END"}
+        ],"choices":[{"choice_id":"1","options":["7"],"submitted_entities":["8"],"evidence":[
+            {"method":"DebugPrintEntityChoices","source_line":5},
+            {"method":"SendChoices","source_line":12}
+        ]}]}}"""
+        val (source, document) = EvidenceAdapters.powerDocument(json.toByteArray())
+        val choice = PowerEvidenceReducer.reduce(source, document).choices.single()
+        assertEquals(0, choice.offered.chronologyEpoch)
+        assertEquals(1, choice.submitted.chronologyEpoch)
+        assertEquals(null, choice.confirmed.chronologyEpoch)
+    }
+
     @Test fun gameResetPreservesPriorEventsAsHistoricalAndStartsUnknownCurrentEpoch() {
         fun event(sequence: Int, line: Int, raw: String, extra: String = "") =
-            """{"sequence":$sequence,"source_line":$line,"log_time":"12:00:0$sequence.0","raw":"$raw"$extra}"""
+            """{"sequence":$sequence,"source_line":$line,"log_time":"12:00:0${if (sequence == 6) 5 else sequence}.0","raw":"$raw"$extra}"""
         val events = listOf(
             event(1, 1, "Player EntityID=2 PlayerID=1"),
             event(2, 2, "tag", ", \"entity\":\"2\",\"tag\":\"CURRENT_PLAYER\",\"value\":\"1\""),
@@ -40,6 +55,9 @@ class ChronologyEpochTest {
         val historicalIds = reduced.events.filter { it.chronologyState == ChronologyState.HISTORICAL }.map { it.id }.toSet()
         assertTrue(reduced.events.filter { it.chronologyState == ChronologyState.CURRENT }.none { it.parentEventId in historicalIds })
         assertTrue(reduced.diagnostics.any { it.contains("observed gameplay rewind") })
+        assertEquals(listOf(0, 1), reduced.entityEpochs.map { it.chronologyEpoch })
+        assertEquals("1", reduced.entityEpochs.first().entities.getValue("83").tags["USED_REWIND"])
+        assertTrue("83" !in reduced.entities)
     }
 
     @Test fun unclassifiedGameResetDoesNotClaimGameplayRewind() {

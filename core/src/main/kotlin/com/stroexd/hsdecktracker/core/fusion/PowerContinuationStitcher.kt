@@ -136,10 +136,13 @@ object PowerContinuationStitcher {
             it.copy(chronologyState = ChronologyState.HISTORICAL)
         } else earlier.snapshots
         val laterSnapshots = later.snapshots.map { it.copy(chronologyEpoch = it.chronologyEpoch + epochOffset) }
-        val entities = (earlier.entities.keys + later.entities.keys).associateWith { id ->
+        val entities = if (laterContainsResetEpoch) later.entities else (earlier.entities.keys + later.entities.keys).associateWith { id ->
             mergeEntity(earlier.entities[id], later.entities[id])
         }
-        val choices = (earlier.choices + later.choices).groupBy(::choiceKey).values.map { revisions ->
+        fun offsetStage(stage: ChoiceStage) = stage.copy(chronologyEpoch = stage.chronologyEpoch?.plus(epochOffset))
+        val laterChoices = later.choices.map { it.copy(offered = offsetStage(it.offered), submitted = offsetStage(it.submitted), confirmed = offsetStage(it.confirmed)) }
+        // A reset prevents choice-ID reuse from joining unrelated stages across sources.
+        val choices = if (laterContainsResetEpoch) earlier.choices + laterChoices else (earlier.choices + laterChoices).groupBy(::choiceKey).values.map { revisions ->
             revisions.reduce(::mergeChoice)
         }.sortedBy { it.id.toIntOrNull() ?: Int.MAX_VALUE }
         return ReducedPowerMatch(
@@ -158,6 +161,12 @@ object PowerContinuationStitcher {
                 "Observed source-session gap retained between ${earlier.source.id} and ${later.source.id}",
             ),
             continuation = decision,
+            entityEpochs = (earlier.entityEpochs + later.entityEpochs.map { it.copy(chronologyEpoch = it.chronologyEpoch + epochOffset) })
+                .groupBy { it.chronologyEpoch }.map { (epoch, records) ->
+                    EntityEpoch(epoch, records.flatMap { it.entities.keys }.distinct().associateWith { id ->
+                        records.mapNotNull { it.entities[id] }.reduce { first, second -> mergeEntity(first, second) }
+                    })
+                },
         )
     }
 
@@ -188,6 +197,8 @@ object PowerContinuationStitcher {
     )
 
     private fun mergeStage(earlier: ChoiceStage, later: ChoiceStage): ChoiceStage {
+        if (earlier.chronologyEpoch != later.chronologyEpoch && earlier.evidence.isNotEmpty() && later.evidence.isNotEmpty())
+            return later.copy(chronologyEpoch = null, evidence = (earlier.evidence + later.evidence).distinct())
         val selected = if (later.entityRefs.isNotEmpty()) later else earlier
         return selected.copy(evidence = (earlier.evidence + later.evidence).distinct())
     }

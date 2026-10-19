@@ -15,6 +15,27 @@ import java.time.ZoneId
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
 
+    @Test fun sixRewindsPreserveSevenEntityEpochsAndLocatedChoiceStages() {
+        val bundle = EvidenceAdapters.exporterBundle(Files.readAllBytes(fixtureDir.resolve(
+            "fusion-test-589424a4-7b2c-48e1-a879-80ed5adf1fba-73cfa31b-853f-4567-bb99-14bd35b52ee4.zip")))
+        val (source, document) = bundle.matches.single { (source, _) ->
+            source.contentSha256.values.contains("ddc8357c0cd8f87ed37e9d092d758402dd1467a41968ff257c61e1358866b71e")
+        }
+        val reduced = PowerEvidenceReducer.reduce(source, document)
+        assertEquals(6, reduced.events.count { it.kind == "GAME_RESET" })
+        assertEquals((0..6).toList(), reduced.entityEpochs.map { it.chronologyEpoch })
+        assertEquals(reduced.entities, reduced.entityEpochs.last().entities)
+        assertTrue(reduced.entityEpochs.dropLast(1).all { it.entities.isNotEmpty() })
+        assertEquals(6, reduced.diagnostics.count { it.contains("observed gameplay rewind") })
+        val resets = reduced.events.filter { it.kind == "GAME_RESET" }.map { it.evidence.single().sourceLine!! }
+        reduced.choices.flatMap { listOf(it.offered, it.submitted, it.confirmed) }.forEach { stage ->
+            stage.chronologyEpoch?.let { epoch ->
+                assertTrue(stage.evidence.isNotEmpty())
+                assertTrue(stage.evidence.all { ref -> ref.sourceLine?.let { line -> resets.count { it <= line } == epoch } == true })
+            }
+        }
+    }
+
     @Test
     fun `all inventoried tracker records parse with pinned identities`() {
         val matchIds = linkedSetOf<String>()
