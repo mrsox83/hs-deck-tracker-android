@@ -4,6 +4,9 @@
 
 This section is the restart source of truth. `docs/coordination/TASKS.md` owns active assignments and reserved paths; `docs/coordination/HANDOFF.md` owns the current integration/phone handoff. The dated sections below are retained as an append-only project history. An unchecked historical item is not active unless it is repeated here or in TASKS/HANDOFF.
 
+- [x] 2026-10-19 HSC-004 acceptance source published as `b9220b0`: /3 output distinction, archive provenance/coverage, historical identity cutoff, and pinned local-went-second witness. Prior 229 ordinary + three private checks and final additional private witness pass. Earlier wording that acceptance changes remain local is superseded. Session closeout: `checkpoints/mobile-fusion-session-close-2026-10-19.md`.
+- [ ] Restart after closeout with live usage/state/shared-feedback review and a bounded HSC-006/010 consumer contract; no automatic implementation, APK, merge or deployment. Canonical shared HSC-004 status reconciliation remains pending source access/review; local finite evidence does not establish universal closure.
+
 - [x] 2026-10-18 session closed at published implementation/acceptance commit `52738fb`; LOCAL-002 accepted, Drive/Shared Exchange records current, no merge/deployment. Five-hour usage was 76% of the owner's 90% ceiling. Resume after reset with read-only state/usage/backlog review and owner choice; do not automatically start HSC-004 or HSC-006/010. See `checkpoints/mobile-fusion-session-close-2026-10-18.md`.
 
 - [x] Owner resumed; live usage and canonical feedback were refreshed before implementation. New October16 corrected-result evidence superseded the earlier assumption that HSC-006/010 consumer integration was the next smallest safe unit.

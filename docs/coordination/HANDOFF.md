@@ -1,5 +1,17 @@
 # HS-FUSION coordinator handoff
 
+## Current closeout — 2026-10-19
+
+Owner-approved HSC-004 acceptance source published as `b9220b0`, following reset epochs `b9c6a65` and entity/choice preservation `87bbaaf`. New producer versions are offline-r2/3 and android-r3/3. Archive provenance/coverage and historical identity cutoffs are validated; unknown ownership remains explicit. 229 ordinary tests plus three private replays pass; the additional pinned October8 local-went-second replay passes 30 raw owner signals. These are four private acceptance checks completed across the recorded runs, not a claim of a single four-test invocation.
+
+The independent reviewer was a workspace-sharing subagent, not the separate CLOUD-001 cloud worker. CLOUD-001 remains DONE; no worker launch or replacement is authorized by this closeout. Existing private source, signing data, phone history and fused artifacts remain preserved.
+
+Five-hour usage at closeout preparation is 80% of the authorized 90% ceiling (weekly39%); no reset credit available or consumed. Stop substantive work after closeout publication. No APK, Android build/phone acceptance for /3, merge or deployment. Current installed APK remains the prior coverage-validation build; source publication does not update the phone.
+
+Restart: reread live usage, branch/remote/worktree, coordination state and Shared Exchange; reconcile pending canonical HSC-004 status with its source before claiming broad closure. Then define a finite HSC-006/010 consumer/hand-reconstruction contract around source/epoch/time-scoped identity, explicit unknowns, reset boundaries and exclusion of unsupported hidden-state inference. Do not implement or build automatically. Full universal HSC-004 ownership recovery is not claimed. See `checkpoints/mobile-fusion-session-close-2026-10-19.md`.
+
+The dated sections below retain historical context and are superseded where they conflict with this current closeout.
+
 2026-10-16. Human owner retains scope/approval authority. Remote/local chat coordinates. Only one assigned worker per task; records, not chat memory, carry ownership across sessions.
 
 Owner resumed after the end-of-day pause. Published source through `9c58860` combines the corrected-result revision/provenance path, result-conflict/manual shell, plain-language notices, current-session-first/next-three discovery, and the edit/export race fix. The 215-test core suite, Android compilation, APK assembly/signature/package/permission/ZIP/native-alignment gates, and REA shipped-artifact inspection pass. Combined v6 phone acceptance is now complete: historical LOSS/current WIN display and separate revision-4 export with three preserved owner edits pass; current-session-first discovery was owner-tested and noticeably faster. No instrumented latency claim, merge, deployment or R6.
