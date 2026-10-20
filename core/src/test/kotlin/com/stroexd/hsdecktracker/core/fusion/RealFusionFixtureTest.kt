@@ -3,6 +3,7 @@ package com.stroexd.hsdecktracker.core.fusion
 import com.stroexd.hsdecktracker.core.stats.MatchResult
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,6 +15,51 @@ import java.time.ZoneId
 
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
+
+    @Test fun ratWasteHandOrderProjectionKeepsBothSidesAndWithholdsPrivateIdentity() {
+        val started = System.nanoTime()
+        val bytes = Files.readAllBytes(fixtureDir.resolve("HS-game-20261018-165407-e3bc4eb7-logs.zip"))
+        assertEquals("9392b19815be64f0e053b1edc50933d5bd06749a311369ad0e09da4b21bd8d69", EvidenceAdapters.sha256(bytes))
+        val trackerBytes = Files.readAllBytes(fixtureDir.resolve("match_20261018T215407114Z_47cbbf799b54c32d7881fb104804d8e59847cf81da4b1d31115edccead9c809d.json"))
+        assertEquals("0540889ea13d924e1be148cc1e4a41029c466c1a31ac4823dc3328e3268e7004", EvidenceAdapters.sha256(trackerBytes))
+        val tracker = EvidenceAdapters.tracker(trackerBytes)
+        val bundle = EvidenceAdapters.exporterBundle(bytes)
+        val powers = bundle.matches.map { PowerEvidenceReducer.reduce(it.first, it.second) }
+        assertTrue(powers.single().source.contentSha256.values.contains("7729f57c8893047fcdb360892323b28031523d52bdf259f714e28730cfef6f0a"))
+        val evaluation = FusionEvaluator.evaluate(tracker, powers, ZoneId.of("America/Chicago"), tracker.record.timeline.mapNotNull { it.cardId }.toSet())
+        val pairing = evaluation.manualDecision()
+        assertEquals(PairingStatus.ACCEPTED, pairing.status)
+        val fused = FusionCoordinator.assemble(tracker, evaluation.powers, pairing)
+        val checkpoint = fused.snapshots.single { it.phase == "BEFORE_ACTION" && it.evidence.any { ref -> ref.sourceLine == 34937 } }
+        val view = DecisionHandProjector.project(fused, checkpoint.id)
+        assertEquals(listOf(1, 2), view.hands.map { it.controller })
+        assertEquals(listOf("38", "53", "44", "126", "48", "46", "234", "40"), view.hands.single { it.controller == 2 }.slots.map { it.entityId })
+        val rawByLine = bundle.matches.single().second.getValue("match").jsonObject.getValue("events").jsonArray
+            .associateBy { it.jsonObject.getValue("source_line").toString().toInt() }
+        val archive = fused.entityEpochs.single { it.chronologyEpoch == checkpoint.chronologyEpoch }
+        for (slot in view.hands.single { it.controller == 2 }.slots.take(7)) {
+            val observations = archive.entities.getValue(slot.entityId).tagHistory.filter {
+                it.evidence in slot.evidence && it.evidence.rule == "power-descriptor-position/1"
+            }
+            assertEquals(setOf("ZONE", "ZONE_POSITION", "CONTROLLER"), observations.map { it.name }.toSet())
+            for (observation in observations) {
+                assertTrue(observation.sourceLine <= 34937)
+                val raw = rawByLine.getValue(observation.sourceLine).jsonObject.getValue("raw").jsonPrimitive.content
+                assertTrue(raw.contains(" id=${slot.entityId} zone=HAND zonePos=${slot.position} "))
+                assertTrue(raw.contains(" player=2]"))
+                assertEquals(mapOf("ZONE" to "HAND", "ZONE_POSITION" to "${slot.position}", "CONTROLLER" to "2")[observation.name], observation.value)
+            }
+            assertTrue(view.hands.single { it.controller == 2 }.diagnostics.contains("HAND_SLOT_SUPPLEMENTAL_DESCRIPTOR:${slot.entityId}"))
+        }
+        // The old ghost-warning expectation was never reached while the eight-slot assertion failed.
+        // Raw line34576 directly places entity67 in PLAY, not in either hand.
+        assertFalse(view.hands.flatMap { it.slots }.any { it.entityId == "67" })
+        val materialized = FusionSnapshotMaterializer.materialize(fused.snapshots.takeWhile { it.id != checkpoint.id } + checkpoint).last()
+        assertEquals("PLAY", materialized.entityTags.getValue("67")["ZONE"])
+        assertTrue(rawByLine.getValue(34576).jsonObject.getValue("raw").jsonPrimitive.content.contains(" id=67 zone=PLAY zonePos=0 "))
+        assertTrue(view.hands.flatMap { it.slots }.all { it.cardId == null && it.effectiveCost == null })
+        println("HAND_VIEW exactOrder=true bothControllers=true observerKnowledgeUnknown=true elapsedMillis=${(System.nanoTime() - started) / 1_000_000}")
+    }
 
     @Test fun growingLogPrefixIdentityCharacterization() {
         fun bytes(name: String, hash: String): ByteArray = Files.readAllBytes(fixtureDir.resolve(name)).also {
@@ -243,6 +289,9 @@ class RealFusionFixtureTest {
         var truncatedCount = 0
         val schemas = linkedMapOf<String, Int>()
         val diagnosticCounts = linkedMapOf<String, Int>()
+        val positionalDiagnosticObservations = linkedMapOf<String, Int>()
+        val positionalDisagreement = Regex("Positional descriptors disagree with explicit (ZONE|ZONE_POSITION|CONTROLLER) tags: ([0-9]+) observation\\(s\\); explicit tags retained; first source line ([0-9]+)")
+        val unsupportedDescriptor = Regex("Unsupported positional descriptors: ([0-9]+) observation\\(s\\); no positional fields imported; first source line ([0-9]+)")
         val diagnosticContexts = mutableListOf<String>()
         exporterFixtureHashes.forEach { (name, expectedHash) ->
             val bytes = Files.readAllBytes(fixtureDir.resolve(name))
@@ -263,6 +312,19 @@ class RealFusionFixtureTest {
                 if (reduced.completed) completedCount++
                 if (reduced.sourceTruncated) truncatedCount++
                 reduced.diagnostics.forEach { diagnostic ->
+                    val disagreement = positionalDisagreement.matchEntire(diagnostic)
+                    val unsupported = unsupportedDescriptor.matchEntire(diagnostic)
+                    if (disagreement != null || unsupported != null) {
+                        val key = disagreement?.groupValues?.get(1) ?: "UNSUPPORTED"
+                        val count = (disagreement?.groupValues?.get(2) ?: unsupported!!.groupValues[1]).toInt()
+                        val firstLine = (disagreement?.groupValues?.get(3) ?: unsupported!!.groupValues[2]).toInt()
+                        assertTrue(count > 0 && firstLine > 0)
+                        assertTrue(document.getValue("match").jsonObject.getValue("events").jsonArray.any {
+                            it.jsonObject.getValue("source_line").toString().toInt() == firstLine
+                        }, "Diagnostic must retain a real raw source location")
+                        positionalDiagnosticObservations[key] = positionalDiagnosticObservations.getOrDefault(key, 0) + count
+                        return@forEach
+                    }
                     val category = diagnostic
                         .replace(Regex("at source line [0-9]+"), "at source line <n>")
                         .replace(Regex("^[0-9]+ unterminated"), "<n> unterminated")
@@ -289,6 +351,8 @@ class RealFusionFixtureTest {
         assertEquals(4, truncatedCount)
         assertEquals(21_018, eventCount)
         assertEquals(29_674, snapshotCount)
+        // Preserve the original chronology golden below; independently pin the new raw-descriptor audit.
+        assertEquals(mapOf("ZONE" to 22_643, "ZONE_POSITION" to 20_650, "CONTROLLER" to 566, "UNSUPPORTED" to 288), positionalDiagnosticObservations)
         assertEquals(
             linkedMapOf("hs-export-bundle/0.2" to 4, "hs-export-bundle/0.3" to 2, "hs-export-bundle/0.4" to 15),
             schemas,
