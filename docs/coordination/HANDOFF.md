@@ -1,5 +1,13 @@
 # HS-FUSION coordinator handoff
 
+## Source publication — 2026-10-20 Central
+
+Resource Exchange SOURCE-PUBLISHED positional row/exact implementation SHA connector-readback VERIFIED; mounted patch-note SHA256df1dee46c5a334086e5fde2c8764b98f333f590ff1c8257bcb3b9d6111a4c92d. No sync pending for this publication record.
+
+Owner-approved source-only commit e2dfa78946720f2e80d3ff07e9f21c50d65af791 pushed to origin/feature/mobile-fusion-offline; independent git ls-remote matches exactly. Includes positional descriptor preservation, position-only in-memory hand view, tests, reviewed report and coordination records. Four reviewed source/test file hashes match the prior review;254 ordinary/11 private passes remain existing executed evidence, not a new run. Only preexisting untracked growing-prefix-fix.init.gradle is excluded/preserved. Resource Exchange patch-note status updated to SOURCE-PUBLISHED; connector confirmation follows separately. No APK, app integration, migration, merge/deployment or canonical write. Full observer-known hand contract is still incomplete. This supersedes source-local/publication-pending wording below only, not feature acceptance or phone gates.
+
+Next bounded proposal: review the remaining observer-knowledge/known-card contract before coaching integration; any implementation, canonical backlog reconciliation and APK/phone gate need their separate owner approval. Source publication is not a request for a fresh phone game or reinstall.
+
 ## Active local follow-up — 2026-10-19
 
 Review-result Resource Exchange wording is now connector-readback VERIFIED as well as the earlier positional/test status. Latest patch-note hash and review close usage25%five-hour/58%weekly (ceiling90%) recorded in checkpoint. No code changes or tests rerun in this review turn; existing validated source bytes preserved.
