@@ -1,5 +1,9 @@
 # HS-FUSION coordinator handoff
 
+## Candidate association SOURCE-PUBLISHED
+
+Owner-approved source46175d7eb7fa17ae4f44988c79e7d346f9293f3e pushed to origin/feature/mobile-fusion-offline; independent ls-remote exactly matches.264 ordinary/12 private tests and hardened independent no-blocker review apply to unchanged source. Only preexisting growing-prefix-fix.init.gradle remains untracked, preserved/excluded. Resource Exchange publication entry updated in place; connector sync pending verification. No APK/runtime integration, names/private costs, phone acceptance, canonical closure, merge or deployment. Next proposed gate: define the remaining observer/audience and decision-time knowledge validation contract before integrating any knowledge output; no new phone upload required automatically.
+
 ## Source publication approved — candidate association
 
 Owner approved source-only commit/push to feature/mobile-fusion-offline. Preflight local/remote c28ad9d matched; hardened source/test hashes unchanged from no-blocker independent review;264 ordinary/12 private passes retained without rerun. Publication includes candidate resolver, synthetic/private harness tests and sanitized coordination/audit records; no private fixtures/account contents/signing files or preexisting growing-prefix helper. Historical sections below retain earlier gates; this approval supersedes their publication-pending wording only. No runtime integration, names/private costs, APK, phone acceptance, canonical closure, merge or deployment. Usage48%five-hour/20%weekly under80%. Commit/remote verification follows separately.

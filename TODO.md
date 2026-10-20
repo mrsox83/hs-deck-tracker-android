@@ -2,6 +2,8 @@
 
 ## Authoritative current state — 2026-10-16
 
+- [x] Candidate association SOURCE-PUBLISHED at46175d7eb7fa17ae4f44988c79e7d346f9293f3e, remote independently matched.264/12 tests and hardened independent review retained. Preexisting helper excluded. Supersedes earlier local/publication-pending status for this unit only; no APK/runtime/knowledge enablement. Next proposed gate: remaining observer/audience and decision-time knowledge contract review.
+
 - [x] Hardened candidate-association independent static review complete, no blockers under trusted adapter contract; report OBSERVER-ASSOCIATION-HARDENING-REVIEW-2026-10-20.md pins current hashes.264 ordinary/12 private coordinator passes, final shared counts connector-verified. Next owner gate: source-only commit/publication, no APK or runtime/card-knowledge integration.
 
 - [x] Owner-approved defensive association hardening SOURCE-LOCAL:264 ordinary/12 private tests passed. Missing evidence and unclassified reset boundaries refuse association; malformed/unlocated future metadata safe-refusal contract tested.80% ceiling active,44%five-hour/19%weekly. Next separate gate: focused independent review of hardened hashes; no APK or publication.
