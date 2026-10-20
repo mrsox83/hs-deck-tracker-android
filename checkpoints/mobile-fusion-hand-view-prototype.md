@@ -1,6 +1,10 @@
 # Offline hand-view prototype — 2026-10-19
 
-Status: SOURCE-LOCAL POSITIONAL CORRECTION / BOUNDED TEST GATE PASSED. Full observer-known hand contract remains INCOMPLETE. No APK, commit/push, migration, canonical closure or deployment. Branch feature/mobile-fusion-offline at4e9e722, pre-existing documentation/helper preserved.
+Status: SOURCE-PUBLISHED POSITIONAL CORRECTION / BOUNDED TEST GATE PASSED. Owner-approved commit e2dfa78946720f2e80d3ff07e9f21c50d65af791 pushed2026-10-20 Central to origin/feature/mobile-fusion-offline and independently verified by ls-remote. Full observer-known hand contract remains INCOMPLETE. No APK, app integration, migration, canonical closure or deployment. Preexisting helper preserved. This supersedes source-local/publication-pending wording retained below.
+
+Publication-only checks: reviewed reducer/projector/two synthetic test hashes unchanged; prior254 ordinary/11 private passes retained without rerun. Eleven bounded source/test/coordination files committed; no private raw artifacts. Only untracked growing-prefix-fix.init.gradle excluded/preserved. Resource Exchange patch notes updated to SOURCE-PUBLISHED at exact SHA; remote note confirmation recorded separately. No new build, phone test, reset credit or canonical write. Next: separately approved remaining observer-knowledge contract review before known-card coaching integration.
+
+Publication note connector-readback VERIFIED at the existing Resource Exchange file/link. Mounted SHA256df1dee46c5a334086e5fde2c8764b98f333f590ff1c8257bcb3b9d6111a4c92d supersedes pre-publication hashes retained below.
 
 ## Approved correction and final validation — 2026-10-19
 
