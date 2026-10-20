@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## 2026-10-20 — candidate association source published
+
+Committed46175d7eb7fa17ae4f44988c79e7d346f9293f3e and pushed feature/mobile-fusion-offline on owner approval; independent ls-remote exactly matches. Source264 ordinary/12 private tests and hardened no-blocker review retained, not rerun. Staging cleared; preexisting untracked helper preserved/excluded, private artifacts remain local. Resource Exchange source-published entry updated in place, sync verification separate. No APK/runtime/schema/name/cost integration, canonical closure, merge/deployment. Publication receipt documentation follows in this source-only workflow.
+
 ## 2026-10-20 — source-only publication authorized
 
 Owner approved commit/push of reviewed candidate association unit and sanitized supporting documentation. Preflight feature branch/local/remote c28ad9d verified; hardened source/test hashes unchanged,264/12 executed results retained. No test rerun needed for unchanged source. Preexisting growing-prefix helper excluded and preserved; private fixtures/ignored helper excluded. No APK/runtime integration/merge/deployment or canonical closure. Usage48%five-hour/20%weekly under80%; publication verification recorded after push.
