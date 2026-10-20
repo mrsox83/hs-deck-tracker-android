@@ -1,5 +1,57 @@
 # HS-FUSION coordinator handoff
 
+## Source publication approved — candidate association
+
+Owner approved source-only commit/push to feature/mobile-fusion-offline. Preflight local/remote c28ad9d matched; hardened source/test hashes unchanged from no-blocker independent review;264 ordinary/12 private passes retained without rerun. Publication includes candidate resolver, synthetic/private harness tests and sanitized coordination/audit records; no private fixtures/account contents/signing files or preexisting growing-prefix helper. Historical sections below retain earlier gates; this approval supersedes their publication-pending wording only. No runtime integration, names/private costs, APK, phone acceptance, canonical closure, merge or deployment. Usage48%five-hour/20%weekly under80%. Commit/remote verification follows separately.
+
+## Hardened association focused review — in progress
+
+Final review-gate usage47%five-hour/20%weekly under80%. Resource Exchange mounted review-outcome entry updated; immediate connector readback not yet showing this newest paragraph, so review-note sync PENDING. Earlier final264/12 counts are remotely verified. No repeated write/new file needed.
+
+COMPLETE: no blockers or new reachable correctness issue under trusted adapter contract. Saved reports/OBSERVER-ASSOCIATION-HARDENING-REVIEW-2026-10-20.md with hashes/limits. Three defensive changes and synthetic coverage independently inspected; no tests rerun. Source-local264/12 coordinator test evidence remains valid for unchanged hashes. Next proposed gate: owner-approved source-only commit/publication; no APK or runtime integration. Final Resource Exchange test counts verified.
+
+Owner approved focused independent read-only review of hardened source/test hashes AC419A3620BDB7E1E39FFC9F423B5E3BFFD25E6F57D141A75CA17090C297B69F /375B2838F993D0D57DC00ADCB3E2D9872ED88FF1948FB8873A7B0028BAF08711. Fresh reviewer restricted to source/synthetic tests and supporting parser/reducer, no private artifacts/builds/edits/delegation. Existing264/12 results not reviewer-rerun. Final Resource Exchange264/12 wording now connector-readback VERIFIED, superseding pending sync below. Intake45%five-hour/20%weekly under80%; no reset. No commit/push/APK or canonical closure authorized.
+
+## Approved defensive hardening — 80% ceiling
+
+Resource Exchange final-count follow-up: mounted note includes264/12 final PASS; immediate connector fetch still shows earlier pending-private wording. Final-count sync is PENDING, not remotely verified. Initial hardening entry itself was connector-verified. Retry read-only on next gate; do not create another patch-note file.
+
+Validation COMPLETE:264 ordinary/12 private tests passed; BUILD SUCCESSFUL in1m45s, reports .gradle/observer-hardening-final/core/test-results. New three malformed-input regressions pass. git diff --check passed (existing CRLF notices only). Source/test SHA256 AC419A3620BDB7E1E39FFC9F423B5E3BFFD25E6F57D141A75CA17090C297B69F /375B2838F993D0D57DC00ADCB3E2D9872ED88FF1948FB8873A7B0028BAF08711. Temporary hardening init removed; reports and preexisting helpers preserved. Resource Exchange SOURCE-LOCAL entry connector-readback verified; final private count sync checked separately. Usage44%five-hour/19%weekly under80%, no reset. Next: focused independent review of changed source/test hashes before publication; no new worker launched automatically. No commit/push/APK or canonical closure.
+
+Owner raised ceiling to80%; new live check42%five-hour/19%weekly supersedes the earlier73% budget hold. Core-only hardening implemented locally: missing/wrongly typed choice evidence refuses association; contract explicitly allows safe refusal for malformed/unlocated metadata; epoch increments follow reducer's structured GAME_RESET classification and raw reset-looking records without classification return UNKNOWN. Three synthetic regression functions added, reset helper updated to parser-compatible metadata. Full ordinary/private tests running; no PASS claimed yet. No names/costs/runtime/schema changes, commit/push or APK. Prior independent review covered pre-hardening hashes only.
+
+## Hardening approved — budget hold
+
+Owner approved the proposed three-item core-only hardening/test pass. Startup live usage is already73%five-hour/12%weekly against75% ceiling, leaving insufficient safe headroom for implementation and verification. No source/test edits or builds started. Preserve all dirty work. Resume this approved scope after usage reset or explicit ceiling increase; no automatic worker, APK or push. Scope: reject missing choice evidence, document/test safe refusal for malformed unlocated future metadata, align reset interpretation with parser/reducer while refusing ambiguous malformed reset records. Prior261/12 passes do not validate these unimplemented changes.
+
+## Independent candidate-association review authorized — 75% ceiling
+
+Review COMPLETE: no blockers under trusted adapter contract. Three optional malformed-input hardening items retained UNASSESSED in reports/OBSERVER-ASSOCIATION-REVIEW-2026-10-20.md: missing choice evidence, invariance wording for malformed future metadata, reset predicate alignment. No fixes applied; source/test hashes unchanged. Latest usage52%five-hour/9%weekly. Recommend separately approved bounded hardening/tests before source publication; no APK.
+
+Owner raised the five-hour ceiling to75%, superseding60%, and authorized independent review only. Live check47%five-hour/8%weekly; no reset used. Fresh read-only reviewer assigned the candidate resolver and synthetic tests, excluding private evidence, builds and edits. Existing261 ordinary/12 private passes are coordinator-executed, not reviewer reruns. No implementation correction, publication, APK, canonical closure, merge or deployment authorized by this review gate. All dirty work preserved.
+
+## Candidate association validated locally — 60% ceiling
+
+Resource Exchange candidate SOURCE-LOCAL note/final test counts and new-note receipts are connector-readback VERIFIED. Existing START_HERE pointer preserved; note hash recorded in checkpoint. Repository source still uncommitted/unpushed at c28ad9d baseline; no APK.
+
+Owner-resumed core-only resolver is SOURCE-LOCAL with final261 ordinary/12 private passes, no failures/errors/skips. In-memory same-source/current-epoch/cutoff offer/send/alias association returns only CANDIDATE/UNKNOWN/CONFLICTED; source/match/range mismatch fails closed. Existing first/second raw fixtures produce2/1; rewind checkpoints remain unknown without renewed mapping, including the earlier #84 view. Private aliases not returned, names/costs still withheld, no FusedMatch/schema/runtime/UI changes. Checkpoint mobile-fusion-observer-association.md pins hashes/reports. Independent review of this new resolver is PENDING; old positional review does not cover it. Live39%five-hour/7%weekly under new60% ceiling, no reset. New canonical #101–105 notes received/read and shared receipt connector-verified, not replayed/promoted/closed. No APK, commit/push or canonical write. Preserve all prior local docs/reports/helpers; own temporary init removed. Next: owner-approved independent review before publication.
+
+## Owner-resumed bounded implementation — 60% ceiling
+
+Owner requested start-of-session prep and proceed, revoking the overnight pause and authorizing the previously proposed core-only candidate association resolver. Startup checks: local/remote c28ad9d match, existing dirty docs/reports/helpers preserved, live21%five-hour/4%weekly, new ceiling60% supersedes historical90%. Read-only canonical/Resource Exchange refresh succeeded; newest #101–105 reports are additional references, not confirmed current-build regressions or new priority authority. Source-local implementation/tests in progress; see checkpoints/mobile-fusion-observer-association.md. No verified observer/card-knowledge output, schema/runtime integration, APK, canonical write or commit/push authorized. No new worker.
+
+## Owner-paused closeout — 2026-10-20 Central
+
+Closed for the night at owner request; wait for owner resume tomorrow. Read checkpoints/mobile-fusion-session-close-2026-10-20.md first on restart. Local/remote c28ad9d independently matched; published source e2dfa78 retains254 ordinary/11 private test evidence and independent review. Only subsequent local documentation/reports are dirty; no product-code diff, staging empty, preexisting helper and ignored audit helper preserved. No active child worker, CLOUD-001 remains DONE. Live closeout usage1%five-hour/0%weekly under90%; no reset credit used. No commit/push/build or external write during closeout. Proposed observer-association resolver is NOT implementation-approved; audit approval did not authorize it. Resume with live state/usage/Resource Exchange checks and owner decision, no automatic implementation, phone request, canonical write, merge or deployment. This pause overrides active next-step wording below until the owner resumes.
+
+## Existing-raw observer audit — 2026-10-20 Central
+
+Owner-approved audit completed on three hash-pinned first/second/rewind sources;66896 selected event bodies checked against raw source lines. Sanitized report reports/OBSERVER-RAW-AUDIT-2026-10-20.md records choice-based candidate controllers2/1/2, no located direct audience/local markers, repeat same-value SHOW/HIDE witnesses and action-boundary timing. Candidate is not verified human visibility; rewind alias bindings were not renewed, and epoch4's send36577 is later than checkpoint34937, so it cannot certify that earlier view. FIRST action1775 introduces its identity at the checkpoint; tracked-history absence elsewhere often differs from raw descriptor absence. Current null-name/cost output remains safe. No product code, core test rerun, APK, external notes, commit/push or canonical write. Local ignored audit helper retained; all prior dirty docs/helper/uploads preserved. Proposed next gate: owner-approved core-only candidate observer-association resolver with source/epoch/cutoff tests, without names/cost enablement or schema/runtime integration. Usage18%five-hour/61%weekly under90% at readout.
+
+## Observer contract review — 2026-10-20 Central
+
+Reviewed remaining knowledge contract against published c28ad9d/e2dfa78. Report reports/OBSERVER-KNOWLEDGE-CONTRACT-REVIEW-2026-10-20.md and plan top section record missing retained observer mapping, audience-free SHOW/HIDE flags, repeat-identity suppression and action-descriptor identity observation before same-line BEFORE_ACTION capture. These are prerequisites for future names/costs, not a claim of leakage in the current position-only projection. Next proposal: owner-approved read-only existing-raw audit of first/second-player/rewind fixtures before specifying a positive knowledge gate or schema. No implementation, tests, raw replay, APK, commit/push, canonical/Resource Exchange writes or new phone request this turn. Helper preserved; usage6%five-hour/59%weekly at start, ceiling90%. Source publication status below remains valid.
+
 ## Source publication — 2026-10-20 Central
 
 Resource Exchange SOURCE-PUBLISHED positional row/exact implementation SHA connector-readback VERIFIED; mounted patch-note SHA256df1dee46c5a334086e5fde2c8764b98f333f590ff1c8257bcb3b9d6111a4c92d. No sync pending for this publication record.

@@ -1,5 +1,23 @@
 # HSC-006/010 consumer plan — 2026-10-19 restart
 
+## Current candidate unit — hardened, reviewed, source publication approved
+
+Owner approved source-only commit/push. Final264 ordinary/12 private tests pass; focused independent static review found no blocker under trusted adapter contract. Missing evidence/unclassified reset boundaries refuse association; malformed/unlocated future metadata safe-refusal contract explicit. This supersedes older261-test/review-pending/proposal-only wording for this unit. Candidate remains in-memory and unconnected to runtime/schema/export; not observer visibility, names/private costs or phone acceptance. Full positive knowledge contract remains incomplete. See checkpoint and OBSERVER-ASSOCIATION-HARDENING-REVIEW-2026-10-20.md.
+
+## Resumed candidate implementation — 60% ceiling
+
+Owner approved session prep/proceed for the bounded core-only resolver. ObserverAssociationResolver now derives an in-memory CANDIDATE controller only from one source/document's unique same-epoch, cutoff-valid submitted choice and preceding offer/alias proof. UNKNOWN/CONFLICTED remain explicit; source/match/range mismatches, future-only or cross-reset aliases do not become proof. No names/private costs, verified observer claim, FusedMatch schema/persistence, runtime or APK integration. Final261 ordinary/12 private passes; new source awaits independent review. reports/OBSERVER-RAW-AUDIT-2026-10-20.md remains audit evidence; checkpoint mobile-fusion-observer-association.md has implementation/test details. This supersedes implementation-proposal-only wording below for the candidate helper, not the unfulfilled positive knowledge/audience/cost contract or canonical write gate.
+
+## October20 approved raw audit outcome
+
+reports/OBSERVER-RAW-AUDIT-2026-10-20.md records three pinned existing captures, offer/send/alias candidate controllers2/1/2 and confirmed reveal timing limits. No direct observer-audience proof established; candidates must not unlock identities/costs. Original alias mappings are not renewed after rewinds, and epoch4 send36577 cannot qualify #84 checkpoint34937. A same-action raw descriptor can already contain an identity before the snapshot line; reducer-history absence is not raw/human absence. Recommended next bounded owner-approved unit is core-only in-memory candidate observer association with exact source/epoch/cutoff and conflict tests, no persisted schema or app/known-card integration. Audit complete does not authorize implementation. No new phone game or upload requested; canonical write remains separate.
+
+## October20 remaining observer contract review
+
+Source c28ad9d reviewed after e2dfa78 positional publication. No positive observer mapping is retained by FusedMatch; pairing, time-scoped identity and SHOW/HIDE booleans are insufficient by themselves. A further boundary issue must be audited before names can be enabled: reducer observes action actor/target identities before same-line BEFORE_ACTION capture, so source cutoff is not automatically a pre-decision knowledge cutoff. Current position-only view remains safe by withholding names/costs. Do not add a knowledge-gate API or schema based on unsupported semantics.
+
+Recommended next owner-approved task: bounded read-only raw audit of existing first-player, second-player and rewind fixtures for explicit observer markers, SHOW/HIDE/repeated reveal semantics and action-reveal ordering. Deliver supported/unsupported evidence with hashes/line/epoch references; absence is a valid result, not permission to guess. No new phone game, upload, parser change, build or implementation is requested now. Exact contract/gates: reports/OBSERVER-KNOWLEDGE-CONTRACT-REVIEW-2026-10-20.md. This review is local documentation only; canonical write, raw audit, implementation, publication and APK require their respective scope approvals.
+
 ## Approved positional-descriptor follow-up
 
 Owner approved the bounded reducer correction after the failed private witness was diagnosed. Complete raw TAG_CHANGE descriptors can supplement missing ZONE/ZONE_POSITION/CONTROLLER observations at their exact current-epoch source line; explicit tags always take precedence, including the named change on the same line. Raw entity40 demonstrates why later descriptors cannot replace explicit tags: its descriptor reports DECK/position0 after explicit HAND/position8 observations. Disagreements and unsupported descriptors are counted in bounded per-match diagnostics with first raw locations; no per-observation warning flood. Supplemental slot evidence is explicitly marked in the hand view. No card ID, private cost, missing owner or previous-epoch state is filled from these descriptors.

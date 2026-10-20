@@ -2,7 +2,25 @@
 
 ## Authoritative current state — 2026-10-16
 
+- [x] Hardened candidate-association independent static review complete, no blockers under trusted adapter contract; report OBSERVER-ASSOCIATION-HARDENING-REVIEW-2026-10-20.md pins current hashes.264 ordinary/12 private coordinator passes, final shared counts connector-verified. Next owner gate: source-only commit/publication, no APK or runtime/card-knowledge integration.
+
+- [x] Owner-approved defensive association hardening SOURCE-LOCAL:264 ordinary/12 private tests passed. Missing evidence and unclassified reset boundaries refuse association; malformed/unlocated future metadata safe-refusal contract tested.80% ceiling active,44%five-hour/19%weekly. Next separate gate: focused independent review of hardened hashes; no APK or publication.
+
+- [x] Independent candidate-association static review complete: no blockers under trusted adapter contract; three optional malformed-input hardening items UNASSESSED in OBSERVER-ASSOCIATION-REVIEW-2026-10-20.md. No fixes or publication. Proposed next: bounded defensive hardening/tests with owner approval. Usage52%five-hour/9%weekly under75% ceiling.
+
+- [ ] Independent candidate-association review now owner-approved and in progress. Five-hour ceiling75% supersedes60%; intake47%five-hour/8%weekly. Read-only review, no private evidence/build rerun. Findings require a separate implementation/publication decision; no APK.
+
 This section is the restart source of truth. `docs/coordination/TASKS.md` owns active assignments and reserved paths; `docs/coordination/HANDOFF.md` owns the current integration/phone handoff. The dated sections below are retained as an append-only project history. An unchecked historical item is not active unless it is repeated here or in TASKS/HANDOFF.
+
+- [x] Owner-resumed candidate association unit implemented SOURCE-LOCAL:261 ordinary/12 private passes, original data preserved. Candidates only, source/epoch/cutoff-valid proof, no future/reset alias inheritance or names/cost enablement. Checkpoint mobile-fusion-observer-association.md. New60% ceiling active;39%five-hour/7%weekly at verification. Next separate gate: independent review of this resolver, not covered by earlier positional review; no APK or commit/push yet. Supersedes in-progress/pause wording below for this approved unit only.
+
+- [ ] Owner resumed and approved bounded candidate-association implementation with60% five-hour ceiling; overnight pause below is superseded for this unit. Pure core-only resolver, exact current source/epoch/cutoff evidence, UNKNOWN/CONFLICTED preserved. Tests in progress; no names/cost enablement, schema/runtime/APK work or commit/push. Preserve all prior local work. Checkpoint mobile-fusion-observer-association.md.
+
+- [ ] OWNER-PAUSED overnight2026-10-20. On owner resume, read checkpoints/mobile-fusion-session-close-2026-10-20.md and verify live usage/branch/remote/dirty state/shared feedback. Core-only candidate observer resolver remains PROPOSED, not implementation-approved; keep names/costs withheld. No automatic APK, phone game/upload request, canonical write, merge/deployment or publication. Preserve local documentation/reports and both helpers.
+
+- [x] Owner-approved existing-raw observer/reveal audit complete; report docs/coordination/reports/OBSERVER-RAW-AUDIT-2026-10-20.md pins three captures and bounded conclusions. Submitted choices yield candidate controllers, not verified visibility; no late evidence/reset alias trust promoted backward. Reveal timing risk and repeated SHOW behavior confirmed without changing current position-only output. Next proposed unit: separately approved core-only candidate observer-association resolver and cutoff/conflict tests; keep names/costs withheld. No APK/new capture/upload or canonical write automatically authorized.
+
+- [x] Remaining observer-knowledge contract reviewed at c28ad9d. Missing perspective/audience proof and action-reveal versus BEFORE_ACTION timing require evidence review, not automatic name/cost enablement. Current position-only view remains unchanged/safe. Report docs/coordination/reports/OBSERVER-KNOWLEDGE-CONTRACT-REVIEW-2026-10-20.md. Next proposed gate: owner-approved read-only audit of existing first/second/rewind raw fixtures; no new phone capture, implementation/schema change or APK automatically authorized.
 
 - [x] 2026-10-20 owner-approved positional source published as e2dfa78946720f2e80d3ff07e9f21c50d65af791; remote feature tip independently verified. Existing254 ordinary/11 private passes and independent review unchanged; no new test run. Resource Exchange marked SOURCE-PUBLISHED, no APK/app integration/phone acceptance or canonical closure. Preexisting helper retained. Supersedes publication-pending wording below. Next proposed unit: review remaining observer-known hand contract under separate approval.
 
