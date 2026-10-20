@@ -16,6 +16,36 @@ import java.time.ZoneId
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
 
+    @Test fun existingObserverAssociationsRemainCandidatesAndDoNotCrossReset() {
+        val cases = listOf(
+            Triple("HS-export-20261007-142822-44f30f8a.zip", "6e89dacbe05f040a10ab5a73ac79e2edc31934d2c3e3fbf18d94a981ff038d4e", 2),
+            Triple("HS-export-20261008-161122-04f747f4.zip", "3034236b5d61e1f75d0ace581710952cbc1c969ed9c9fec25ec4a2f6b649e92e", 1),
+        )
+        for ((name, hash, owner) in cases) {
+            val bytes = Files.readAllBytes(fixtureDir.resolve(name))
+            assertEquals(hash, EvidenceAdapters.sha256(bytes))
+            val (source, document) = EvidenceAdapters.exporterBundle(bytes).matches.single()
+            val cutoff = document.getValue("match").jsonObject.getValue("events").jsonArray.last().jsonObject.getValue("source_line").toString().toInt()
+            val candidate = ObserverAssociationResolver.resolve(source, document, 0, cutoff)
+            assertEquals(ObserverAssociationStatus.CANDIDATE, candidate.status, candidate.diagnostics.toString())
+            assertEquals(owner, candidate.candidateController)
+            assertTrue(candidate.evidence.all { it.sourceId == source.id && it.sourceLine in 1..cutoff })
+            assertTrue(candidate.diagnostics.contains("CANDIDATE_IS_NOT_VERIFIED_OBSERVER_KNOWLEDGE"))
+            val beforeSubmit = if (owner == 2) 1070 else 1518
+            assertEquals(ObserverAssociationStatus.UNKNOWN, ObserverAssociationResolver.resolve(source, document, 0, beforeSubmit).status)
+        }
+        val bytes = Files.readAllBytes(fixtureDir.resolve("HS-game-20261018-165407-e3bc4eb7-logs.zip"))
+        assertEquals("9392b19815be64f0e053b1edc50933d5bd06749a311369ad0e09da4b21bd8d69", EvidenceAdapters.sha256(bytes))
+        val (source, document) = EvidenceAdapters.exporterBundle(bytes).matches.single()
+        assertEquals(2, ObserverAssociationResolver.resolve(source, document, 0, 1775).candidateController)
+        for ((epoch, line) in listOf(1 to 6320, 4 to 34937, 4 to 36577)) {
+            val value = ObserverAssociationResolver.resolve(source, document, epoch, line)
+            assertEquals(ObserverAssociationStatus.UNKNOWN, value.status)
+            assertEquals(null, value.candidateController)
+        }
+        println("OBSERVER_ASSOCIATION candidatesOnly=true firstAndSecond=true resetsAndFutureEvidenceUnknown=true")
+    }
+
     @Test fun ratWasteHandOrderProjectionKeepsBothSidesAndWithholdsPrivateIdentity() {
         val started = System.nanoTime()
         val bytes = Files.readAllBytes(fixtureDir.resolve("HS-game-20261018-165407-e3bc4eb7-logs.zip"))
