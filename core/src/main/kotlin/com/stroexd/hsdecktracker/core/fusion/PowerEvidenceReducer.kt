@@ -17,6 +17,9 @@ object PowerEvidenceReducer {
     private val playerEntity = Regex("Player EntityID=([0-9]+) PlayerID=([0-9]+).*")
     private val gameEntity = Regex("GameEntity EntityID=([0-9]+).*")
     private val entityName = Regex("entityName=(.*?) id=([0-9]+)")
+    // Only a complete positional descriptor is usable; never fill omitted fields from another epoch.
+    private val positionalDescriptor = Regex("\\[entityName=.* id=([0-9]+) zone=([A-Z_]+) zonePos=([0-9]+) cardId=[^ ]* player=([0-9]+)\\]")
+    private val descriptorZones = setOf("INVALID", "PLAY", "DECK", "HAND", "GRAVEYARD", "REMOVEDFROMGAME", "SETASIDE", "SECRET")
     private val linkedEntityTags = setOf(
         "CREATOR", "COPIED_FROM_ENTITY_ID", "COPY_OF_ENTITY_ID", "HERO_ENTITY", "HERO_POWER", "ATTACHED", "REWARD_ENTITY",
     )
@@ -32,6 +35,9 @@ object PowerEvidenceReducer {
         val outputEvents = mutableListOf<CanonicalEvent>()
         val snapshots = mutableListOf<FusionSnapshot>()
         val diagnostics = mutableListOf<String>()
+        val descriptorDisagreements = linkedMapOf<String, Pair<Int, Int>>() // count and first raw line
+        var unsupportedDescriptors = 0
+        var firstUnsupportedDescriptorLine: Int? = null
         val blockStack = ArrayDeque<String>()
         val aliases = linkedMapOf<String, String>()
         val playerTurnIndices = linkedMapOf<Int, Int>()
@@ -105,6 +111,33 @@ object PowerEvidenceReducer {
             observeAlias(tagEntityText, aliases)
             val tagEntity = if (tagEntityText != null) entityReference(tagEntityText, aliases) else pendingEntity
             if (tagName != null && tagValue != null && tagEntity != null) {
+                val rawPrefix = "TAG_CHANGE Entity=$tagEntityText tag=$tagName value="
+                if (tagEntityText != null && body.startsWith(rawPrefix) && body.removePrefix(rawPrefix).trim() == tagValue) {
+                    val fields = positionalDescriptor.matchEntire(tagEntityText)?.groupValues
+                    if (fields != null && fields[1] == tagEntity && fields[1].toIntOrNull()?.let { it > 0 } == true &&
+                        fields[2] in descriptorZones && fields[3].toIntOrNull() != null &&
+                        fields[4].toIntOrNull()?.let { it > 0 } == true) {
+                        val positionalEvidence = evidence.copy(rule = "power-descriptor-position/1")
+                        for ((name, value) in listOf("ZONE" to fields[2], "ZONE_POSITION" to fields[3], "CONTROLLER" to fields[4])) {
+                            // The descriptor describes the entity before this change. The named tag wins
+                            // on this line, rather than manufacturing two conflicting post-change values.
+                            if (name != tagName) {
+                                val entity = mutableEntities[tagEntity]
+                                if (name in entity?.explicitTags.orEmpty()) {
+                                    if (entity?.tags?.get(name) != value) {
+                                        val (count, firstLine) = descriptorDisagreements[name] ?: (0 to line)
+                                        descriptorDisagreements[name] = (count + 1) to firstLine
+                                    }
+                                } else if (entity?.tags?.get(name) != value) {
+                                    observeTag(mutableEntities, tagEntity, name, value, sequence, line, time, positionalEvidence)
+                                }
+                            }
+                        }
+                    } else if (tagEntityText.contains("zonePos=")) {
+                        unsupportedDescriptors++
+                        if (firstUnsupportedDescriptorLine == null) firstUnsupportedDescriptorLine = line
+                    }
+                }
                 observeTag(mutableEntities, tagEntity, tagName, tagValue, sequence, line, time, evidence)
                 if (tagName == "TURN") rawTurn = tagValue.toIntOrNull()
             } else {
@@ -197,6 +230,11 @@ object PowerEvidenceReducer {
                 if (id != null) mutableEntities.getOrPut(id) { MutableEntity(id) }.observeVisibility(false, evidence)
             }
         }
+        for ((name, counts) in descriptorDisagreements) {
+            diagnostics += "Positional descriptors disagree with explicit $name tags: ${counts.first} observation(s); explicit tags retained; first source line ${counts.second}"
+        }
+        if (unsupportedDescriptors > 0)
+            diagnostics += "Unsupported positional descriptors: $unsupportedDescriptors observation(s); no positional fields imported; first source line $firstUnsupportedDescriptorLine"
         if (blockStack.isNotEmpty()) diagnostics += "${blockStack.size} unterminated block(s); final snapshot is unresolved"
         if (lastEvidence != null) captureSnapshot(Int.MAX_VALUE, "LAST_VALID", blockStack.isNotEmpty(), lastEvidence)
 
@@ -231,6 +269,7 @@ object PowerEvidenceReducer {
         val entity = entities.getOrPut(id) { MutableEntity(id) }
         entity.tags[name] = value
         entity.history += TagObservation(sequence, line, time, name, value, evidence)
+        if (evidence.rule != "power-descriptor-position/1") entity.explicitTags += name
         if (name == "CONTROLLER") entity.observeController(value.toIntOrNull(), evidence)
         if (name == "ZONE") entity.observeZone(value, evidence)
         if (name == "ZONE_POSITION") entity.observePosition(value.toIntOrNull(), evidence)
@@ -400,6 +439,8 @@ object PowerEvidenceReducer {
         var cardId: Claim<String> = Claim(reason = "Identity not observed")
         var controller: Claim<Int> = Claim(reason = "Controller not observed")
         val tags = linkedMapOf<String, String>()
+        // Descriptor fields are supplemental observations, not replacements for explicit tag updates.
+        val explicitTags = mutableSetOf<String>()
         val history = mutableListOf<TagObservation>()
         val identities = mutableListOf<IdentityObservation>()
         val zones = mutableListOf<ValueObservation<String>>()
