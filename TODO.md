@@ -2,6 +2,20 @@
 
 ## Authoritative current state — 2026-10-16
 
+- [x] Player-first report independently reviewed, no blockers; PLAYER-HAND-REPORT-REVIEW-2026-10-20.md pins unchanged source/tests. Local reviewer, no private evidence/build/test rerun.269 ordinary/12 private coordinator passes retained. Next owner gate source-only commit/publication; UI/export/APK separate.
+
+- [x] Player-first core report SOURCE-LOCAL:269 ordinary/12 private tests passed; explicit selected controller, ordered evidenced positions, unknown names/costs, escaped bounded cancellable output. Opponent output absent/nonblocking. Checkpoint mobile-fusion-player-hand-report.md. Next owner gate independent review; no UI/export/APK/publication yet.
+
+- [x] Player-first design clarification recorded: selected-player hand order required, opponent optional/nonblocking/off by default. No inferred player mapping; explicit controller selection with basis label. Next proposed implementation scope is selected-player core renderer/tests only; no opponent acquisition dependency.
+
+- [x] Position-only consumer design complete: docs/coordination/POSITION_ONLY_CONSUMER_DESIGN.md. Next proposed owner gate core-only one-checkpoint renderer/tests; names/costs withheld and provenance/incomplete-hand warnings preserved. UI/export/APK separate, no new capture required.
+
+- [x] Existing visual evidence audit complete, OBSERVER-EXISTING-VISUAL-AUDIT-2026-10-20.md. Two of nine retained images visually inspected; no original manifest/log-instance timing proof located. Region probes do retain frame/OCR timestamps, not certified acquisition/decision anchors. Automatic knowledge enrichment DEFERRED. Next proposed choice: bounded position-only consumer integration design; no further identical audit or new upload automatically needed.
+
+- [x] Read-only observer producer feasibility complete: OBSERVER-PRODUCER-FEASIBILITY-2026-10-20.md. Existing visual keyframes reusable, exact perspective/slot-instance/pre-decision log link unsupported. Automatic positive knowledge deferred; no metadata implementation authorized. Next proposed gate: bounded existing-visual-evidence review, not new capture system/uploads.
+
+- [x] Post-publication observer-knowledge requirements reviewed; OBSERVER-KNOWLEDGE-REMAINING-CONTRACT-2026-10-20.md separates perspective/audience, decision boundary, instance continuity and cost evidence. No positive knowledge enabled. Next proposed gate: read-only producer feasibility inspection, not repeat raw audit or automatic schema/APK work.
+
 - [x] Candidate association SOURCE-PUBLISHED at46175d7eb7fa17ae4f44988c79e7d346f9293f3e, remote independently matched.264/12 tests and hardened independent review retained. Preexisting helper excluded. Supersedes earlier local/publication-pending status for this unit only; no APK/runtime/knowledge enablement. Next proposed gate: remaining observer/audience and decision-time knowledge contract review.
 
 - [x] Hardened candidate-association independent static review complete, no blockers under trusted adapter contract; report OBSERVER-ASSOCIATION-HARDENING-REVIEW-2026-10-20.md pins current hashes.264 ordinary/12 private coordinator passes, final shared counts connector-verified. Next owner gate: source-only commit/publication, no APK or runtime/card-knowledge integration.
