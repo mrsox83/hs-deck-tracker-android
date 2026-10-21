@@ -1,5 +1,33 @@
 # Mobile fusion work log
 
+## 2026-10-20 — player report independent review
+
+Owner delegated reviewer choice. Selected fresh local read-only reviewer for small uncommitted patch, avoiding unnecessary cloud handoff; excluded private artifacts/builds/edits. Branch/HEAD/source hashes verified, no blocking findings or fixes requested. Saved PLAYER-HAND-REPORT-REVIEW-2026-10-20.md; coordinator269/12 test passes not independently rerun. No product edits, shared/canonical write, commit/push/APK or worker implementation. Next owner gate source-only publication. Intake20%five-hour/24%weekly under80%, no reset. All prior dirty docs/helper preserved.
+
+## 2026-10-20 — player-first core report implemented and validated
+
+Owner approved core renderer/tests. Added PlayerHandReportRenderer with explicit positive selected controller, CALLER_SELECTED label, one checkpoint/projector call, provenance/diagnostics, unconditional unknown identities/costs, data escaping and bounded append/cancellation; no opponent acquisition/output. Five new tests and existing suite yield269 ordinary/12 private passes, build1m57s. Initial test-fixture codec/provenance and escaped-warning assertion failures corrected without relaxing validator/production behavior; reports retained. Windows locked test-output rerun redirected to fresh .gradle/player-report-accepted-tests, no deletion. Checkpoint pins final hashes. Temporary init removed; prior helper/docs preserved. Resource Exchange source-local entry updated, no APK/UI/export/schema/runtime/push or canonical closure. Independent review remains next owner gate. Intake10%, mid-run15%five-hour/24%weekly under80%, no reset.
+
+## 2026-10-20 — player-hand order is primary
+
+Owner clarified player hand is chief requirement, opponent optional. Updated consumer design to single explicitly selected controller (no inferred/default player), project player only in required path, opponent off by default/nonblocking; both controller selections and opponent independence in acceptance tests. Existing projector tests unchanged. Design/documentation only, no code/test/build/push/external changes or capture request. Existing local work/helper preserved.
+
+## 2026-10-20 — position-only consumer design
+
+Read existing projector, compact summary and saved artifact/export paths. Designed a separate one-explicit-checkpoint core renderer, not alteration of compact pilot or saved fusion JSON. Numeric controllers/evidenced order, unconditional unknown identity/costs, all warnings/provenance, escaping, cancellation/output bound and no silent fallback/truncation. Later explicit checkpoint export/SAF action separate. Saved POSITION_ONLY_CONSUMER_DESIGN.md; next owner gate renderer/tests implementation. No production changes/test rerun/build/APK/push/external/canonical writes or worker. Intake7%five-hour/22%weekly under80%; existing264/12 historical evidence and dirty docs/helper preserved.
+
+## 2026-10-20 — retained visual audit and knowledge deferral
+
+Inventoried nine private bookmark JPEGs, hashed them and inspected5/7 locally. Readable hand scene supports image-time observation, not decision-time knowledge. Original diagnostic manifest not found in bounded workspace/attachment/download/mounted artifact checks; no global absence/provenance claim. RegionProbe timestamp refinement documented: existing probes separate frame/OCR time from bookmark request, still no certified pixel/log boundary join. Saved OBSERVER-EXISTING-VISUAL-AUDIT-2026-10-20.md, defer automatic knowledge enrichment and recommend position-only consumer design as next owner choice. No raw private contents copied, no new capture/upload request, code/tests/build/push/canonical/external writes or new worker. Intake4%five-hour/22%weekly under80%; existing docs/helper retained.
+
+## 2026-10-20 — observer producer feasibility
+
+Read-only traced OcrFrame, ScreenRecognizer reuse/timestamps, VisionGameTracker count-based hand/play detection, VisualEvidenceRecorder, VisualEvidence model, VisualFieldPilot and AppContainer triggers. Existing hashed triggered keyframes and OCR support reusable, but request-vs-frame timing, reused text, missing instance order/perspective/log-boundary anchors prevent automatic decision knowledge. Saved OBSERVER-PRODUCER-FEASIBILITY-2026-10-20.md with minimal prospective metadata/privacy proposal and bounded existing-keyframe review next gate. No production/schema/API edits, tests/APK, new capture/worker, external/canonical write or publication. Prior docs/helper preserved;264/12 existing passes not rerun. Intake2%five-hour/21%weekly under80%, no reset.
+
+## 2026-10-20 — post-publication knowledge contract review
+
+At owner request reviewed current projector/HistoricalIdentity/reducer/candidate source and saved tracker fields against completed raw audit. Saved OBSERVER-KNOWLEDGE-REMAINING-CONTRACT-2026-10-20.md: candidate association insufficient for observer audience, pre-decision timing, instance continuity or private costs. Saved tracker timeline/coverage lacks exact frame/slot/source joins. Proposed bounded read-only producer feasibility inspection before any metadata/API implementation; no repeat audit/capture campaign assumed. Documentation only, no code/tests/APK/commit/push/external/canonical change. Existing264/12 passes not rerun. d695dcd baseline, preexisting helper preserved. Intake0%five-hour/21%weekly under80%, no reset credit used.
+
 ## 2026-10-20 — candidate association source published
 
 Committed46175d7eb7fa17ae4f44988c79e7d346f9293f3e and pushed feature/mobile-fusion-offline on owner approval; independent ls-remote exactly matches. Source264 ordinary/12 private tests and hardened no-blocker review retained, not rerun. Staging cleared; preexisting untracked helper preserved/excluded, private artifacts remain local. Resource Exchange source-published entry updated in place, sync verification separate. No APK/runtime/schema/name/cost integration, canonical closure, merge/deployment. Publication receipt documentation follows in this source-only workflow.
