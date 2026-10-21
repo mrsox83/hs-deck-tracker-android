@@ -2,6 +2,8 @@
 
 ## Authoritative current state — 2026-10-16
 
+- [x] Player-first core hand report SOURCE-PUBLISHED efe30df9d092f6560a6cb2271a97883f5d67c75f, remote independently verified;269/12 tests and independent review retained. Supersedes local/publication-pending wording for this unit. No phone UI/export/APK yet. Next proposed gate app selection/export integration plan.
+
 - [x] Player-first report independently reviewed, no blockers; PLAYER-HAND-REPORT-REVIEW-2026-10-20.md pins unchanged source/tests. Local reviewer, no private evidence/build/test rerun.269 ordinary/12 private coordinator passes retained. Next owner gate source-only commit/publication; UI/export/APK separate.
 
 - [x] Player-first core report SOURCE-LOCAL:269 ordinary/12 private tests passed; explicit selected controller, ordered evidenced positions, unknown names/costs, escaped bounded cancellable output. Opponent output absent/nonblocking. Checkpoint mobile-fusion-player-hand-report.md. Next owner gate independent review; no UI/export/APK/publication yet.
