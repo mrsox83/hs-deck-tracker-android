@@ -13,6 +13,7 @@ object PowerEvidenceReducer {
     private val cardId = Regex("cardId=([^ ]*)", RegexOption.IGNORE_CASE)
     private val inlineTag = Regex("tag=([^ ]+) value=(.*)")
     private val fullEntity = Regex("FULL_ENTITY - Creating ID=([0-9]+) CardID=(.*)")
+    private val updatedEntity = Regex("FULL_ENTITY - Updating (.+) CardID=([^ ]*)")
     private val shownEntity = Regex("(?:SHOW_ENTITY|CHANGE_ENTITY) - Updating Entity=.*? id=([0-9]+).*? CardID=([^ ]*)")
     private val playerEntity = Regex("Player EntityID=([0-9]+) PlayerID=([0-9]+).*")
     private val gameEntity = Regex("GameEntity EntityID=([0-9]+).*")
@@ -83,6 +84,18 @@ object PowerEvidenceReducer {
                 pendingEntity = id
                 val entity = mutableEntities.getOrPut(id) { MutableEntity(id) }
                 entity.observeCard(created.groupValues[2], evidence)
+            } else if (body.startsWith("FULL_ENTITY")) {
+                // Rewind restoration uses Updating headers. An unrecognized header MUST clear
+                // the old inline-tag recipient, rather than assigning its tags to a prior card.
+                pendingEntity = null
+                val updated = updatedEntity.matchEntire(body)
+                val ids = updated?.groupValues?.get(1)?.let { text -> entityId.findAll(text).map { it.groupValues[1] }.distinct().toList() }.orEmpty()
+                val id = ids.singleOrNull()?.takeIf { it.toIntOrNull()?.let { value -> value > 0 } == true }
+                if (id != null) {
+                    pendingEntity = id
+                    mutableEntities.getOrPut(id) { MutableEntity(id) }
+                        .observeCard(updated!!.groupValues[2], evidence.copy(rule = "power-full-entity-update/1"))
+                } else diagnostics += "Unassigned FULL_ENTITY header at source line $line; following inline tags are not attributed to a previous entity"
             }
             playerEntity.matchEntire(body)?.let { player ->
                 pendingEntity = player.groupValues[1]
@@ -118,6 +131,10 @@ object PowerEvidenceReducer {
                         fields[2] in descriptorZones && fields[3].toIntOrNull() != null &&
                         fields[4].toIntOrNull()?.let { it > 0 } == true) {
                         val positionalEvidence = evidence.copy(rule = "power-descriptor-position/1")
+                        // A validated descriptor explicitly names this instance now. Preserve that
+                        // source observation; do not backfill an earlier checkpoint or reset epoch.
+                        observeDescriptor(mutableEntities, tagEntityText,
+                            evidence.copy(rule = "power-descriptor-identity/1"), aliases)
                         for ((name, value) in listOf("ZONE" to fields[2], "ZONE_POSITION" to fields[3], "CONTROLLER" to fields[4])) {
                             // The descriptor describes the entity before this change. The named tag wins
                             // on this line, rather than manufacturing two conflicting post-change values.

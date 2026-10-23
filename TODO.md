@@ -1,6 +1,38 @@
 # Mobile fusion R0–R2
 
-## Authoritative current state — 2026-10-16
+## Authoritative current state — 2026-10-23
+
+- [x] Source-witness reconciliation PASS:286 ordinary/one exact M.O.T.H.E.R./12 broader private tests and Android compile. Stronger slot/anchor/side/result/count/warning proofs replace three stale expectations; original structure/chronology goldens retained. Production unchanged since focused review. See docs/coordination/reports/COACHING-EXPORT-RAW-WITNESS-2026-10-23.md. Next separately approve source-only publication; no APK/phone acceptance or HSC closure. Owner resumed with80% ceiling, current20%five-hour.
+
+- [ ] OWNER-PAUSED until next reset; live77%five-hour, reset1792785424. Preserve dirty work; resume only on owner return with fresh usage/state, then three broad-fixture raw-witness reconciliations. No automatic tests/APK/publication.
+
+- [x] Independent review's pairing/provenance findings corrected; focused re-review no new bounded blocker.286 ordinary/one targeted private/Android PASS. Broader9/12 remains FAIL pending raw-witness reconciliation; no golden updates/APK/publication. Usage75%five-hour under80%, stop new test loops this window.
+
+- [ ] Independent coaching-export review CHANGES REQUIRED: final-identity anchors can affect old pairing; derived hand values/action links insufficiently validated; archive recursion repeats hand validation. See docs/coordination/reports/COACHING-EXPORT-INDEPENDENT-REVIEW-2026-10-23.md. Source fixes/regressions/re-review pending; no APK/publication.
+
+- [ ] Broader coaching-export gate FAIL:12 private tests,9 pass/3 fail; fallback proof, Priest accepted pairing and descriptor audit changes require independent evidence review, not blind baseline updates. Read-only reviewer permission pending. See docs/coordination/reports/COACHING-EXPORT-REGRESSION-2026-10-23.md. No APK/publication.
+
+- [x] Bounded FULL_ENTITY Updating rewind restoration fix:282 ordinary tests plus unchanged #84 raw-package acceptance and Android compilation pass; exact eight-card order/names/target/cost cascade verified. Supersedes prior seven-unknown cost blocker for this fixture, not universal completeness. Source-local only; independent review/broader regressions, canonical reconciliation and APK/phone gates remain pending.
+
+- [ ] Coaching export detailed handHistory is local/unaccepted: eight-slot raw #84 order passes, strict pre-discount cost test fails after resets; inspect exact raw restoration/cost provenance without printed-cost or prior-epoch guesses. Final ordinary/Android checks pending; no APK or issue closure. See checkpoints/mobile-fusion-coaching-export-2026-10-23.md. Supersedes earlier detailed-hand-not-implemented wording, not acceptance.
+
+## October23 owner correction — coaching export is the target (ACTIVE)
+
+Owner authorized parser/export implementation, removal of the separate Player hand positions phone entry for the next build, and visible button styling for affected text actions. This supersedes prior paused/UI-phone-checklist next steps; retain historical delivery evidence. Own-player identities/costs should be included when captured; missing evidence is tracker uncertainty, not human ignorance. Opponent optional, no rewriting earlier revelations. Preserve existing UI game timeline. First local slice adds a separate warned trackerTimeline to newly generated fused JSON, retaining original event order/duplicates and tracker source pointer; canonical Power events unchanged. Removes phone report entry and makes reader authorization/review actions outlined buttons. Detailed hand-state/identity/cost/action linkage is still PENDING, not completed by the quick summary. No APK, publication, migration, old-artifact rewrite, merge or deployment. Local checks running; no PASS claimed yet.
+
+## Session close — October23,2026 — PAUSED
+
+Owner will test tomorrow morning. APK delivery and remote hash verification complete; phone acceptance PENDING. Delivery folder: https://drive.google.com/drive/folders/1wgXywsEBlBizvqvtNescwxtV6fodjSta . Resume with owner phone results: update existing app without uninstall/clear-data, open an existing fused game, then checkpoint/side selection, position preview and save/cancel checks in README. No new game/upload required for initial UI checks. Names/costs remain UNKNOWN; old immutable fusions are not upgraded.
+
+Preserve dirty documentation/checkpoint and all four untracked Gradle helpers. No new build, worker, commit/push, merge, deployment, cleanup or automatic continuation. On owner resume, refresh branch/local/remote/dirty state, coordination and live usage before work. Last observed usage74%five-hour/22%weekly under80% ceiling; no reset used. Local/shared delivery notes are retained; README closing preparation-only sentence is stale (delivery verified), a documentation correction remains queued, no APK rebuild needed.
+
+## October23 approved APK delivery completed
+
+Uploaded mobile-fusion-player-hand-positions-2026-10-23-v1 directly under HSReplay/Development: https://drive.google.com/drive/folders/1wgXywsEBlBizvqvtNescwxtV6fodjSta . Exactly APK, README.md, CHECKPOINT.md and SHA256.txt verified by connector listing/readback. Downloaded remote APK 68410153 bytes; SHA256 cff1c94615403927ee93704ddbcfa7902a542e10f8ba4d4b977c4aa986452f6e matches local. Source1203094 unchanged. Resource Exchange patch notes updated in place; phone acceptance remains PENDING. Supersedes preparation-only delivery gate below. No installation, source commit/push, merge/deployment or canonical closure. Next: owner updates existing app without uninstall/clear-data and follows package README, starting with an existing fused game. Usage66%five-hour/21%weekly under80% ceiling.
+
+## Historical authoritative state — 2026-10-16 (superseded above)
+
+- [x] Player hand phone-validation APK prepared LOCALLY; build/signature/alignment/REA gates pass, same signer/package/permissions. Checkpoint mobile-fusion-player-hand-apk-2026-10-23.md, local package mobile-fusion-player-hand-positions-2026-10-23-v1, hashcff1c94615403927ee93704ddbcfa7902a542e10f8ba4d4b977c4aa986452f6e.272 cached ordinary passes, prior12 private passes retained. Resource Exchange prepared-only note verified. Delivery/installation/device checks PENDING; next owner gate Drive upload, no automatic delivery/merge/deployment.
 
 - [x] Phone player-hand integration SOURCE-PUBLISHED cfb8bb8c325e6ec20fdea2ff9359949e0a1e48f3, remote independently matched; Resource Exchange source note readback verified.272/12 tests/Android compile and independent review retained. No APK/device acceptance yet. Next owner gate phone-validation APK preparation/static/signature/REA gates, with delivery separately authorized. Supersedes local/publication-pending wording for this unit only.
 

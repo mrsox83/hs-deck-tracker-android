@@ -492,7 +492,6 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
     var editing by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var showPostMatchLogs by remember { mutableStateOf(false) }
-    var showPlayerHand by androidx.compose.runtime.saveable.rememberSaveable(matchId) { mutableStateOf(false) }
     var selectedCard by remember { mutableStateOf<Card?>(null) }
     val importFusion = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         val selectedMatch = match
@@ -525,9 +524,6 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
 
     if (showPostMatchLogs && match != null) {
         PostMatchLogsDialog(container, match) { showPostMatchLogs = false }
-    }
-    if (showPlayerHand && match != null) {
-        PlayerHandDialog(container, match) { showPlayerHand = false }
     }
 
     Scaffold(
@@ -628,7 +624,6 @@ fun MatchDetailScreen(navController: NavHostController, matchId: String) {
                                 color = MaterialTheme.colorScheme.error)
                         }
                         if (entry.state == FusionImportState.FUSED_LOCAL) {
-                            TextButton(onClick = { showPlayerHand = true }) { Text(stringResource(R.string.player_hand_title)) }
                             val consistency = PostMatchPresentation.fusionConsistency(match, entry)
                             Text(
                                 consistency.message,

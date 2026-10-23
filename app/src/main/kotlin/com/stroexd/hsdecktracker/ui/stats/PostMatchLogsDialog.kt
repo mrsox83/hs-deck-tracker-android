@@ -205,7 +205,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 if (availability == PostMatchLogClient.Availability.STOPPED) Text("Start Shizuku first, then return here. The companion exporter remains available as fallback.")
                 if (availability == PostMatchLogClient.Availability.CLOSED) Text("Reader closed while choosing the export destination. Close and reopen this dialog to connect again. Retained export/retry does not need a reader connection.")
                 if (availability == PostMatchLogClient.Availability.NEEDS_PERMISSION) {
-                    TextButton(enabled = !busy, onClick = {
+                    OutlinedButton(enabled = !busy, onClick = {
                         try { client.requestPermission() } catch (error: Exception) { message = error.message.orEmpty() }
                     }) { Text("Authorize restricted reader") }
                 }
@@ -308,7 +308,7 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                         Text("I have finished the match and stopped active tracking.")
                     }
                 }
-                TextButton(enabled = !busy && confirmedFinished && availability in listOf(PostMatchLogClient.Availability.READY, PostMatchLogClient.Availability.CONNECTED), onClick = {
+                OutlinedButton(enabled = !busy && confirmedFinished && availability in listOf(PostMatchLogClient.Availability.READY, PostMatchLogClient.Availability.CONNECTED), onClick = {
                     runOperation { client.connect(); sessions = client.listSessions(); selected = emptySet(); "Select one session, or two for reconnect. Nothing is selected automatically." }
                 }) { Text("Connect / refresh sessions") }
                 sessions.forEach { session ->
@@ -355,6 +355,6 @@ fun PostMatchLogsDialog(container: AppContainer, match: MatchRecord, onDismiss: 
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(if (busy) "Stop / close" else "Close") } },
+        confirmButton = { OutlinedButton(onClick = onDismiss) { Text(if (busy) "Stop / close" else "Close") } },
     )
 }

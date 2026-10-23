@@ -30,8 +30,25 @@ data class PowerPairingFacts(
             val firstEvidence = player?.tagHistory?.lastOrNull { it.name == "FIRST_PLAYER" }?.evidence?.let(::listOf).orEmpty()
             val anchors = linkedMapOf<String, MutableList<EvidenceRef>>()
             for (event in match.events) {
-                val cardId = event.actorEntityId?.let { match.entities[it]?.cardId?.value } ?: continue
-                anchors.getOrPut(cardId) { mutableListOf() }.addAll(event.evidence)
+                if (event.kind != "PLAY") continue
+                val incorporated = setOf(match.source.id) + match.source.parentSourceIds
+                val at = event.evidence.map { it.sourceId to it.sourceLine }.distinct().singleOrNull() ?: continue
+                val line = at.second?.takeIf { it > 0 } ?: continue
+                if (at.first !in incorporated) continue
+                val entity = match.entityEpochs.singleOrNull { it.chronologyEpoch == event.chronologyEpoch }
+                    ?.entities?.get(event.actorEntityId) ?: continue
+                val owners = entity.tagHistory.filter { it.name == "CONTROLLER" && it.evidence.sourceId == at.first &&
+                    it.sourceLine == it.evidence.sourceLine && it.sourceLine in 1..line }
+                val ownerLine = owners.maxOfOrNull { it.sourceLine } ?: continue
+                val owner = owners.filter { it.sourceLine == ownerLine }
+                if (owner.map { it.value }.distinct().singleOrNull()?.toIntOrNull() != localController) continue
+                val identities = entity.identityHistory.filter { it.evidence.sourceId == at.first &&
+                    (it.evidence.sourceLine ?: 0) in 1..line }
+                val identityLine = identities.maxOfOrNull { it.evidence.sourceLine!! } ?: continue
+                val identity = identities.filter { it.evidence.sourceLine == identityLine }
+                val cardId = identity.map { it.cardId }.distinct().singleOrNull()?.takeIf { it.isNotBlank() } ?: continue
+                anchors.getOrPut(cardId) { mutableListOf() }.addAll(
+                    (event.evidence + identity.map { it.evidence } + owner.map { it.evidence }).distinct())
             }
             return PowerPairingFacts(
                 match = match,

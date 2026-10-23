@@ -69,17 +69,34 @@ class RealFusionFixtureTest {
         val archive = fused.entityEpochs.single { it.chronologyEpoch == checkpoint.chronologyEpoch }
         for (slot in view.hands.single { it.controller == 2 }.slots.take(7)) {
             val observations = archive.entities.getValue(slot.entityId).tagHistory.filter {
-                it.evidence in slot.evidence && it.evidence.rule == "power-descriptor-position/1"
+                it.evidence in slot.evidence && it.name in setOf("ZONE", "ZONE_POSITION", "CONTROLLER")
             }
             assertEquals(setOf("ZONE", "ZONE_POSITION", "CONTROLLER"), observations.map { it.name }.toSet())
             for (observation in observations) {
                 assertTrue(observation.sourceLine <= 34937)
                 val raw = rawByLine.getValue(observation.sourceLine).jsonObject.getValue("raw").jsonPrimitive.content
-                assertTrue(raw.contains(" id=${slot.entityId} zone=HAND zonePos=${slot.position} "))
-                assertTrue(raw.contains(" player=2]"))
+                if (observation.evidence.rule == "power-descriptor-position/1") {
+                    assertTrue(raw.contains(" id=${slot.entityId} zone=HAND zonePos=${slot.position} "))
+                    assertTrue(raw.contains(" player=2]"))
+                } else if (raw.startsWith("TAG_CHANGE")) {
+                    assertTrue(raw.contains(" id=${slot.entityId} "))
+                    assertTrue(raw.trimEnd().endsWith("tag=${observation.name} value=${observation.value}"))
+                } else {
+                    assertEquals("tag=${observation.name} value=${observation.value}", raw)
+                    val header = rawByLine.values.map { it.jsonObject }.last { event ->
+                        event.getValue("source_line").toString().toInt() < observation.sourceLine &&
+                            event.getValue("raw").jsonPrimitive.content.let { text ->
+                                text.startsWith("FULL_ENTITY") || text.startsWith("SHOW_ENTITY") || text.startsWith("CHANGE_ENTITY") ||
+                                    text.startsWith("Player EntityID=") || text.startsWith("GameEntity EntityID=") ||
+                                    text.startsWith("BLOCK_START BlockType=GAME_RESET") || text == "RESET_GAME"
+                            }
+                    }.getValue("raw").jsonPrimitive.content
+                    assertTrue(header.contains(" id=${slot.entityId} ") || header.contains("Creating ID=${slot.entityId} "))
+                }
                 assertEquals(mapOf("ZONE" to "HAND", "ZONE_POSITION" to "${slot.position}", "CONTROLLER" to "2")[observation.name], observation.value)
             }
-            assertTrue(view.hands.single { it.controller == 2 }.diagnostics.contains("HAND_SLOT_SUPPLEMENTAL_DESCRIPTOR:${slot.entityId}"))
+            assertEquals(observations.any { it.evidence.rule == "power-descriptor-position/1" },
+                view.hands.single { it.controller == 2 }.diagnostics.contains("HAND_SLOT_SUPPLEMENTAL_DESCRIPTOR:${slot.entityId}"))
         }
         // The old ghost-warning expectation was never reached while the eight-slot assertion failed.
         // Raw line34576 directly places entity67 in PLAY, not in either hand.
@@ -132,7 +149,44 @@ class RealFusionFixtureTest {
         assertTrue(FusionProvenanceValidator.validate(combinedArtifact).isEmpty())
         assertTrue(combinedArtifact.diagnostics.any { it.startsWith("Partial reconstruction: 1 selected Power") })
         assertEquals(1, combinedArtifact.diagnostics.count { it.startsWith("Equivalent completed Power evidence:") })
-        assertEquals(PairingStatus.PENDING, priestTogether.status, "Characterizes current behavior, not desired acceptance")
+        assertEquals(PairingStatus.ACCEPTED, priestTogether.status, "Restored source identities now have scoped local PLAY evidence")
+        val priestPower = latePower.single { it.source.id == priestTogether.acceptedSourceId }
+        assertEquals(latePower.last().source.id, priestPower.source.id)
+        val priestDocument = late.matches.single { it.first.id == priestPower.source.id }.second
+        val priestRaw = priestDocument.getValue("match").jsonObject.getValue("events").jsonArray
+            .map { it.jsonObject }.associateBy { it.getValue("source_line").toString().toInt() }
+        for ((line, cardId) in listOf(32894 to "JAIL_720", 38812 to "CATA_301", 42241 to "CATA_215")) {
+            val raw = priestRaw.getValue(line)
+            assertEquals("PLAY", raw.getValue("block_type").jsonPrimitive.content)
+            val actor = raw.getValue("actor").jsonPrimitive.content
+            assertTrue(actor.contains("cardId=$cardId ") && actor.contains("player=2]"))
+            assertTrue(priest.record.timeline.any { it.cardId == cardId })
+            val play = priestPower.events.single { it.kind == "PLAY" && it.evidence.any { ref -> ref.sourceLine == line } }
+            val entity = priestPower.entityEpochs.single { it.chronologyEpoch == play.chronologyEpoch }.entities.getValue(play.actorEntityId!!)
+            val identity = entity.identityHistory.filter { it.evidence.sourceId == priestPower.source.id &&
+                (it.evidence.sourceLine ?: 0) in 1..line }.maxByOrNull { it.evidence.sourceLine!! }!!
+            val owner = entity.tagHistory.filter { it.name == "CONTROLLER" && it.evidence.sourceId == priestPower.source.id &&
+                it.sourceLine in 1..line }.maxByOrNull { it.sourceLine }!!
+            assertEquals(cardId, identity.cardId)
+            assertEquals("2", owner.value)
+            val proofs = PowerPairingFacts.fromReduced(priestPower, null, 2).anchorEvidence.getValue(cardId)
+            assertTrue(identity.evidence in proofs && owner.evidence in proofs && play.evidence.all { it in proofs })
+        }
+        for ((line, controller, hero) in listOf(Triple(30408, 1, "64"), Triple(30421, 2, "66"))) {
+            assertEquals("tag=HERO_ENTITY value=$hero", priestRaw.getValue(line).getValue("raw").jsonPrimitive.content)
+            val playerHeader = priestRaw.values.last { event -> event.getValue("source_line").toString().toInt() < line &&
+                event.getValue("raw").jsonPrimitive.content.startsWith("Player EntityID=") }.getValue("raw").jsonPrimitive.content
+            assertTrue(Regex("PlayerID=$controller(?: |$)").containsMatchIn(playerHeader))
+        }
+        assertTrue(priestRaw.getValue(30671).getValue("raw").jsonPrimitive.content.endsWith("CardID=HERO_09a"))
+        assertTrue(priestRaw.getValue(30703).getValue("raw").jsonPrimitive.content.endsWith("CardID=HERO_03bt"))
+        assertEquals("LOST", priestRaw.getValue(66658).getValue("value").jsonPrimitive.content)
+        val ownMapping = priestDocument.getValue("player_name_mappings").jsonArray.single {
+            it.jsonObject.getValue("controller").toString() == "2"
+        }.jsonObject
+        assertTrue(ownMapping.getValue("source_line").toString().toInt() < 66658)
+        assertEquals(ownMapping.getValue("name").jsonPrimitive.content, priestRaw.getValue(66658).getValue("entity").jsonPrimitive.content)
+        assertEquals(MatchResult.LOSS, priest.record.result)
         val firstArtifact = FusionCoordinator.assemble(dk, earlyPower, dkEarly)
         val laterArtifact = FusionCoordinator.assemble(dk, latePower, dkLate)
         println("GROWING_PREFIX dkLogicalIdEarly=${firstArtifact.matchId} dkLogicalIdLate=${laterArtifact.matchId}")
@@ -320,6 +374,7 @@ class RealFusionFixtureTest {
         val schemas = linkedMapOf<String, Int>()
         val diagnosticCounts = linkedMapOf<String, Int>()
         val positionalDiagnosticObservations = linkedMapOf<String, Int>()
+        var unassignedHeaderCount = 0
         val positionalDisagreement = Regex("Positional descriptors disagree with explicit (ZONE|ZONE_POSITION|CONTROLLER) tags: ([0-9]+) observation\\(s\\); explicit tags retained; first source line ([0-9]+)")
         val unsupportedDescriptor = Regex("Unsupported positional descriptors: ([0-9]+) observation\\(s\\); no positional fields imported; first source line ([0-9]+)")
         val diagnosticContexts = mutableListOf<String>()
@@ -341,6 +396,8 @@ class RealFusionFixtureTest {
                 snapshotCount += reduced.snapshots.size
                 if (reduced.completed) completedCount++
                 if (reduced.sourceTruncated) truncatedCount++
+                val perMatchDescriptorCounts = linkedMapOf<String, Int>()
+                val unassignedHeaderLines = mutableListOf<Int>()
                 reduced.diagnostics.forEach { diagnostic ->
                     val disagreement = positionalDisagreement.matchEntire(diagnostic)
                     val unsupported = unsupportedDescriptor.matchEntire(diagnostic)
@@ -353,6 +410,19 @@ class RealFusionFixtureTest {
                             it.jsonObject.getValue("source_line").toString().toInt() == firstLine
                         }, "Diagnostic must retain a real raw source location")
                         positionalDiagnosticObservations[key] = positionalDiagnosticObservations.getOrDefault(key, 0) + count
+                        perMatchDescriptorCounts[key] = count
+                        return@forEach
+                    }
+                    val unassigned = Regex("Unassigned FULL_ENTITY header at source line ([0-9]+); following inline tags are not attributed to a previous entity").matchEntire(diagnostic)
+                    if (unassigned != null) {
+                        val line = unassigned.groupValues[1].toInt()
+                        val raw = document.getValue("match").jsonObject.getValue("events").jsonArray.single {
+                            it.jsonObject.getValue("source_line").toString().toInt() == line
+                        }.jsonObject.getValue("raw").jsonPrimitive.content
+                        assertTrue(raw.startsWith("FULL_ENTITY - Updating "))
+                        assertFalse(Regex("\\bid=[0-9]+").containsMatchIn(raw))
+                        unassignedHeaderCount++
+                        unassignedHeaderLines += line
                         return@forEach
                     }
                     val category = diagnostic
@@ -362,6 +432,19 @@ class RealFusionFixtureTest {
                     diagnosticContexts += "$name#${source.matchAlias} completed=${reduced.completed} " +
                         "truncated=${reduced.sourceTruncated}: $diagnostic"
                 }
+                assertEquals(rawDescriptorAudit(reduced, document), perMatchDescriptorCounts,
+                    "Every descriptor disagreement must match a prior explicit same-epoch raw observation")
+                val expectedUnassignedLines = document.getValue("match").jsonObject.getValue("events").jsonArray.map { it.jsonObject }.filter { event ->
+                    val raw = event.getValue("raw").jsonPrimitive.content
+                    if (!raw.startsWith("FULL_ENTITY") || Regex("FULL_ENTITY - Creating ID=[0-9]+ CardID=.*").matches(raw)) false
+                    else {
+                        val update = Regex("FULL_ENTITY - Updating (.+) CardID=[^ ]*").matchEntire(raw)
+                        val ids = update?.groupValues?.get(1)?.let { text -> Regex("(?:id|entity)=([0-9]+)", RegexOption.IGNORE_CASE)
+                            .findAll(text).map { it.groupValues[1] }.distinct().toList() }.orEmpty()
+                        ids.singleOrNull()?.toIntOrNull()?.let { it > 0 } != true
+                    }
+                }.map { it.getValue("source_line").toString().toInt() }
+                assertEquals(expectedUnassignedLines, unassignedHeaderLines, "Every unassigned header must remain disclosed")
                 assertTrue(reduced.events.all { event ->
                     event.evidence.isNotEmpty() && event.evidence.all { it.sourceId == source.id && it.sourceLine != null }
                 }, "$name match ${source.matchAlias} has an event without exact source evidence")
@@ -382,7 +465,7 @@ class RealFusionFixtureTest {
         assertEquals(21_018, eventCount)
         assertEquals(29_674, snapshotCount)
         // Preserve the original chronology golden below; independently pin the new raw-descriptor audit.
-        assertEquals(mapOf("ZONE" to 22_643, "ZONE_POSITION" to 20_650, "CONTROLLER" to 566, "UNSUPPORTED" to 288), positionalDiagnosticObservations)
+        assertEquals(mapOf("ZONE" to 22_610, "ZONE_POSITION" to 20_665, "CONTROLLER" to 566, "UNSUPPORTED" to 288), positionalDiagnosticObservations)
         assertEquals(
             linkedMapOf("hs-export-bundle/0.2" to 4, "hs-export-bundle/0.3" to 2, "hs-export-bundle/0.4" to 15),
             schemas,
@@ -405,7 +488,7 @@ class RealFusionFixtureTest {
         println(
             "REAL_FUSION_CORPUS bundles=${exporterFixtureHashes.size} matches=$matchCount " +
                 "completed=$completedCount truncated=$truncatedCount events=$eventCount snapshots=$snapshotCount " +
-                "schemas=$schemas diagnostics=$diagnosticCounts diagnosticContexts=$diagnosticContexts",
+                "schemas=$schemas unassignedFullHeaders=$unassignedHeaderCount diagnostics=$diagnosticCounts diagnosticContexts=$diagnosticContexts",
         )
     }
 
@@ -583,6 +666,41 @@ class RealFusionFixtureTest {
         assertEquals(4, fused.sources.size)
         assertEquals(stitched.events.size, fused.events.size)
     }
+}
+
+/** Test-only audit: compare raw descriptors against earlier explicit tag proofs, not final state. */
+private fun rawDescriptorAudit(reduced: ReducedPowerMatch, document: kotlinx.serialization.json.JsonObject): Map<String, Int> {
+    val counts = linkedMapOf<String, Int>()
+    val pattern = Regex("\\[entityName=.* id=([0-9]+) zone=([A-Z_]+) zonePos=([0-9]+) cardId=[^ ]* player=([0-9]+)\\]")
+    val zones = setOf("INVALID", "PLAY", "DECK", "HAND", "GRAVEYARD", "REMOVEDFROMGAME", "SETASIDE", "SECRET")
+    var epoch = 0
+    for (element in document.getValue("match").jsonObject.getValue("events").jsonArray) {
+        val event = element.jsonObject
+        val raw = event.getValue("raw").jsonPrimitive.content
+        if (raw.startsWith("BLOCK_START") && event["block_type"]?.jsonPrimitive?.content == "GAME_RESET") epoch++
+        val text = event["entity"]?.jsonPrimitive?.content ?: continue
+        val tag = event["tag"]?.jsonPrimitive?.content ?: continue
+        val value = event["value"]?.jsonPrimitive?.content ?: continue
+        val prefix = "TAG_CHANGE Entity=$text tag=$tag value="
+        if (!raw.startsWith(prefix) || raw.removePrefix(prefix).trim() != value) continue
+        val id = Regex("(?:id|entity)=([0-9]+)", RegexOption.IGNORE_CASE).find(text)?.groupValues?.get(1) ?: continue
+        val fields = pattern.matchEntire(text)?.groupValues
+        val valid = fields != null && fields[1] == id && (id.toIntOrNull() ?: 0) > 0 && fields[2] in zones &&
+            fields[3].toIntOrNull() != null && (fields[4].toIntOrNull() ?: 0) > 0
+        if (!valid) {
+            if (text.contains("zonePos=")) counts["UNSUPPORTED"] = counts.getOrDefault("UNSUPPORTED", 0) + 1
+            continue
+        }
+        val line = event.getValue("source_line").toString().toInt()
+        val entity = reduced.entityEpochs.single { it.chronologyEpoch == epoch }.entities[id] ?: continue
+        for ((name, observed) in listOf("ZONE" to fields!![2], "ZONE_POSITION" to fields[3], "CONTROLLER" to fields[4])) {
+            if (name == tag) continue
+            val prior = entity.tagHistory.filter { it.name == name && it.evidence.sourceId == reduced.source.id &&
+                it.sourceLine < line && it.evidence.rule != "power-descriptor-position/1" }.maxByOrNull { it.sourceLine }
+            if (prior != null && prior.value != observed) counts[name] = counts.getOrDefault(name, 0) + 1
+        }
+    }
+    return counts
 }
 
 private val exporterFixtureHashes = linkedMapOf(
