@@ -600,4 +600,19 @@
     <string name="choose_match_export_folder">Choose match export folder</string>
     <string name="match_export_folder_help">Select Downloads/HSDeckTracker/Matches (create it first). New completed matches are saved as JSON with their full timeline.</string>
     <string name="match_export_failed">Match saved, but JSON export failed. Check the export folder in Settings.</string>
+    <string name="player_hand_title">Player hand positions</string>
+    <string name="player_hand_warning">Some cards may be missing from this record. Card names and costs are not included. These are saved positions, not verified decision-time knowledge.</string>
+    <string name="player_hand_filter">Filter checkpoints</string>
+    <string name="player_hand_checkpoint">Choose a checkpoint (no automatic selection)</string>
+    <string name="player_hand_refine">Showing the first 200 matches. Refine the filter to see others.</string>
+    <string name="player_hand_side_help">Choose the side to show as your hand. The app has not verified which side is yours.</string>
+    <string name="player_hand_side">Player side number (positive controller ID)</string>
+    <string name="player_hand_side_options">Side numbers recorded here: %1$s. These are not verified player identities.</string>
+    <string name="player_hand_preview">Prepare preview</string>
+    <string name="player_hand_details">Source details</string>
+    <string name="player_hand_save">Save report</string>
+    <string name="player_hand_cancelled">Save cancelled. Your game data is unchanged.</string>
+    <string name="player_hand_saved">Report saved to the location you chose. Cloud upload is not confirmed.</string>
+    <string name="player_hand_failed">Save did not finish. The destination may contain an incomplete file. Your original game data is unchanged.</string>
+    <string name="player_hand_missing_payload">The prepared report is no longer available. Prepare it again. No report data was written; the picker may have created an empty destination.</string>
 </resources>

@@ -2,6 +2,16 @@
 
 ## Authoritative current state — 2026-10-16
 
+- [x] October23 owner resumed; startup local/remote/dirty state/hashes/usage/shared-feedback refreshed. Independent phone-integration static review found no blockers; PHONE-HAND-INTEGRATION-REVIEW-2026-10-23.md.272/12 prior tests and Android compile retained, not rerun; device checks pending. Next owner gate source-only commit/publication, no APK yet. Supersedes overnight pause below for this completed review only.
+
+- [ ] New October21 HSC-009/010 note-preservation request and HSC-004/006/010 coaching diagnostic received/read in existing Resource Exchange receipt ledger (verified); priority UNASSESSED, technical triage/raw replay not performed, no implementation authority. No displacement of player-hand scope. H: absent; connector working. Canonical backlog unchanged.
+
+- [ ] OWNER-PAUSED October21 night after last approved task. On owner resume read checkpoints/mobile-fusion-phone-hand-session-2026-10-21.md and refresh state/usage/shared feedback. Local phone integration passes272 ordinary/12 private tests and Android Kotlin compilation, no APK/commit/push/publication. Independent integration review and device picker/lifecycle acceptance pending. Preserve all dirty work/helpers; no automatic continuation.
+
+- [x] Phone player-hand dialog/export implemented SOURCE-LOCAL: explicit side/checkpoint, pinned bounded saved artifact, reviewed renderer, full preview and Android text save. No names/costs/observer inference/opponent dependency or original mutation. New helper tests/old regressions pass; build1m52s. New integration not independently reviewed. Resource Exchange update deferred under tonight's no-publication bound.
+
+- [x] Phone player-hand selection/export design complete: PLAYER_HAND_PHONE_INTEGRATION_PLAN.md. Separate action, explicit checkpoint/annotated side, position-only preview and text save picker; no schema/identity inference/opponent dependency. Next owner gate app/presentation implementation/tests and compile verification; APK delivery separate.
+
 - [x] Player-first core hand report SOURCE-PUBLISHED efe30df9d092f6560a6cb2271a97883f5d67c75f, remote independently verified;269/12 tests and independent review retained. Supersedes local/publication-pending wording for this unit. No phone UI/export/APK yet. Next proposed gate app selection/export integration plan.
 
 - [x] Player-first report independently reviewed, no blockers; PLAYER-HAND-REPORT-REVIEW-2026-10-20.md pins unchanged source/tests. Local reviewer, no private evidence/build/test rerun.269 ordinary/12 private coordinator passes retained. Next owner gate source-only commit/publication; UI/export/APK separate.
