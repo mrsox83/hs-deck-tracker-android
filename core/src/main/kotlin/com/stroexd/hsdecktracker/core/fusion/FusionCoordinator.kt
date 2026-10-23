@@ -3,8 +3,8 @@ package com.stroexd.hsdecktracker.core.fusion
 import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import java.security.MessageDigest
 
-const val OFFLINE_FUSION_VERSION = "offline-r2/4"
-const val ANDROID_FUSION_VERSION = "android-r3/4"
+const val OFFLINE_FUSION_VERSION = "offline-r2/5"
+const val ANDROID_FUSION_VERSION = "android-r3/5"
 
 object FusionCoordinator {
     fun assemble(
@@ -40,7 +40,7 @@ object FusionCoordinator {
             "Partial reconstruction: ${unused.size} selected Power source(s) retained as provenance but not incorporated into the timeline. " +
                 "They may be unrelated games or unverified reconnect fragments; full reconnect recovery is not established.",
         ) else emptyList()
-        return FusedMatch(
+        val fused = FusedMatch(
             schema = FUSION_SCHEMA,
             matchId = matchId,
             fusionVersion = fusionVersion,
@@ -51,10 +51,21 @@ object FusionCoordinator {
             choices = accepted?.choices.orEmpty(),
             snapshots = accepted?.snapshots.orEmpty(),
             entityEpochs = accepted?.entityEpochs.orEmpty(),
+            trackerTimeline = TrackerTimelineSummary(
+                sourceId = tracker.source.id,
+                events = tracker.record.timeline.toList(),
+                evidence = EvidenceRef(tracker.source.id, jsonPointer = "/timeline", rule = "tracker-timeline-summary/1"),
+            ),
             diagnostics = accepted?.diagnostics.orEmpty() + trackerCoverageDiagnostics + powerCoverageWarnings + equivalenceDiagnostics +
                 "Logical match identity: tracker-record/1; selected evidence and saved-result revisions do not create another game identity.",
             continuations = listOfNotNull(accepted?.continuation),
         )
+        if (accepted == null) return fused
+        // Supplemental hand derivation must not block preservation of the existing canonical evidence.
+        return try { fused.copy(handHistory = CoachingHandHistoryBuilder.build(fused)) }
+        catch (error: IllegalArgumentException) {
+            fused.copy(diagnostics = fused.diagnostics + "Hand history unavailable: source checkpoint chronology/provenance did not pass validation.")
+        }
     }
 
     private fun trackerCoverageDiagnostics(tracker: TrackerEvidence): List<String> {

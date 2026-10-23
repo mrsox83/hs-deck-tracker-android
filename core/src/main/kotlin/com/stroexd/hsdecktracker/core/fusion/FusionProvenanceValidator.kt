@@ -16,6 +16,22 @@ object FusionProvenanceValidator {
             if (value.status != ClaimStatus.UNKNOWN) evidence(path, value.evidence)
         }
 
+        match.handHistory?.let { history ->
+            // Derived fields are claims about canonical evidence, not trusted imported annotations.
+            try {
+                if (history != CoachingHandHistoryBuilder.build(match))
+                    errors += "handHistory differs from canonical source derivation"
+            } catch (error: IllegalArgumentException) {
+                errors += "handHistory canonical source derivation is unavailable"
+            }
+        }
+        match.trackerTimeline?.let { summary ->
+            if (match.sources.singleOrNull { it.id == summary.sourceId }?.type != SourceType.ANDROID_TRACKER_JSON)
+                errors += "trackerTimeline requires one tracker source"
+            if (summary.evidence.sourceId != summary.sourceId || summary.evidence.jsonPointer != "/timeline")
+                errors += "trackerTimeline must reference its tracker timeline"
+            evidence("trackerTimeline", listOf(summary.evidence))
+        }
         match.sources.forEachIndexed { index, source ->
             if (source.type == SourceType.DERIVED_FUSION && source.parentSourceIds.isEmpty()) {
                 errors += "sources[$index] derived source has no parents"
@@ -95,6 +111,7 @@ object FusionProvenanceValidator {
             val archiveErrors = validate(match.copy(
                 entities = archive.entities, entityEpochs = emptyList(), events = emptyList(),
                 snapshots = emptyList(), choices = emptyList(), continuations = emptyList(),
+                handHistory = null, trackerTimeline = null,
                 pairing = PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "archive validation"),
             ))
             errors += archiveErrors.filter { it.startsWith("entities[") }.map { "entityEpochs[$index].$it" }

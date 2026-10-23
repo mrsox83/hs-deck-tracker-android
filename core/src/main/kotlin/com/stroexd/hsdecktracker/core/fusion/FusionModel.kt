@@ -242,4 +242,15 @@ data class FusedMatch(
     val diagnostics: List<String> = emptyList(),
     val continuations: List<PowerContinuationDecision> = emptyList(),
     val entityEpochs: List<EntityEpoch> = emptyList(),
+    /** Screenshot observations only; separate from the canonical Power timeline. */
+    val trackerTimeline: TrackerTimelineSummary? = null,
+    val handHistory: CoachingHandHistory? = null,
+)
+
+@Serializable
+data class TrackerTimelineSummary(
+    val sourceId: String,
+    val events: List<com.stroexd.hsdecktracker.core.stats.TimelineEvent>,
+    val evidence: EvidenceRef,
+    val warning: String = "Tracker observations may be incomplete or inaccurate. Not a verified Power.log timeline or complete hand inventory.",
 )

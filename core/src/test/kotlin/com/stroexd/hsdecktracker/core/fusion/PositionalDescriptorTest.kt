@@ -23,11 +23,14 @@ class PositionalDescriptorTest {
         return PowerEvidenceReducer.reduce(FusionSource("power", "hash", SourceType.ANDROID_POWER_EVIDENCE, captureMethod = "test"), document)
     }
 
-    @Test fun explicitPositionsHaveExactProvenanceWithoutPrivateIdentityOrCost() {
+    @Test fun explicitPositionsAndNamedIdentityHaveExactProvenanceWithoutInventedCost() {
         val result = reduce(change(descriptor()))
         val e = result.entities.getValue("38")
         assertEquals("HAND", e.tags["ZONE"]); assertEquals("1", e.tags["ZONE_POSITION"]); assertEquals("2", e.tags["CONTROLLER"])
-        assertNull(e.cardId.value); assertTrue(e.identityHistory.isEmpty()); assertNull(e.tags["COST"])
+        assertEquals("PRIVATE", e.cardId.value)
+        assertEquals("PRIVATE", e.identityHistory.single().cardId)
+        assertEquals(EvidenceRef("power", 1, observedTime = "12:00:00", rule = "power-descriptor-identity/1"), e.identityHistory.single().evidence)
+        assertNull(e.tags["COST"])
         val proofs = e.tagHistory.filter { it.name in setOf("ZONE", "ZONE_POSITION", "CONTROLLER") }
         assertEquals(3, proofs.size)
         assertTrue(proofs.all { it.sourceLine == 1 && it.evidence.sourceLine == 1 && it.evidence.sourceId == "power" && it.evidence.rule == "power-descriptor-position/1" })

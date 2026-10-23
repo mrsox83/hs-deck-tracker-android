@@ -31,6 +31,7 @@ dependencies {
 }
 
 tasks.test {
+    exclude("**/RealCoachingHandPackageTest.class")
     exclude("**/RealDiscoveryFixtureTest.class")
     exclude("**/RealPendingPairingTest.class")
     exclude("**/RealManualReconnectTest.class")
@@ -148,6 +149,19 @@ tasks.register<Test>("realFusionFixtureTest") {
     doFirst {
         require(fixtureDir.isPresent) { "Pass -PhsFusionFixtureDir=<private fixture directory>" }
         systemProperty("hsFusionFixtureDir", fixtureDir.get())
+    }
+}
+
+tasks.register<Test>("realCoachingHandPackageTest") {
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/RealCoachingHandPackageTest.class")
+    maxHeapSize = "1g"
+    doFirst {
+        val reviewPackage = providers.gradleProperty("hsHandReviewPackage")
+        require(reviewPackage.isPresent) { "Pass -PhsHandReviewPackage=<private review ZIP>" }
+        systemProperty("hsHandReviewPackage", reviewPackage.get())
     }
 }
 

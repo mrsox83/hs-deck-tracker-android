@@ -43,6 +43,21 @@ object DecisionHandProjector {
         val selected = match.snapshots.withIndex().filter { it.value.id == checkpointId }.singleOrNull()
             ?: error("Checkpoint must identify exactly one snapshot")
         val prefix = match.snapshots.take(selected.index + 1)
+        val snapshot = materializeValidated(match, prefix, check).last()
+        return projectMaterialized(match, snapshot, controllers, check)
+    }
+
+    /** One state replay for the complete export, rather than replaying every prefix. */
+    internal fun all(match: FusedMatch, check: () -> Unit = {}): Sequence<Pair<FusionSnapshot, DecisionHandView>> {
+        require(match.schema == FUSION_SCHEMA && match.pairing.status == PairingStatus.ACCEPTED)
+        return materializeValidated(match, match.snapshots, check).map { snapshot ->
+            val controllers = snapshot.entityTags.values.mapNotNull { it["CONTROLLER"]?.toIntOrNull() }
+                .filter { it > 0 }.toSet()
+            snapshot to projectMaterialized(match, snapshot, controllers, check)
+        }
+    }
+
+    private fun materializeValidated(match: FusedMatch, prefix: List<FusionSnapshot>, check: () -> Unit): Sequence<FusionSnapshot> {
         val sources = match.sources.associateBy { it.id }
         require(sources.size == match.sources.size && match.pairing.acceptedSourceId in sources) { "Ambiguous or missing accepted source" }
         val incorporated = setOfNotNull(match.pairing.acceptedSourceId) + match.sources
@@ -74,8 +89,13 @@ object DecisionHandProjector {
             previous = snapshot
             previousLocation = at
         }
-        val snapshot = FusionSnapshotMaterializer.materialize(prefix).map { check(); it }.last()
-        val (source, cutoff) = location(snapshot)
+        return FusionSnapshotMaterializer.materialize(prefix).map { check(); it }
+    }
+
+    private fun projectMaterialized(match: FusedMatch, snapshot: FusionSnapshot, controllers: Set<Int>,
+        check: () -> Unit): DecisionHandView {
+        val at = snapshot.evidence.map { it.sourceId to it.sourceLine!! }.distinct().single()
+        val (source, cutoff) = at
         val archives = match.entityEpochs.filter { it.chronologyEpoch == snapshot.chronologyEpoch }
         require(archives.size <= 1) { "Ambiguous entity epoch archive" }
         val entities = archives.singleOrNull()?.entities.orEmpty()
