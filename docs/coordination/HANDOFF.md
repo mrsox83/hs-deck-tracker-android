@@ -1,5 +1,9 @@
 # HS-FUSION coordinator handoff
 
+## Phone player-hand integration SOURCE-PUBLISHED
+
+Owner-approved cfb8bb8c325e6ec20fdea2ff9359949e0a1e48f3 committed/pushed to origin/feature/mobile-fusion-offline; independent ls-remote exactly matches.272 ordinary/12 private passes/Android compile and fresh independent no-blocker static review retained for unchanged source; no rerun or phone acceptance invented. Resource Exchange existing patch-note ID updated in place and connector-readback VERIFIED with source publication, no APK claim. Only three local helper recipes remain untracked/preserved; ignored private/staging files excluded. Next owner gate separately approve phone-validation APK preparation/artifact gates, not automatic packaging/delivery. No canonical closure, merge/deployment or known-card inference.
+
 ## October23 phone integration source publication approved
 
 Owner approved source-only commit/push. Preflight branch/local/remote9b0e2f9 match and integration source/test hashes unchanged from no-blocker independent review; prior272 ordinary/12 private passes/Android compile retained without rerun. Include reviewed app/helper/tests/strings and sanitized integration plan/checkpoint/review/coordination records. Exclude all three local Gradle helper recipes, ignored staging copies/private artifacts/signing files. No APK build/delivery, device acceptance, canonical closure, merge/deployment. Intake41%five-hour/11%weekly under80%; no reset. Commit/remote verification follows separately.
