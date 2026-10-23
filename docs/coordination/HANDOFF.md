@@ -1,5 +1,9 @@
 # HS-FUSION coordinator handoff
 
+## Coaching export SOURCE-PUBLISHED — October23
+
+Owner-approved cffb53b78112c32b9c6c8ff30f79717bd7b52d65 pushed to origin/feature/mobile-fusion-offline; independent remote hash matched. Resource Exchange existing patch-note ID updated in place and exact content readback VERIFIED.286 ordinary/one exact private/12 broader private passes and Android compilation retained for unchanged source; no publication-only rerun. Four local helpers/private evidence preserved and excluded. Supersedes publication-pending/paused/failing wording below only for completed source gates. FIRST DELIVERED none for corrected coaching export. Next separately approve APK preparation/artifact checks; delivery and phone acceptance remain separate. No canonical HSC closure, merge or deployment.
+
 ## October23 coaching export source publication approved
 
 Owner approved source-only commit/push of reviewed app/core/tests and sanitized documentation. Baseline local/remote1203094 match;286 ordinary/one exact private/12 broader private tests and Android compilation evidence retained, no rerun for publication. Four local Gradle helpers and ignored private evidence excluded/preserved. No APK, phone acceptance, canonical closure, merge or deployment. Source publication receipt follows; next separate owner gate APK preparation/artifact verification.

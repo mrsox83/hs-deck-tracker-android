@@ -2,6 +2,8 @@
 
 ## Authoritative current state — 2026-10-23
 
+- [x] Coaching export SOURCE-PUBLISHED cffb53b78112c32b9c6c8ff30f79717bd7b52d65; remote independently matched, Resource Exchange patch-note readback verified. Reviewed286/one exact/12 broader tests and Android compilation retained. Supersedes older pause/failure/publication-pending entries for completed source gates only. Next owner gate APK preparation/artifact checks; no corrected APK/phone acceptance, HSC closure, merge/deployment.
+
 - [x] Source-witness reconciliation PASS:286 ordinary/one exact M.O.T.H.E.R./12 broader private tests and Android compile. Stronger slot/anchor/side/result/count/warning proofs replace three stale expectations; original structure/chronology goldens retained. Production unchanged since focused review. See docs/coordination/reports/COACHING-EXPORT-RAW-WITNESS-2026-10-23.md. Next separately approve source-only publication; no APK/phone acceptance or HSC closure. Owner resumed with80% ceiling, current20%five-hour.
 
 - [ ] OWNER-PAUSED until next reset; live77%five-hour, reset1792785424. Preserve dirty work; resume only on owner return with fresh usage/state, then three broad-fixture raw-witness reconciliations. No automatic tests/APK/publication.
