@@ -2,6 +2,8 @@
 
 ## Authoritative current state — 2026-10-16
 
+- [x] Phone player-hand integration SOURCE-PUBLISHED cfb8bb8c325e6ec20fdea2ff9359949e0a1e48f3, remote independently matched; Resource Exchange source note readback verified.272/12 tests/Android compile and independent review retained. No APK/device acceptance yet. Next owner gate phone-validation APK preparation/static/signature/REA gates, with delivery separately authorized. Supersedes local/publication-pending wording for this unit only.
+
 - [x] October23 owner resumed; startup local/remote/dirty state/hashes/usage/shared-feedback refreshed. Independent phone-integration static review found no blockers; PHONE-HAND-INTEGRATION-REVIEW-2026-10-23.md.272/12 prior tests and Android compile retained, not rerun; device checks pending. Next owner gate source-only commit/publication, no APK yet. Supersedes overnight pause below for this completed review only.
 
 - [ ] New October21 HSC-009/010 note-preservation request and HSC-004/006/010 coaching diagnostic received/read in existing Resource Exchange receipt ledger (verified); priority UNASSESSED, technical triage/raw replay not performed, no implementation authority. No displacement of player-hand scope. H: absent; connector working. Canonical backlog unchanged.
