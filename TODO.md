@@ -2,6 +2,8 @@
 
 ## Authoritative current state — 2026-10-23
 
+- [x] LOCAL-005 SOURCE-PUBLISHED092b639e432db006ab6c047c27adc561bbc1bacf; remote independently matches, Resource Exchange exact readback verified. Reviewed/tested product unchanged. No /6 APK/phone acceptance. Next owner gate APK preparation/artifact checks, then separate delivery; supersedes publication-pending entries below.
+
 - [x] Post-reset owner resume under85% ceiling: LOCAL-005 independent source review no blocker;13 broader private plus one exact M.O.T.H.E.R. tests freshly PASS,292 ordinary/49 suites FROM-CACHE; prior Android compile retained unchanged. Resource Exchange source-local note exact readback verified, startup pointer verified. Supersedes pause below. No APK/push; next separately approve source-only publication. See current HANDOFF and GLOBAL-TURN-INDEPENDENT-REVIEW-2026-10-23.md.
 
 - [ ] OWNER-PAUSED until post-reset return. Preserve global-turn SOURCE-LOCAL patch and all dirty work;292 ordinary/one targeted private/Android compilation PASS. Resume with live usage/state checks, independent review and broader regressions; no automatic review/test/build/publication. Last87%five-hour under90%. Rewind restoration separate.

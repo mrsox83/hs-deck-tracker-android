@@ -1,5 +1,9 @@
 ## Global-turn correction SOURCE-LOCAL — October23
 
+### Source publication receipt (supersedes local-only wording below)
+
+Owner-approved092b639e432db006ab6c047c27adc561bbc1bacf published to designated feature branch; remote independently matches. Reviewed/tested product unchanged. Four helpers/private data excluded/preserved. Resource Exchange same patch-note ID updated with exact readback verification. No /6 APK or phone acceptance. Next separate owner gate APK preparation/required artifact checks, then delivery. Reset-player restoration remains separate; no universal HSC closure/merge/deployment.
+
 ### Post-reset review/regression completion (supersedes pending gates below)
 
 Owner resumed under85% ceiling. Local/remote972c1d7 match. Independent source review no blocker; report docs/coordination/reports/GLOBAL-TURN-INDEPENDENT-REVIEW-2026-10-23.md retains optional extra coverage recommendations. Fresh13 broader private and one exact package tests PASS, no failures/errors/skips;292 ordinary/49 suites FROM-CACHE for unchanged inputs, previous executed292/Android compile retained. Final BUILD SUCCESS1m21s; reports .gradle/global-turn-resume-20261023/core/test-results. Initial previous-output Windows lock occurred before tests; no cleanup/deletion. Resource Exchange same patch-note ID updated with exact connector readback and existing startup pointer verified. SOURCE-LOCAL/uncommitted/unpushed, no /6 APK or phone acceptance. Next owner gate source-only publication; reset-player restoration separate.

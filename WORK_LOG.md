@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## LOCAL-005 source publication verified
+
+Owner-approved092b639e432db006ab6c047c27adc561bbc1bacf committed/pushed feature/mobile-fusion-offline; independent ls-remote match. Seventeen allowlisted files, private evidence/four helper recipes excluded/preserved. Reviewed/tested product unchanged; results retained without redundant rerun. Existing Resource Exchange patch notes updated after unchanged-content preflight, exact readback verified, same ID/parent/history. No APK, phone validation, reset-player restoration, HSC closure, merge/deployment. Publication receipt docs follow; next separately approve APK preparation/artifact gate.85% ceiling, live20% intake, no reset credit.
+
 ## Post-reset LOCAL-005 review and broader regressions
 
 Owner resumes with85% ceiling, live1% intake. Branch/local/remote972c1d7 verified; dirty work unchanged. Existing independent read-only reviewer found no bounded blocker; non-blocking extra edge coverage recorded separately, no product edits. Fresh13 private/one exact package tests PASS;292 ordinary/49 suites restored from exact-input cache, earlier executed result and Android compile retained. BUILD SUCCESS1m21s. Old output lock failed before tests; fresh ignored output directory used without deleting evidence. Resource Exchange patch-note unchanged-content preflight/update/exact readback verified, same ID/history/parent; startup pointer verified. No app code edits, APK, push, reset restoration, old-artifact changes, HSC closure, merge/deployment. Next owner gate source-only publication; preserve four helpers/private evidence.
