@@ -6,6 +6,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -15,6 +16,49 @@ import java.time.ZoneId
 
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
+
+    @Test fun restoredPlayerBlocksHaveExactLateBindingWitnessesWithoutBackdating() {
+        val bytes=Files.readAllBytes(fixtureDir.resolve("HS-game-20261018-165407-e3bc4eb7-logs.zip"))
+        assertEquals("9392b19815be64f0e053b1edc50933d5bd06749a311369ad0e09da4b21bd8d69",EvidenceAdapters.sha256(bytes))
+        val (source,document)=EvidenceAdapters.exporterBundle(bytes).matches.single()
+        val r=PowerEvidenceReducer.reduce(source,document)
+        val raw=document.getValue("match").jsonObject.getValue("events").jsonArray.map { it.jsonObject }
+            .associateBy { it.getValue("source_line").jsonPrimitive.content.toInt() }
+        val observations=r.entityEpochs.flatMap { epoch -> epoch.entities.values.flatMap { e ->
+            e.tagHistory.filter { it.evidence.isPlayerRestoration }.map { Triple(epoch.chronologyEpoch,e.id,it) }
+        } }
+        assertEquals(listOf(3575,3614,8248,8289,18972,19021,29123,29175,37620,37671),
+            observations.map { it.third.evidence.supportingEvidence.single { p -> p.role=="header" }.sourceLine }.distinct().sorted())
+        assertEquals(10,observations.map { it.first to it.second }.distinct().size)
+        for ((epoch,id,o) in observations) {
+            val proof=o.evidence.supportingEvidence
+            val origin=proof.single { it.role=="origin" }.sourceLine
+            val identity=proof.single { it.role=="identity" }.sourceLine
+            assertEquals("tag=${o.name} value=${o.value}",raw.getValue(origin).getValue("raw").jsonPrimitive.content)
+            assertEquals("tag=ENTITY_ID value=$id",raw.getValue(identity).getValue("raw").jsonPrimitive.content)
+            assertTrue(o.sourceLine>origin && o.sourceLine>identity)
+            assertFalse(raw.getValue(o.sourceLine).getValue("raw").jsonPrimitive.content.startsWith("tag="))
+            assertTrue(r.snapshots.filter { it.chronologyEpoch==epoch && it.evidence.single().sourceLine!!<o.sourceLine }
+                .all { !it.entityTags.get(id).orEmpty().containsKey(o.name) })
+        }
+        assertTrue(r.snapshots.filter { it.chronologyEpoch>0 }.all { it.playerTurnIndices.isEmpty() })
+        val boundary=r.snapshots.single { it.phase=="BEFORE_ACTION" && it.evidence.single().sourceLine==34937 }
+        // Named signal after restoration still lacks an exact matching alias; do not guess.
+        val headers=listOf(29123,29175).map { line -> Regex("FULL_ENTITY - Updating (.*) CardID=")
+            .matchEntire(raw.getValue(line).getValue("raw").jsonPrimitive.content)!!.groupValues[1] }
+        assertFalse(raw.getValue(34561).getValue("entity").jsonPrimitive.content in headers)
+        assertNull(boundary.activeController)
+        assertNull(boundary.rawTurn) // No fresh explicit GameEntity binding in this epoch.
+    }
+
+    @Test fun deliveredSlash6PhoneArtifactRemainsDecodable() {
+        val bytes=Files.readAllBytes(fixtureDir.resolve("fusion-test-dd47b4e9-38d7-4cd8-aa8d-b762eecb372c-9df365b54c0f15cd29d1abfdd94da644.json"))
+        assertEquals("b036a2207cc6cc34d418a804210d4a25266eace7b1dad1145db8664821e8224d",EvidenceAdapters.sha256(bytes))
+        val f=FusionArtifactCodec.decode(bytes.toString(Charsets.UTF_8))
+        assertEquals("android-r3/6",f.fusionVersion)
+        assertEquals(302,f.events.size)
+        assertEquals(494,f.handHistory?.checkpoints?.size)
+    }
 
     @Test fun currentPhoneGlobalTurnIs18WhilePersonalTurnIs9() {
         val bytes = Files.readAllBytes(fixtureDir.resolve("HS-game-20261023-154050-7bad9bbc-logs.zip"))
@@ -417,6 +461,7 @@ class RealFusionFixtureTest {
                 if (reduced.sourceTruncated) truncatedCount++
                 val perMatchDescriptorCounts = linkedMapOf<String, Int>()
                 val unassignedHeaderLines = mutableListOf<Int>()
+                val restoredHeaderLines = mutableListOf<Int>()
                 reduced.diagnostics.forEach { diagnostic ->
                     val disagreement = positionalDisagreement.matchEntire(diagnostic)
                     val unsupported = unsupportedDescriptor.matchEntire(diagnostic)
@@ -432,7 +477,25 @@ class RealFusionFixtureTest {
                         perMatchDescriptorCounts[key] = count
                         return@forEach
                     }
-                    val unassigned = Regex("Unassigned FULL_ENTITY header at source line ([0-9]+); following inline tags are not attributed to a previous entity").matchEntire(diagnostic)
+                    val restored = Regex("Player restoration committed at source line ([0-9]+) from header ([0-9]+); earlier checkpoints unchanged").matchEntire(diagnostic)
+                    if (restored != null) {
+                        val commit=restored.groupValues[1].toInt(); val header=restored.groupValues[2].toInt()
+                        val proofs=reduced.entityEpochs.flatMap { it.entities.values }.flatMap { it.tagHistory }
+                            .filter { it.evidence.isPlayerRestoration && it.evidence.sourceLine==commit &&
+                                it.evidence.supportingEvidence.any { p->p.role=="header" && p.sourceLine==header } }
+                        assertTrue(proofs.isNotEmpty())
+                        val rawEvents=document.getValue("match").jsonObject.getValue("events").jsonArray.map { it.jsonObject }
+                            .associateBy { it.getValue("source_line").jsonPrimitive.content.toInt() }
+                        for(proof in proofs) {
+                            val origin=proof.evidence.supportingEvidence.single { it.role=="origin" }.sourceLine
+                            assertEquals("tag=${proof.name} value=${proof.value}",rawEvents.getValue(origin).getValue("raw").jsonPrimitive.content)
+                            val identity=proof.evidence.supportingEvidence.single { it.role=="identity" }.sourceLine
+                            assertTrue(origin<commit && identity<commit && header<origin)
+                        }
+                        restoredHeaderLines += header
+                        return@forEach
+                    }
+                    val unassigned = Regex("Unassigned FULL_ENTITY header at source line ([0-9]+); .*").matchEntire(diagnostic)
                     if (unassigned != null) {
                         val line = unassigned.groupValues[1].toInt()
                         val raw = document.getValue("match").jsonObject.getValue("events").jsonArray.single {
@@ -463,7 +526,8 @@ class RealFusionFixtureTest {
                         ids.singleOrNull()?.toIntOrNull()?.let { it > 0 } != true
                     }
                 }.map { it.getValue("source_line").toString().toInt() }
-                assertEquals(expectedUnassignedLines, unassignedHeaderLines, "Every unassigned header must remain disclosed")
+                assertEquals(expectedUnassignedLines, (unassignedHeaderLines+restoredHeaderLines).sorted(),
+                    "Every formerly unassigned header needs a raw-verified restoration proof or an explicit refusal")
                 assertTrue(reduced.events.all { event ->
                     event.evidence.isNotEmpty() && event.evidence.all { it.sourceId == source.id && it.sourceLine != null }
                 }, "$name match ${source.matchAlias} has an event without exact source evidence")
