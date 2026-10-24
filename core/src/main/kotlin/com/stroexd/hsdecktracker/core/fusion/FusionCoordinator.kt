@@ -3,8 +3,8 @@ package com.stroexd.hsdecktracker.core.fusion
 import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import java.security.MessageDigest
 
-const val OFFLINE_FUSION_VERSION = "offline-r2/6"
-const val ANDROID_FUSION_VERSION = "android-r3/6"
+const val OFFLINE_FUSION_VERSION = "offline-r2/7"
+const val ANDROID_FUSION_VERSION = "android-r3/7"
 
 object FusionCoordinator {
     fun assemble(

@@ -60,6 +60,30 @@ object PowerEvidenceReducer {
         val resetLines = mutableListOf<Int>()
         var lastEvidence: EvidenceRef? = null
         var previousSnapshotState: SnapshotState? = null
+        var pendingPlayer: PlayerRestoration.Pending? = null
+        var epochStartLine = 0
+        var restoredActive: Int? = null
+        val restoredIds = mutableSetOf<String>()
+        val quarantinedIds = mutableSetOf<String>()
+
+        fun quarantine(id: String, sequence: Int, line: Int, time: String, evidence: EvidenceRef) {
+            quarantinedIds += id
+            aliases.entries.removeAll { it.value == id }
+            mutableEntities[id]?.let { entity ->
+                entity.tags.clear()
+                entity.tags["RESTORATION_CONFLICT"] = "1"
+                entity.links.clear()
+                entity.controller = Claim(reason = "Conflicting entity role after player restoration")
+                entity.history += TagObservation(sequence, line, time, "CONTROLLER", "UNKNOWN", evidence)
+            }
+            activeController = null
+            restoredActive = null
+            turnIndicesComplete = false
+            playerTurnIndices.clear()
+            // DELTA streams have no tombstones; a FULL baseline must remove the quarantined state.
+            previousSnapshotState = null
+            diagnostics += "Entity role conflict at source line $line; restored player state quarantined"
+        }
 
         fun captureSnapshot(sequence: Int, phase: String, unresolved: Boolean, evidence: EvidenceRef) {
             val (snapshot, state) = snapshot(
@@ -80,12 +104,52 @@ object PowerEvidenceReducer {
             val evidence = EvidenceRef(source.id, line, observedTime = time, rule = "power-reducer/1")
             lastEvidence = evidence
 
+            val inlinePlayerTag = inlineTag.matchEntire(body)
+            val pending = pendingPlayer
+            if (pending != null) {
+                if (inlinePlayerTag != null) {
+                    pending.add(PlayerRestoration.Tag(inlinePlayerTag.groupValues[1], inlinePlayerTag.groupValues[2], evidence))
+                    continue
+                }
+                pendingPlayer = null
+                // A reset is an interruption, not proof that the preceding restoration completed.
+                val restored = if (event.string("block_type") == "GAME_RESET") null else pending.finish(evidence)
+                val old = restored?.let { mutableEntities[it.id] }
+                val aliasConflict = restored?.alias?.let { aliases[it]?.let { id -> id != restored.id } } == true
+                val ownerConflict = restored != null && mutableEntities.values.any {
+                    it.id != restored.id && it.tags["PLAYER_ID"] == restored.controller.toString()
+                }
+                if (restored == null || old != null || restored.id in gameEntityIds || aliasConflict || ownerConflict) {
+                    activeController = null
+                    restoredActive = null
+                    diagnostics += "Unassigned FULL_ENTITY header at source line ${pending.header.sourceLine}; player restoration proof rejected"
+                } else {
+                    restoredIds += restored.id
+                    for (tag in restored.tags) observeTag(mutableEntities, restored.id, tag.name, tag.value,
+                        sequence, line, time, tag.evidence)
+                    restored.alias?.let {
+                        aliases[it] = restored.id
+                        mutableEntities.getValue(restored.id).observeAlias(it, restored.aliasEvidence)
+                    }
+                    if (restored.tags.any { it.name == "CURRENT_PLAYER" && it.value == "1" }) {
+                        activeController = if (restoredActive == null || restoredActive == restored.controller) restored.controller else null
+                        restoredActive = restored.controller
+                    }
+                    diagnostics += "Player restoration committed at source line $line from header ${pending.header.sourceLine}; earlier checkpoints unchanged"
+                }
+            }
+
             val created = fullEntity.matchEntire(body) ?: shownEntity.matchEntire(body)
             if (created != null) {
                 val id = created.groupValues[1]
-                pendingEntity = id
-                val entity = mutableEntities.getOrPut(id) { MutableEntity(id) }
-                entity.observeCard(created.groupValues[2], evidence)
+                if (id in restoredIds && created.groupValues[2].isNotBlank()) {
+                    quarantine(id, sequence, line, time, evidence)
+                    pendingEntity = null
+                } else if (id !in quarantinedIds) {
+                    pendingEntity = id
+                    val entity = mutableEntities.getOrPut(id) { MutableEntity(id) }
+                    entity.observeCard(created.groupValues[2], evidence)
+                } else pendingEntity = null
             } else if (body.startsWith("FULL_ENTITY")) {
                 // Rewind restoration uses Updating headers. An unrecognized header MUST clear
                 // the old inline-tag recipient, rather than assigning its tags to a prior card.
@@ -94,9 +158,17 @@ object PowerEvidenceReducer {
                 val ids = updated?.groupValues?.get(1)?.let { text -> entityId.findAll(text).map { it.groupValues[1] }.distinct().toList() }.orEmpty()
                 val id = ids.singleOrNull()?.takeIf { it.toIntOrNull()?.let { value -> value > 0 } == true }
                 if (id != null) {
-                    pendingEntity = id
-                    mutableEntities.getOrPut(id) { MutableEntity(id) }
-                        .observeCard(updated!!.groupValues[2], evidence.copy(rule = "power-full-entity-update/1"))
+                    if (id in restoredIds && updated!!.groupValues[2].isNotBlank()) {
+                        quarantine(id, sequence, line, time, evidence)
+                        pendingEntity = null
+                    } else if (id !in quarantinedIds) {
+                        pendingEntity = id
+                        mutableEntities.getOrPut(id) { MutableEntity(id) }
+                            .observeCard(updated!!.groupValues[2], evidence.copy(rule = "power-full-entity-update/1"))
+                    }
+                } else if (chronologyEpoch > 0 && updated != null && ids.isEmpty() &&
+                    updated.groupValues[2].isEmpty() && !updated.groupValues[1].startsWith("[")) {
+                    pendingPlayer = PlayerRestoration.Pending(updated.groupValues[1], evidence)
                 } else diagnostics += "Unassigned FULL_ENTITY header at source line $line; following inline tags are not attributed to a previous entity"
             }
             playerEntity.matchEntire(body)?.let { player ->
@@ -109,9 +181,10 @@ object PowerEvidenceReducer {
             gameEntity.matchEntire(body)?.let { game ->
                 pendingEntity = game.groupValues[1]
                 val id = pendingEntity!!.takeIf { it.toIntOrNull()?.let { value -> value > 0 } == true }
+                if (id in restoredIds) quarantine(id!!, sequence, line, time, evidence)
                 if (id != null) gameEntityIds += id
                 gameEntityId = gameEntityIds.singleOrNull()
-                if (id == null || gameEntityIds.size != 1) {
+                if (id == null || gameEntityIds.size != 1 || id in quarantinedIds) {
                     gameEntityId = null
                     rawTurn = null
                     diagnostics += "Ambiguous or invalid GameEntity declaration at source line $line; global turn remains unknown"
@@ -121,7 +194,7 @@ object PowerEvidenceReducer {
             playerNamesByController.flatMap { (controller, mappings) ->
                 mappings.map { Triple(controller, it.first, it.second) }
             }.sortedBy { it.third.sourceLine }.forEach { (controller, name, aliasEvidence) ->
-                if ((aliasEvidence.sourceLine ?: Int.MAX_VALUE) <= line) {
+                if ((aliasEvidence.sourceLine ?: Int.MAX_VALUE) in epochStartLine..line) {
                     mutableEntities.values.firstOrNull { it.tags["PLAYER_ID"] == controller.toString() }?.let { player ->
                         aliases[name] = player.id
                         player.observeAlias(name, aliasEvidence)
@@ -192,6 +265,7 @@ object PowerEvidenceReducer {
                     playerTurnIndices.clear()
                     diagnostics += "Turn owner unresolved at source line $line; per-player turn indices remain unknown"
                 } else {
+                    restoredActive = null
                     if (turnIndicesComplete && nextController != activeController)
                         playerTurnIndices[nextController] = (playerTurnIndices[nextController] ?: 0) + 1
                     activeController = nextController
@@ -224,6 +298,10 @@ object PowerEvidenceReducer {
                         outputEvents.replaceAll { prior -> prior.copy(chronologyState = ChronologyState.HISTORICAL) }
                         snapshots.replaceAll { prior -> prior.copy(chronologyState = ChronologyState.HISTORICAL) }
                         chronologyEpoch += 1
+                        epochStartLine = line
+                        restoredActive = null
+                        restoredIds.clear()
+                        quarantinedIds.clear()
                         resetLines += line
                         entityEpochs += EntityEpoch(chronologyEpoch - 1, mutableEntities.mapValues { it.value.freeze() })
                         blockStack.clear()
@@ -267,6 +345,9 @@ object PowerEvidenceReducer {
                 if (id != null) mutableEntities.getOrPut(id) { MutableEntity(id) }.observeVisibility(false, evidence)
             }
         }
+        pendingPlayer?.let {
+            diagnostics += "Unassigned FULL_ENTITY header at source line ${it.header.sourceLine}; EOF does not complete player restoration"
+        }
         for ((name, counts) in descriptorDisagreements) {
             diagnostics += "Positional descriptors disagree with explicit $name tags: ${counts.first} observation(s); explicit tags retained; first source line ${counts.second}"
         }
@@ -304,6 +385,7 @@ object PowerEvidenceReducer {
         sequence: Int, line: Int, time: String, evidence: EvidenceRef,
     ) {
         val entity = entities.getOrPut(id) { MutableEntity(id) }
+        if (entity.tags["RESTORATION_CONFLICT"] == "1") return
         entity.tags[name] = value
         entity.history += TagObservation(sequence, line, time, name, value, evidence)
         if (evidence.rule != "power-descriptor-position/1") entity.explicitTags += name
@@ -326,9 +408,9 @@ object PowerEvidenceReducer {
                 val observation = entity.history.lastOrNull { it.name == name } ?: return@mapNotNull null
                 name to Claim(
                     value = value,
-                    status = ClaimStatus.OBSERVED,
+                    status = observation.evidence.observationStatus(),
                     confidence = Confidence.HIGH,
-                    reason = "$name tag observed at snapshot boundary",
+                    reason = if (observation.evidence.isPlayerRestoration) "$name restored from validated player block" else "$name tag observed at snapshot boundary",
                     evidence = listOf(observation.evidence),
                 )
             }.toMap()
@@ -377,7 +459,8 @@ object PowerEvidenceReducer {
                 ?: return Claim(reason = "$name not observed for current hero/player")
             val observation = entity.history.lastOrNull { it.name == name }
                 ?: return Claim(reason = "$name has no retained observation")
-            return Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "$name tag observed", listOf(observation.evidence))
+            return Claim(value, observation.evidence.observationStatus(), Confidence.HIGH,
+                if (observation.evidence.isPlayerRestoration) "$name restored from validated player block" else "$name tag observed", listOf(observation.evidence))
         }
         val health = observed(hero, "HEALTH")
         val damage = observed(hero, "DAMAGE")
@@ -488,6 +571,7 @@ object PowerEvidenceReducer {
         val links = linkedMapOf<String, Claim<String>>()
 
         fun observeCard(value: String, evidence: EvidenceRef) {
+            if (tags["RESTORATION_CONFLICT"] == "1") return
             if (value.isNotEmpty()) {
                 if (identities.lastOrNull()?.cardId != value) identities += IdentityObservation(value, evidence)
                 cardId = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CardID observed in power record", listOf(evidence))
@@ -496,7 +580,8 @@ object PowerEvidenceReducer {
         fun observeController(value: Int?, evidence: EvidenceRef) {
             if (value != null) {
                 if (controllers.lastOrNull()?.value != value) controllers += ValueObservation(value, evidence)
-                controller = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "CONTROLLER tag observed", listOf(evidence))
+                controller = Claim(value, evidence.observationStatus(), Confidence.HIGH,
+                    if (evidence.isPlayerRestoration) "Controller restored from validated player block" else "CONTROLLER tag observed", listOf(evidence))
             }
         }
         fun observeZone(value: String, evidence: EvidenceRef) {
@@ -512,7 +597,8 @@ object PowerEvidenceReducer {
             if (entityAliases.none { it.value == value }) entityAliases += ValueObservation(value, evidence)
         }
         fun observeLink(name: String, value: String, evidence: EvidenceRef) {
-            links[name] = Claim(value, ClaimStatus.OBSERVED, Confidence.HIGH, "$name entity link observed", listOf(evidence))
+            links[name] = Claim(value, evidence.observationStatus(), Confidence.HIGH,
+                if (evidence.isPlayerRestoration) "$name restored from validated player block" else "$name entity link observed", listOf(evidence))
         }
         fun freeze() = EntityState(
             id, cardId, controller, tags.toMap(), history.toList(), identities.toList(), zones.toList(),

@@ -67,9 +67,9 @@ object PowerContinuationStitcher {
         if (sharedIdentities.size < MIN_SHARED_IDENTITIES) rejected += "fewer than $MIN_SHARED_IDENTITIES stable entity identities overlap"
 
         val sharedPlayers = earlier.entities.values.flatMap { state ->
-            state.aliasHistory.mapNotNull { alias -> state.controller.value?.let { alias.value to it } }
+            state.aliasHistory.filterNot { it.evidence.isPlayerRestoration }.mapNotNull { alias -> state.controller.value?.let { alias.value to it } }
         }.toSet().intersect(later.entities.values.flatMap { state ->
-            state.aliasHistory.mapNotNull { alias -> state.controller.value?.let { alias.value to it } }
+            state.aliasHistory.filterNot { it.evidence.isPlayerRestoration }.mapNotNull { alias -> state.controller.value?.let { alias.value to it } }
         }.toSet())
         if (sharedPlayers.size < 2) rejected += "both player/controller identities do not overlap"
 

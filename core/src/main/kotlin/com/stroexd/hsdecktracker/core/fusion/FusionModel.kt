@@ -12,13 +12,21 @@ enum class ClaimStatus { OBSERVED, DERIVED, INFERRED, CONFLICTED, UNKNOWN }
 enum class Confidence { HIGH, MEDIUM, LOW }
 
 @Serializable
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 data class EvidenceRef(
     val sourceId: String,
     val sourceLine: Int? = null,
     val jsonPointer: String? = null,
     val observedTime: String? = null,
     val rule: String? = null,
+    /** Flat raw witnesses for a delayed derivation; primary location is its availability cutoff. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val supportingEvidence: List<SupportingEvidenceRef> = emptyList(),
 )
+
+/** Deliberately nonrecursive: untrusted JSON cannot build nested proof trees. */
+@Serializable
+data class SupportingEvidenceRef(val sourceId: String, val sourceLine: Int, val role: String)
 
 @Serializable
 data class Claim<T>(

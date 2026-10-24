@@ -2,6 +2,20 @@
 
 ## Authoritative current state — 2026-10-23
 
+- [x] October24 owner-approved sanitized LOCAL-006 source-only Resource Exchange status published to existing patch-note ID, exact readback VERIFIED. Shared-status blocker below superseded. No source push/APK; next owner gate source-only publication.
+
+- [x] October24 LOCAL-006 source-local acceptance:303 ordinary/15 broader private/one exact private and Android compile PASS; independent review no blocker. No /7 APK/push. Shared-note write safety-blocked, no bypass; next owner explicitly approves sanitized Resource Exchange status, then source publication. Final19% usage after reset; last-task exception ended,85% cap restored. See reset-player checkpoint/current HANDOFF.
+
+- [x] Reset-player evidence contract design complete, no implementation. Proposed effective commit-line DERIVED refs plus bounded one-level original supporting evidence; affected consumers/validator and compatibility tests mapped. Next owner approves additive model and bounded recovery implementation/tests. See RESET-PLAYER-EVIDENCE-CONTRACT-2026-10-23.md.
+
+- [x] /6 bounded phone export acceptance reconciled in existing Resource Exchange and canonical backlog with verified readback/revision guard. Broader HSC issues OPEN. Reset-player restoration reviewed, no code; next owner gate narrow provenance/availability contract before implementation. See RESET-PLAYER-RESTORATION-REVIEW-2026-10-23.md.
+
+- [x] /6 dd47b4e9 phone export bounded turn-counter PASS:302 events/494 snapshots/494 hand checkpoints match raw global TURN; tracker timeline41/provenance/hand refs verified. Seven unresolved owners remain, no reset. See GLOBAL-TURN-PHONE-WITNESS-2026-10-23.md. Next owner approves shared/canonical bounded reconciliation; not universal HSC/UI acceptance.
+
+- [x] Global-turn APK v1 DELIVERED: https://drive.google.com/drive/folders/1lREUfFp4ktC6Sz0u6TQ3Dm3bX99leat7 . Four files/readback/downloaded APK hash verified; Resource Exchange verified. PHONE PENDING; next owner new-game fusion/export checklist, no uninstall/data clearing or forced old-artifact upgrade.
+
+- [x] Global-turn APK v1 BUILT LOCALLY:32s/292 tests/signature/alignment/REA gates PASS, package mobile-fusion-global-turn-2026-10-23-v1, hashf3db34d7f4a7c090abe9f0fb79ee7e5aa0ac77c2938f3b706caf1de528fb7c59. Resource Exchange verified. NOT DELIVERED/PHONE-ACCEPTED; next owner gate Drive delivery/hash check then phone test. See current HANDOFF/checkpoint.
+
 - [x] LOCAL-005 SOURCE-PUBLISHED092b639e432db006ab6c047c27adc561bbc1bacf; remote independently matches, Resource Exchange exact readback verified. Reviewed/tested product unchanged. No /6 APK/phone acceptance. Next owner gate APK preparation/artifact checks, then separate delivery; supersedes publication-pending entries below.
 
 - [x] Post-reset owner resume under85% ceiling: LOCAL-005 independent source review no blocker;13 broader private plus one exact M.O.T.H.E.R. tests freshly PASS,292 ordinary/49 suites FROM-CACHE; prior Android compile retained unchanged. Resource Exchange source-local note exact readback verified, startup pointer verified. Supersedes pause below. No APK/push; next separately approve source-only publication. See current HANDOFF and GLOBAL-TURN-INDEPENDENT-REVIEW-2026-10-23.md.
