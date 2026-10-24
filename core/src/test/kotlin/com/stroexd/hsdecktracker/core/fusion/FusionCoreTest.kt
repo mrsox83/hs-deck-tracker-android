@@ -41,7 +41,7 @@ class FusionCoreTest {
         assertEquals(first.matchId, revision.matchId)
         assertEquals(3, added.sources.size)
         assertTrue(first.matchId.matches(Regex("[0-9a-f]{32}")))
-        assertEquals("offline-r2/5", first.fusionVersion)
+        assertEquals("offline-r2/6", first.fusionVersion)
         assertTrue(first.diagnostics.any { it.startsWith("Logical match identity: tracker-record/1") })
         val otherRecord = tracker.record.copy(id = "different-saved-game")
         val other = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), otherRecord).toByteArray())

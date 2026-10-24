@@ -12,6 +12,8 @@ Report older evidence under its existing HSC ID as HISTORICAL / ADDITIONAL EVIDE
 
 ## Every new APK package
 
+For JSON source comparisons during validation, follow JSON_EVIDENCE_COMPARISON_STANDARD.md. Keep exact original byte hashes distinct from parsed-content equality and serializer-hash reconciliation; a pretty/compact presentation difference is not automatically corruption and never licenses rewriting source evidence.
+
 1. Add a dated entry to the same shared patch-notes file, preserving its Drive ID/link and old entries. Include exact package folder/link, source SHA and dirty-build qualification, APK checksum, HSC/task IDs, fixed/new behavior and limitations.
 2. Record compatibility/schema changes and migration/user steps, including an explicit none when verified. Separate source tests, APK/static/signature gates, delivery, phone validation, push, merge and deployment. Phone starts PENDING until observed evidence arrives.
 3. Retain the package's own README.md, CHECKPOINT.md and SHA256.txt inside its unique sibling folder directly under Development. Link from the index; never nest builds or overwrite a historical package to update its status.

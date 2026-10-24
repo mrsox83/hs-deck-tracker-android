@@ -2,6 +2,22 @@
 
 ## Authoritative current state — 2026-10-23
 
+- [x] Post-reset owner resume under85% ceiling: LOCAL-005 independent source review no blocker;13 broader private plus one exact M.O.T.H.E.R. tests freshly PASS,292 ordinary/49 suites FROM-CACHE; prior Android compile retained unchanged. Resource Exchange source-local note exact readback verified, startup pointer verified. Supersedes pause below. No APK/push; next separately approve source-only publication. See current HANDOFF and GLOBAL-TURN-INDEPENDENT-REVIEW-2026-10-23.md.
+
+- [ ] OWNER-PAUSED until post-reset return. Preserve global-turn SOURCE-LOCAL patch and all dirty work;292 ordinary/one targeted private/Android compilation PASS. Resume with live usage/state checks, independent review and broader regressions; no automatic review/test/build/publication. Last87%five-hour under90%. Rewind restoration separate.
+
+- [x] Global/personal TURN source correction LOCAL ONLY:292 ordinary/one pinned phone regression/Android compile PASS. Phone raw global18/personal9, seven-slot hand and10 unknown-owner warnings preserved; producer /6, old artifacts unchanged. Independent review/broader private regressions/shared handoff pending; no APK/push. See checkpoints/mobile-fusion-global-turn-2026-10-23.md. Reset restoration separate.
+
+- [x] Approved turn-ownership raw/source investigation complete. Current10 unresolved markers exactly match export; placeholder alias gap stays unknown. Verified raw global18 vs personal9 scope mix and fresh rewind player restoration with late ENTITY_ID currently dropped. See TURN-OWNERSHIP-RAW-AUDIT-2026-10-23.md. Next separately authorize small global/player-turn correction; reset restoration follows separately. No source/build/test/push/old-artifact edits. Owner ceiling90%, live76%.
+
+- [x] LOCAL-003 DONE / BOUNDED-ACCEPTED: owner explicitly CHECKED AND PASSED old-game availability, normal timeline, removed separate hand-report entry and visible controls; /5 uploaded hand/cost/action witness independently verified. Canonical backlog/shared records/receipts reconciled with verified readback. No broad HSC closure. Next separately authorize bounded turn-ownership raw audit; report CLOSEOUT-NEXT-TASK-REVIEW-2026-10-23.md. Older UI-pending wording superseded for this named scope.
+
+- [x] Documented formatting-aware JSON verification and published bounded phone-export/coaching handoff in Resource Exchange; patch notes/startup pointer readback verified. No app change/rebuild or HSC closure. Remaining owner UI checks: old-game preservation, normal timeline, removed separate hand-report entry and visible buttons. See HANDOFF for verified shared link.
+
+- [x] Coaching export v1 APK DELIVERED to new direct Development sibling, remote68437525bytes/SHA256bcac564a... verified; Resource Exchange readback verified, focused scan block resolved. See current HANDOFF/checkpoint. Phone acceptance PENDING: update without data removal, new-game fusion/export checklist. No HSC closure/merge/deployment.
+
+- [x] Coaching export APK prepared LOCALLY, build286 tests/signature/alignment/required REA inventory pass; additional focused inspection policy-blocked, no bypass/runtime claim. Checkpoint mobile-fusion-coaching-export-apk-2026-10-23.md. Resource Exchange readback verified. Next owner gate Drive delivery/hash verification then phone tests; no upload/install/merge/deployment.
+
 - [x] Coaching export SOURCE-PUBLISHED cffb53b78112c32b9c6c8ff30f79717bd7b52d65; remote independently matched, Resource Exchange patch-note readback verified. Reviewed286/one exact/12 broader tests and Android compilation retained. Supersedes older pause/failure/publication-pending entries for completed source gates only. Next owner gate APK preparation/artifact checks; no corrected APK/phone acceptance, HSC closure, merge/deployment.
 
 - [x] Source-witness reconciliation PASS:286 ordinary/one exact M.O.T.H.E.R./12 broader private tests and Android compile. Stronger slot/anchor/side/result/count/warning proofs replace three stale expectations; original structure/chronology goldens retained. Production unchanged since focused review. See docs/coordination/reports/COACHING-EXPORT-RAW-WITNESS-2026-10-23.md. Next separately approve source-only publication; no APK/phone acceptance or HSC closure. Owner resumed with80% ceiling, current20%five-hour.
