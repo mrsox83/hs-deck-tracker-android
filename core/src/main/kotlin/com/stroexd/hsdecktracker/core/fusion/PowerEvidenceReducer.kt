@@ -53,6 +53,8 @@ object PowerEvidenceReducer {
         var activeController: Int? = null
         var turnIndicesComplete = true
         var rawTurn: Int? = null
+        val gameEntityIds = linkedSetOf<String>()
+        var gameEntityId: String? = null
         var chronologyEpoch = 0
         val entityEpochs = mutableListOf<EntityEpoch>()
         val resetLines = mutableListOf<Int>()
@@ -104,7 +106,17 @@ object PowerEvidenceReducer {
                     mutableEntities, pendingEntity!!, "PLAYER_ID", controller.toString(), sequence, line, time, evidence,
                 )
             }
-            gameEntity.matchEntire(body)?.let { game -> pendingEntity = game.groupValues[1] }
+            gameEntity.matchEntire(body)?.let { game ->
+                pendingEntity = game.groupValues[1]
+                val id = pendingEntity!!.takeIf { it.toIntOrNull()?.let { value -> value > 0 } == true }
+                if (id != null) gameEntityIds += id
+                gameEntityId = gameEntityIds.singleOrNull()
+                if (id == null || gameEntityIds.size != 1) {
+                    gameEntityId = null
+                    rawTurn = null
+                    diagnostics += "Ambiguous or invalid GameEntity declaration at source line $line; global turn remains unknown"
+                }
+            }
             // Apply only mappings already observed in this match, never future/session-global names.
             playerNamesByController.flatMap { (controller, mappings) ->
                 mappings.map { Triple(controller, it.first, it.second) }
@@ -122,7 +134,10 @@ object PowerEvidenceReducer {
             val tagValue = event.string("value")
             val tagEntityText = event.string("entity")
             observeAlias(tagEntityText, aliases)
-            val tagEntity = if (tagEntityText != null) entityReference(tagEntityText, aliases) else pendingEntity
+            // The literal game name is bound only by this epoch's explicit declaration,
+            // never by a player/account alias or a guessed numeric ID.
+            val tagEntity = if (tagEntityText == "GameEntity") gameEntityId
+                else if (tagEntityText != null) entityReference(tagEntityText, aliases) else pendingEntity
             if (tagName != null && tagValue != null && tagEntity != null) {
                 val rawPrefix = "TAG_CHANGE Entity=$tagEntityText tag=$tagName value="
                 if (tagEntityText != null && body.startsWith(rawPrefix) && body.removePrefix(rawPrefix).trim() == tagValue) {
@@ -156,11 +171,14 @@ object PowerEvidenceReducer {
                     }
                 }
                 observeTag(mutableEntities, tagEntity, tagName, tagValue, sequence, line, time, evidence)
-                if (tagName == "TURN") rawTurn = tagValue.toIntOrNull()
+                if (tagName == "TURN" && gameEntityId != null && tagEntity == gameEntityId)
+                    rawTurn = tagValue.toIntOrNull()?.takeIf { it >= 0 }
             } else {
                 val inline = inlineTag.matchEntire(body)
                 if (inline != null && pendingEntity != null) {
                     observeTag(mutableEntities, pendingEntity!!, inline.groupValues[1], inline.groupValues[2], sequence, line, time, evidence)
+                    if (inline.groupValues[1] == "TURN" && gameEntityId != null && pendingEntity == gameEntityId)
+                        rawTurn = inline.groupValues[2].toIntOrNull()?.takeIf { it >= 0 }
                 }
             }
 
@@ -211,6 +229,8 @@ object PowerEvidenceReducer {
                         blockStack.clear()
                         activeController = null
                         rawTurn = null
+                        gameEntityId = null
+                        gameEntityIds.clear()
                         turnIndicesComplete = false
                         playerTurnIndices.clear()
                         previousSnapshotState = null

@@ -16,6 +16,25 @@ import java.time.ZoneId
 class RealFusionFixtureTest {
     private val fixtureDir = Path.of(checkNotNull(System.getProperty("hsFusionFixtureDir")))
 
+    @Test fun currentPhoneGlobalTurnIs18WhilePersonalTurnIs9() {
+        val bytes = Files.readAllBytes(fixtureDir.resolve("HS-game-20261023-154050-7bad9bbc-logs.zip"))
+        assertEquals("611e3d1439ad57e62d9dc2ad85f5480d2078a5f4aafd3c3738eca266b2d1b210", EvidenceAdapters.sha256(bytes))
+        val (source, document) = EvidenceAdapters.exporterBundle(bytes).matches.single { it.first.matchAlias == "3" }
+        val reduced = PowerEvidenceReducer.reduce(source, document)
+        val boundary = reduced.snapshots.single { it.phase == "BEFORE_ACTION" && it.evidence.single().sourceLine == 66081 }
+        assertEquals(18, boundary.rawTurn)
+        assertEquals(1, boundary.activeController)
+        assertEquals("9", reduced.entities.getValue("2").tagHistory.last { it.name == "TURN" && it.sourceLine <= 66081 }.value)
+        assertEquals(listOf(48385,49950,51127,52357,54048,56647,59598,63213,67520,71556),
+            reduced.diagnostics.filter { it.startsWith("Turn owner unresolved") }.map { Regex("source line (\\d+)").find(it)!!.groupValues[1].toInt() })
+        val hands = DecisionHandProjector.all(FusionCoordinator.assemble(
+            TrackerEvidence(FusionSource("tracker:test", "test", SourceType.ANDROID_TRACKER_JSON, captureMethod = "test"),
+                com.stroexd.hsdecktracker.core.stats.MatchRecord(id = "current-turn-test", timestamp = 1, result = MatchResult.WIN)),
+            listOf(reduced), PairingDecision(PairingStatus.ACCEPTED, source.id, emptyList(), "Pinned raw fixture")))
+        val hand = hands.single { it.first.phase == "BEFORE_ACTION" && it.first.evidence.single().sourceLine == 66081 }.second
+        assertEquals(listOf("32","5","6","33","184","194","9"), hand.hands.single { it.controller == 1 }.slots.map { it.entityId })
+    }
+
     @Test fun existingObserverAssociationsRemainCandidatesAndDoNotCrossReset() {
         val cases = listOf(
             Triple("HS-export-20261007-142822-44f30f8a.zip", "6e89dacbe05f040a10ab5a73ac79e2edc31934d2c3e3fbf18d94a981ff038d4e", 2),
