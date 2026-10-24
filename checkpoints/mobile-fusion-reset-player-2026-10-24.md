@@ -1,5 +1,9 @@
 # Bounded reset-player restoration — SOURCE-LOCAL
 
+## Source publication receipt — supersedes local-only state below
+
+Owner-approved a8da4d41386b38eff2e6aef74e9b7b7498645621 published to feature/mobile-fusion-offline; remote independently matches. Reviewed/tested product hashes unchanged.19 allowlisted files, four helpers/private outputs excluded/preserved. Existing Resource Exchange short source-published status exact readback VERIFIED. No /7 APK or phone/runtime acceptance, broad HSC closure, merge/deployment. Next owner gate APK preparation/required artifact checks, then separately authorized delivery/phone validation.
+
 ## Shared-status receipt — October24
 
 Owner explicitly approved concise sanitized source-only Resource Exchange status without private game details. Existing patch-note ID1awcL4HLD7xuCX76hQt69MIoWaPKx7j7r updated after unchanged-content preflight/exact connector readback VERIFIED. Shared-status blocker below superseded; rejected detailed payload not retried. Uncommitted source/tests unchanged, no push/APK/phone acceptance. Next owner gate source publication;85% ceiling remains.

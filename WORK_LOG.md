@@ -1,5 +1,9 @@
 # Mobile fusion work log
 
+## October24 reset-player source publication
+
+Owner-approved a8da4d41386b38eff2e6aef74e9b7b7498645621 committed/pushed designated feature branch; independent remote hash matches.19 allowlisted files, four helpers/private evidence excluded and preserved. Reviewed/tested product pins unchanged;303 ordinary/15 broader private/one exact/Android and independent review retained without redundant rerun. Existing Resource Exchange short sanitized status updated/readback VERIFIED, same ID/history/parent. No APK/phone acceptance/HSC closure/merge/deployment. Publication receipt docs follow; next owner gate APK preparation/artifact checks.32%five-hour intake under85%, no reset credit.
+
 ## October24 approved short shared status
 
 Owner explicitly approved concise source-only status with no private game details. Existing Resource Exchange patch notes same ID/parent/history updated after unchanged-content preflight; exact connector readback verified. Earlier rejected detailed payload was not retried or indirectly copied. Shared-status blocker resolved for approved sanitized version only. Source/review/test inputs unchanged, no tests rerun/commit/push/APK/HSC closure/merge/deployment. Next owner gate source publication. Live30%five-hour/36%weekly under85%, no reset credit.
