@@ -2,6 +2,8 @@
 
 Coordinator-owned. Updated 2026-10-24. Source of truth for development ownership; no agent self-claims. Single cloud pilot maximum until reviewed.
 
+Current numeric reveal-recipient state SOURCE-PUBLISHED5214f06, remote/Resource Exchange/canonical backlog readback verified; supersedes source-local/validation paragraphs below. No active worker or /8 APK/phone acceptance. Next owner combined APK preparation/checks/Drive delivery approval; HSC-006/010 remain broadly OPEN, priority UNASSESSED. See publication checkpoint; unrelated local dirty files preserved.
+
 Numeric reveal-recipient bounded fix now SOURCE-LOCAL PASS; supersedes IN VALIDATION below. One authorized source-only reviewer completed/re-reviewed no blocker;308 ordinary/15 corpus/one two-upload private checks PASS, exact M.O.T.H.E.R./Android successful inputs retained via cache/up-to-date. See REVEAL-RECIPIENT-REVIEW-2026-10-24.md. No active worker, publication/APK pending owner gates, HSC-006/010 broad requirements OPEN/priority UNASSESSED.
 
 Current owner authorization supersedes the paused investigation paragraph below: bounded numeric reveal-recipient fix/regressions IN VALIDATION locally, source-only/no APK or publication. Coordinator owns reducer/version/synthetic test changes and reports; one explicitly approved read-only source/synthetic reviewer reveal_recipient_review, no private evidence or edits. Existing task ownership remains unchanged. HSC-006/010 stay OPEN, priority UNASSESSED.

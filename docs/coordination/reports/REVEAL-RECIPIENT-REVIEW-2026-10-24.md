@@ -1,5 +1,9 @@
 # Numeric reveal-recipient fix — review and validation
 
+## Publication receipt — October24
+
+Owner subsequently approved publication/reconciliation. Source5214f06cb2e7368c92f87a086d5aa28d1d1f81de pushed/remote hash VERIFIED; reviewed product unchanged. Resource Exchange same-ID sanitized status and canonical native backlog guarded append readback VERIFIED with old history preserved. Publication checkpoint records links/scope/sync qualification. Supersedes source-local/publication-pending wording below, not test limits or APK/phone gates. No /8 APK/old-artifact rewrite/merge/deployment.
+
 Owner approved bounded parser implementation/regressions after read-only investigation, then explicitly approved one independent read-only reviewer. No publication/APK authorization. Base86e9ad17fc85b75bd91cbff450503c6addbc0292, feature/mobile-fusion-offline. HSC-006/010 remain OPEN, priority UNASSESSED.
 
 ## Source changes
