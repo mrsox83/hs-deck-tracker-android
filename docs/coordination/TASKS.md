@@ -1,6 +1,12 @@
 # HS-FUSION task register
 
-Coordinator-owned. Updated 2026-10-23. Source of truth for development ownership; no agent self-claims. Single cloud pilot maximum until reviewed.
+Coordinator-owned. Updated 2026-10-24. Source of truth for development ownership; no agent self-claims. Single cloud pilot maximum until reviewed.
+
+Numeric reveal-recipient bounded fix now SOURCE-LOCAL PASS; supersedes IN VALIDATION below. One authorized source-only reviewer completed/re-reviewed no blocker;308 ordinary/15 corpus/one two-upload private checks PASS, exact M.O.T.H.E.R./Android successful inputs retained via cache/up-to-date. See REVEAL-RECIPIENT-REVIEW-2026-10-24.md. No active worker, publication/APK pending owner gates, HSC-006/010 broad requirements OPEN/priority UNASSESSED.
+
+Current owner authorization supersedes the paused investigation paragraph below: bounded numeric reveal-recipient fix/regressions IN VALIDATION locally, source-only/no APK or publication. Coordinator owns reducer/version/synthetic test changes and reports; one explicitly approved read-only source/synthetic reviewer reveal_recipient_review, no private evidence or edits. Existing task ownership remains unchanged. HSC-006/010 stay OPEN, priority UNASSESSED.
+
+Session CLOSED / OWNER-PAUSED October24: LOCAL-006 source acceptance is now followed by /7 APK delivery/hash verification and bounded phone reset-recovery/old-game export PASS. This supersedes the source-stage "No /7 APK/phone acceptance" limitation in its historical row below, not broader HSC acceptance.37 explicitly warned pre-reset hand-position conflicts remain OPEN under HSC-006/010, priority UNASSESSED; no investigation worker or implementation assigned. Next proposed read-only investigation waits for owner return/fresh usage checks. See current HANDOFF and RESET-PLAYER-PHONE-WITNESS-2026-10-24.md.
 
 | ID | Owner | Status | Scope / reserved writes | Dependency / acceptance |
 |---|---|---|---|---|

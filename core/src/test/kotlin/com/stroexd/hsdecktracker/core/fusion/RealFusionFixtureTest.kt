@@ -516,6 +516,7 @@ class RealFusionFixtureTest {
                 }
                 assertEquals(rawDescriptorAudit(reduced, document), perMatchDescriptorCounts,
                     "Every descriptor disagreement must match a prior explicit same-epoch raw observation")
+                assertInlineRecipients(reduced, document)
                 val expectedUnassignedLines = document.getValue("match").jsonObject.getValue("events").jsonArray.map { it.jsonObject }.filter { event ->
                     val raw = event.getValue("raw").jsonPrimitive.content
                     if (!raw.startsWith("FULL_ENTITY") || Regex("FULL_ENTITY - Creating ID=[0-9]+ CardID=.*").matches(raw)) false
@@ -548,7 +549,9 @@ class RealFusionFixtureTest {
         assertEquals(21_018, eventCount)
         assertEquals(29_674, snapshotCount)
         // Preserve the original chronology golden below; independently pin the new raw-descriptor audit.
-        assertEquals(mapOf("ZONE" to 22_610, "ZONE_POSITION" to 20_665, "CONTROLLER" to 566, "UNSUPPORTED" to 288), positionalDiagnosticObservations)
+        // Numeric reveal blocks now update their actual cards instead of the prior card.
+        // Raw inline recipient audit above independently checks attribution before this count pin.
+        assertEquals(mapOf("ZONE" to 19_544, "ZONE_POSITION" to 20_665, "CONTROLLER" to 75, "UNSUPPORTED" to 288), positionalDiagnosticObservations)
         assertEquals(
             linkedMapOf("hs-export-bundle/0.2" to 4, "hs-export-bundle/0.3" to 2, "hs-export-bundle/0.4" to 15),
             schemas,
@@ -748,6 +751,33 @@ class RealFusionFixtureTest {
         assertTrue(FusionProvenanceValidator.validate(fused).isEmpty(), FusionProvenanceValidator.validate(fused).joinToString())
         assertEquals(4, fused.sources.size)
         assertEquals(stitched.events.size, fused.events.size)
+    }
+}
+
+/** Independent raw block attribution check; never use the reducer's recipient resolver. */
+private fun assertInlineRecipients(reduced: ReducedPowerMatch, document: kotlinx.serialization.json.JsonObject) {
+    val owners = mutableMapOf<Int, String?>()
+    var owner: String? = null
+    for (item in document.getValue("match").jsonObject.getValue("events").jsonArray) {
+        val e = item.jsonObject
+        val raw = e.getValue("raw").jsonPrimitive.content
+        if (e["block_type"]?.jsonPrimitive?.content == "GAME_RESET") owner = null
+        if (listOf("FULL_ENTITY", "SHOW_ENTITY", "CHANGE_ENTITY", "Player ", "GameEntity ").any { raw.startsWith(it) }) {
+            owner = when {
+                raw.startsWith("FULL_ENTITY - Creating ID=") -> Regex("FULL_ENTITY - Creating ID=([0-9]+) CardID=.*").matchEntire(raw)?.groupValues?.get(1)
+                raw.startsWith("Player ") || raw.startsWith("GameEntity ") -> Regex("EntityID=([0-9]+)").find(raw)?.groupValues?.get(1)
+                else -> {
+                    val target = raw.substringAfter("Updating ", "").substringBeforeLast(" CardID=", "").removePrefix("Entity=")
+                    if (target.matches(Regex("[1-9][0-9]*"))) target
+                    else Regex("(?:^| )id=([0-9]+)(?: |\\])").findAll(target).toList().singleOrNull()?.groupValues?.get(1)
+                }
+            }
+        }
+        if (raw.startsWith("tag=")) owners[e.getValue("source_line").jsonPrimitive.content.toInt()] = owner
+    }
+    for (epoch in reduced.entityEpochs) for ((id, entity) in epoch.entities) for (tag in entity.tagHistory) {
+        if (tag.evidence.isPlayerRestoration || tag.sourceLine !in owners) continue
+        assertEquals(owners[tag.sourceLine], id, "Inline raw recipient at source line ${tag.sourceLine}")
     }
 }
 

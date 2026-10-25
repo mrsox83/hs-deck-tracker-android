@@ -1,6 +1,18 @@
 # Mobile fusion R0–R2
 
-## Authoritative current state — 2026-10-23
+## Authoritative current state — 2026-10-24
+
+- [x] Numeric reveal-recipient fix SOURCE-LOCAL PASS:308 ordinary/15 broader private/one two-phone check, exact M.O.T.H.E.R. executed PASS retained by cache, Android compilation PASS retained up-to-date. Independent reviewer finding fixed/re-reviewed. Both source-local phone reconstructions zero duplicate hands with3643 raw inline tag attribution proofs;48-match corpus stronger raw audit/chronology PASS. Producer /8, schema/old artifacts unchanged. See REVEAL-RECIPIENT-REVIEW-2026-10-24.md. Next owner source-publication + sanitized shared/canonical reconciliation approval; no APK/push yet, HSC-006/010 broadly OPEN. Final34%five-hour under85%.
+
+- [x] Owner-resumed read-only hand-conflict investigation: numeric SHOW_ENTITY mismatch leaves stale inline recipient, contaminating68 with57/52/63 fields; all37 duplicate checkpoints include68. Confirmed own-player hand impact; broader numeric-header effects not fully audited. See HAND-CONFLICT-INVESTIGATION-2026-10-24.md. No product/test/build/push/APK changes. Next owner approval parser fix/regressions; HSC-006/010 shared cause reconciliation pending, priority UNASSESSED. Supersedes paused investigation below, not implementation authorization.
+
+- [ ] OWNER-PAUSED for tonight. Resume only on owner return with fresh usage/state checks; normal85% ceiling, temporary validation exception ended. Next proposed unit: read-only investigation of37 warned pre-reset duplicate hand positions (estimated5–10 usage percentage points), cause/proposed fix only. No implementation/new APK authorized; existing uploads suffice. Closeout usage95% five-hour/46% weekly. Preserve all dirty work/helpers/private evidence. Current /7 delivery and bounded reset/old-game checks PASS; hand-order conflict remains OPEN. Earlier stage entries below are historical, not active pending delivery/phone gates.
+
+- [x] October24 /7 upload comparison complete: bounded reset recovery/owner old-game check PASS; source/tracker/epoch/turn/hand evidence verified across two uploads.37 warned side2 pre-reset duplicate-position occurrences remain OPEN hand-quality finding, not unique-order PASS. Shared/canonical reconciliation verified. Next owner gate read-only raw state-transition investigation, no new APK/implementation authorized.
+
+- [x] October24 /7 reset-player APK DELIVERED to new direct Development folder1NCX5XQ_2qgOmqDktfFXeJMiiwrESuIGd. Four files/support readback/downloaded APK hash verified; Resource Exchange verified. PHONE PENDING; next owner README checklist. Future APK approval combines preparation/checks/upload/hash verification, recorded in BUILD_NOTES_STANDARD.
+
+- [x] October24 /7 reset-player APK v1 prepared LOCALLY:49s/303 tests/signature/alignment/REA gates PASS, hashd6f3a032b0c8bd8d4c3b2143e0097b68f91e30073541a5a17583c908a88cc8cb. Resource Exchange verified. NOT DELIVERED/PHONE-ACCEPTED; next owner gate Drive delivery/hash verification, then phone checklist.
 
 - [x] October24 LOCAL-006 SOURCE-PUBLISHED a8da4d41386b38eff2e6aef74e9b7b7498645621; remote hash/Resource Exchange short-status readback verified, tested product unchanged. No /7 APK or phone acceptance. Next owner gate APK preparation/artifact checks, followed by separately authorized delivery.
 

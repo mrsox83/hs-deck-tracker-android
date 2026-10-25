@@ -14,7 +14,17 @@ object PowerEvidenceReducer {
     private val inlineTag = Regex("tag=([^ ]+) value=(.*)")
     private val fullEntity = Regex("FULL_ENTITY - Creating ID=([0-9]+) CardID=(.*)")
     private val updatedEntity = Regex("FULL_ENTITY - Updating (.+) CardID=([^ ]*)")
-    private val shownEntity = Regex("(?:SHOW_ENTITY|CHANGE_ENTITY) - Updating Entity=.*? id=([0-9]+).*? CardID=([^ ]*)")
+    private val shownEntity = Regex("(?:SHOW_ENTITY|CHANGE_ENTITY) - Updating Entity=(.+) CardID=([^ ]*)")
+    private val revealDescriptor = Regex("\\[entityName=.* id=([0-9]+)(?: [^\\[\\]]*)?\\]")
+
+    private fun revealRecipient(text: String): String? {
+        val id = if (text.all { it in '0'..'9' }) text
+            else revealDescriptor.matchEntire(text)?.let { descriptor ->
+                // Reject repeated/ambiguous identifiers instead of choosing a recipient.
+                descriptor.groupValues[1].takeIf { entityId.findAll(text).count() == 1 }
+            }
+        return id?.takeIf { it.toIntOrNull()?.let { value -> value > 0 } == true }
+    }
     private val playerEntity = Regex("Player EntityID=([0-9]+) PlayerID=([0-9]+).*")
     private val gameEntity = Regex("GameEntity EntityID=([0-9]+).*")
     private val entityName = Regex("entityName=(.*?) id=([0-9]+)")
@@ -139,17 +149,22 @@ object PowerEvidenceReducer {
                 }
             }
 
-            val created = fullEntity.matchEntire(body) ?: shownEntity.matchEntire(body)
+            val revealed = shownEntity.matchEntire(body)
+            val created = fullEntity.matchEntire(body)?.let { it.groupValues[1] to it.groupValues[2] }
+                ?: revealed?.let { header -> revealRecipient(header.groupValues[1])?.let { it to header.groupValues[2] } }
             if (created != null) {
-                val id = created.groupValues[1]
-                if (id in restoredIds && created.groupValues[2].isNotBlank()) {
+                val (id, revealedCard) = created
+                if (id in restoredIds && revealedCard.isNotBlank()) {
                     quarantine(id, sequence, line, time, evidence)
                     pendingEntity = null
                 } else if (id !in quarantinedIds) {
                     pendingEntity = id
                     val entity = mutableEntities.getOrPut(id) { MutableEntity(id) }
-                    entity.observeCard(created.groupValues[2], evidence)
+                    entity.observeCard(revealedCard, evidence)
                 } else pendingEntity = null
+            } else if (body.startsWith("SHOW_ENTITY") || body.startsWith("CHANGE_ENTITY")) {
+                pendingEntity = null
+                diagnostics += "Unassigned reveal header at source line $line; following inline tags are not attributed to a previous entity"
             } else if (body.startsWith("FULL_ENTITY")) {
                 // Rewind restoration uses Updating headers. An unrecognized header MUST clear
                 // the old inline-tag recipient, rather than assigning its tags to a prior card.
@@ -201,7 +216,10 @@ object PowerEvidenceReducer {
                     }
                 }
             }
-            observeAlias(body, aliases)
+            // A rejected reveal must not establish a name that later TAG_CHANGE lines
+            // could use to bypass strict recipient validation.
+            if (!(body.startsWith("SHOW_ENTITY") || body.startsWith("CHANGE_ENTITY")) ||
+                (created != null && created.first !in quarantinedIds)) observeAlias(body, aliases)
 
             val tagName = event.string("tag")
             val tagValue = event.string("value")
@@ -338,8 +356,10 @@ object PowerEvidenceReducer {
                     captureSnapshot(sequence, "TURN_SIGNAL", blockStack.isNotEmpty(), evidence)
             }
             if (body.startsWith("SHOW_ENTITY")) {
-                val id = event.string("entity_id") ?: entityReference(body, aliases)
-                if (id != null) mutableEntities.getOrPut(id) { MutableEntity(id) }.observeVisibility(true, evidence)
+                // Use the same validated recipient as identity/inline tags, not a permissive
+                // fallback or a conflicting pre-parsed entity_id on an unsupported header.
+                val id = created?.first
+                if (id != null && id !in quarantinedIds) mutableEntities[id]?.observeVisibility(true, evidence)
             } else if (body.startsWith("HIDE_ENTITY")) {
                 val id = entityReference(body, aliases)
                 if (id != null) mutableEntities.getOrPut(id) { MutableEntity(id) }.observeVisibility(false, evidence)
