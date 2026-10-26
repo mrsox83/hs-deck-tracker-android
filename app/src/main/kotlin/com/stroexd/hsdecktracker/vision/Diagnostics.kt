@@ -3,6 +3,9 @@ package com.stroexd.hsdecktracker.vision
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.SystemClock
+import com.stroexd.hsdecktracker.core.vision.CaptureDiagnosticKind
+import com.stroexd.hsdecktracker.core.vision.CaptureDiagnosticLog
 import androidx.core.content.FileProvider
 import com.stroexd.hsdecktracker.R
 import com.stroexd.hsdecktracker.core.tracker.GameEvent
@@ -14,6 +17,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -21,6 +25,10 @@ class DiagnosticsRecorder(root: File) {
     private val sessionDir = File(root, "session-" + SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())).apply { mkdirs() }
     private val ocrFile = File(sessionDir, "ocr.jsonl")
     private val eventsFile = File(sessionDir, "events.txt")
+    private val captureLog = CaptureDiagnosticLog(File(sessionDir, "capture-${UUID.randomUUID()}.jsonl"),
+        System::currentTimeMillis, SystemClock::elapsedRealtime)
+
+    fun capture(kind: CaptureDiagnosticKind, values: Map<String, Long>) = captureLog.record(kind, values)
     private var frames = 0
     private var images = 0
 

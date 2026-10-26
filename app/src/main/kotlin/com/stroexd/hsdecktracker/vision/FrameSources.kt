@@ -15,14 +15,16 @@ import android.util.DisplayMetrics
 import android.view.Display
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
+import com.stroexd.hsdecktracker.core.vision.CaptureDiagnosticKind
 import kotlin.math.max
 import kotlin.math.min
 
 /** A screenshot; [width] can be smaller than the bitmap when rows are padded. */
-class Capture(val bitmap: Bitmap, val width: Int, val height: Int)
+class Capture(val bitmap: Bitmap, val width: Int, val height: Int, val imageTimestampNanos: Long? = null)
 
 /** Where screenshots come from. All calls and callbacks happen on the recognizer's thread. */
 interface FrameSource {
+    fun setDiagnosticListener(listener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)?) {}
     /** [onStopped] is called when the source ends by itself, e.g. screen sharing was stopped. */
     fun start(handler: Handler, onStopped: () -> Unit)
 
@@ -49,6 +51,23 @@ fun realDisplaySize(context: Context): Pair<Int, Int> {
  * second; devices where re-attaching doesn't deliver frames fall back to staying attached.
  */
 class MediaProjectionSource(private val context: Context, private val projection: MediaProjection) : FrameSource {
+    private var diagnosticListener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)? = null
+    private var unrequestedImages = 0L
+    private var emptyImages = 0L
+    private var acquireFailures = 0L
+    override fun setDiagnosticListener(listener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)?) {
+        diagnosticListener = listener
+    }
+    private fun report(kind: CaptureDiagnosticKind, values: Map<String, Long> = emptyMap()) {
+        runCatching { diagnosticListener?.invoke(kind, values) }
+    }
+    /** Attached surfaces may deliver at display rate: summarize without per-image I/O. */
+    private fun reportImageCounters() {
+        if (unrequestedImages > 0) report(CaptureDiagnosticKind.UNREQUESTED_IMAGE, mapOf("count" to unrequestedImages))
+        if (emptyImages > 0) report(CaptureDiagnosticKind.NO_IMAGE, mapOf("count" to emptyImages))
+        if (acquireFailures > 0) report(CaptureDiagnosticKind.ACQUIRE_FAILED, mapOf("count" to acquireFailures))
+        unrequestedImages = 0; emptyImages = 0; acquireFailures = 0
+    }
     private lateinit var handler: Handler
     private var reader: ImageReader? = null
     private var virtualDisplay: VirtualDisplay? = null
@@ -65,9 +84,17 @@ class MediaProjectionSource(private val context: Context, private val projection
         this.handler = handler
         projection.registerCallback(
             object : MediaProjection.Callback() {
-                override fun onStop() = onStopped()
+                override fun onStop() {
+                    report(CaptureDiagnosticKind.SOURCE_STOP)
+                    onStopped()
+                }
+
+                override fun onCapturedContentVisibilityChanged(isVisible: Boolean) {
+                    report(CaptureDiagnosticKind.VISIBILITY, mapOf("visible" to if (isVisible) 1L else 0L))
+                }
 
                 override fun onCapturedContentResize(width: Int, height: Int) {
+                    report(CaptureDiagnosticKind.RESIZE, mapOf("contentWidth" to width.toLong(), "contentHeight" to height.toLong()))
                     if (Build.VERSION.SDK_INT >= 34) resize(width, height)
                 }
             },
@@ -75,6 +102,8 @@ class MediaProjectionSource(private val context: Context, private val projection
         )
         val (realWidth, realHeight) = realDisplaySize(context)
         val (width, height) = scaledSize(realWidth, realHeight)
+        report(CaptureDiagnosticKind.SOURCE_START, mapOf("realWidth" to realWidth.toLong(), "realHeight" to realHeight.toLong(),
+            "readerWidth" to width.toLong(), "readerHeight" to height.toLong()))
         densityDpi = context.resources.displayMetrics.densityDpi
         val imageReader = newReader(width, height)
         virtualDisplay = projection.createVirtualDisplay(
@@ -106,6 +135,8 @@ class MediaProjectionSource(private val context: Context, private val projection
             callback(null)
         }
         val next = newReader(width, height)
+        report(CaptureDiagnosticKind.VIEWPORT, mapOf("oldWidth" to old.width.toLong(), "oldHeight" to old.height.toLong(),
+            "readerWidth" to width.toLong(), "readerHeight" to height.toLong(), "detachBetweenFrames" to if (detachBetweenFrames) 1L else 0L))
         virtualDisplay?.apply {
             surface = null
             resize(width, height, densityDpi)
@@ -123,6 +154,7 @@ class MediaProjectionSource(private val context: Context, private val projection
     }
 
     override fun capture(onCapture: (Capture?) -> Unit) {
+        reportImageCounters()
         val imageReader = reader ?: return onCapture(null)
         pending = onCapture
         if (detachBetweenFrames) {
@@ -134,6 +166,7 @@ class MediaProjectionSource(private val context: Context, private val projection
     }
 
     override fun stop() {
+        reportImageCounters()
         handler.removeCallbacks(timeout)
         pending = null
         runCatching { virtualDisplay?.release() }
@@ -145,9 +178,12 @@ class MediaProjectionSource(private val context: Context, private val projection
     }
 
     private fun onTimeout() {
+        reportImageCounters()
         val callback = pending ?: return
         timeouts++
+        report(CaptureDiagnosticKind.TIMEOUT, mapOf("count" to timeouts.toLong(), "reattachWorks" to if (reattachWorks) 1L else 0L))
         if (!reattachWorks && timeouts >= MAX_TIMEOUTS) {
+            report(CaptureDiagnosticKind.ATTACH_FALLBACK)
             detachBetweenFrames = false
             virtualDisplay?.surface = reader?.surface
             return
@@ -161,10 +197,12 @@ class MediaProjectionSource(private val context: Context, private val projection
         val image = try {
             imageReader.acquireLatestImage()
         } catch (e: IllegalStateException) {
+            acquireFailures++
             null
-        } ?: return
+        } ?: run { emptyImages++; return }
         val callback = pending
         if (callback == null) {
+            unrequestedImages++
             image.close()
             return
         }
@@ -174,8 +212,9 @@ class MediaProjectionSource(private val context: Context, private val projection
         if (reattached) reattachWorks = true
         if (detachBetweenFrames) virtualDisplay?.surface = null
         val capture = try {
-            Capture(copyToBitmap(image), image.width, image.height)
+            Capture(copyToBitmap(image), image.width, image.height, image.timestamp)
         } catch (e: Exception) {
+            report(CaptureDiagnosticKind.COPY_FAILED)
             null
         } finally {
             image.close()
@@ -203,6 +242,13 @@ class MediaProjectionSource(private val context: Context, private val projection
 /** Screenshots through the app's accessibility service: no screen-sharing prompt per session (Android 11+). */
 @RequiresApi(30)
 class AccessibilityScreenshotSource(private val service: AccessibilityService) : FrameSource {
+    private var diagnosticListener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)? = null
+    override fun setDiagnosticListener(listener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)?) {
+        diagnosticListener = listener
+    }
+    private fun report(kind: CaptureDiagnosticKind, values: Map<String, Long> = emptyMap()) {
+        runCatching { diagnosticListener?.invoke(kind, values) }
+    }
     private lateinit var handler: Handler
     private var last: Bitmap? = null
 
@@ -222,6 +268,7 @@ class AccessibilityScreenshotSource(private val service: AccessibilityService) :
                             hardware.copy(Bitmap.Config.ARGB_8888, false).also { hardware.recycle() }
                         }
                     } catch (e: Exception) {
+                        report(CaptureDiagnosticKind.COPY_FAILED)
                         null
                     } finally {
                         buffer.close()
@@ -232,7 +279,10 @@ class AccessibilityScreenshotSource(private val service: AccessibilityService) :
                     onCapture(copy?.let { Capture(it, it.width, it.height) })
                 }
 
-                override fun onFailure(errorCode: Int) = onCapture(null)
+                override fun onFailure(errorCode: Int) {
+                    report(CaptureDiagnosticKind.SOURCE_FAILED, mapOf("errorCode" to errorCode.toLong()))
+                    onCapture(null)
+                }
             },
         )
     }
