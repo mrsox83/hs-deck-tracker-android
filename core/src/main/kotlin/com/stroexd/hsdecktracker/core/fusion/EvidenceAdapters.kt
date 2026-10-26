@@ -5,6 +5,7 @@ import com.stroexd.hsdecktracker.core.util.AppJson
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -14,6 +15,8 @@ import java.util.zip.ZipInputStream
 data class TrackerEvidence(
     val source: FusionSource,
     val record: MatchRecord,
+    /** Ingestion-only snapshot; copied/edited records must be ingested again before projection. */
+    internal val noteSnapshot: Pair<MatchRecord, UserNoteAnnotation>? = null,
 )
 
 data class ExporterBundleEvidence(
@@ -27,6 +30,22 @@ object EvidenceAdapters {
     fun tracker(bytes: ByteArray): TrackerEvidence {
         val hash = sha256(bytes)
         val record = AppJson.decodeFromString(MatchRecord.serializer(), bytes.toString(Charsets.UTF_8))
+        val rawNote = AppJson.parseToJsonElement(bytes.toString(Charsets.UTF_8)).jsonObject["notes"]
+        require(rawNote == null || rawNote == JsonNull || rawNote is JsonPrimitive && rawNote.isString) {
+            "Tracker notes must be a string, null or absent"
+        }
+        val note = UserNoteAnnotation(
+            state = when (rawNote) {
+                null -> UserNoteState.ABSENT
+                JsonNull -> UserNoteState.NULL
+                else -> UserNoteState.TEXT
+            },
+            text = (rawNote as? JsonPrimitive)?.takeIf { it.isString }?.content,
+            trackerMatchId = record.id,
+            trackerRevision = record.revision,
+            trackerSha256 = hash,
+            evidence = EvidenceRef("tracker:$hash", jsonPointer = "/notes", rule = "tracker-user-note/1"),
+        )
         return TrackerEvidence(
             FusionSource(
                 id = "tracker:$hash",
@@ -39,6 +58,7 @@ object EvidenceAdapters {
                 complete = null,
             ),
             record,
+            record to note,
         )
     }
 

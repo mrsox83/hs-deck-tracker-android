@@ -3,8 +3,8 @@ package com.stroexd.hsdecktracker.core.fusion
 import com.stroexd.hsdecktracker.core.stats.RecognitionCoverageState
 import java.security.MessageDigest
 
-const val OFFLINE_FUSION_VERSION = "offline-r2/8"
-const val ANDROID_FUSION_VERSION = "android-r3/8"
+const val OFFLINE_FUSION_VERSION = "offline-r2/9"
+const val ANDROID_FUSION_VERSION = "android-r3/9"
 
 object FusionCoordinator {
     fun assemble(
@@ -17,6 +17,17 @@ object FusionCoordinator {
         val accepted = uniquePower.singleOrNull { it.source.id == pairing.acceptedSourceId }
         val sources = mergeSources(listOf(tracker.source) + powerMatches.map { it.source })
         val trackerId = tracker.record.id
+        val userNote = tracker.noteSnapshot?.let { (ingestedRecord, note) ->
+            require(ingestedRecord == tracker.record &&
+                note.trackerRevision == ingestedRecord.revision && note.trackerMatchId == ingestedRecord.id &&
+                tracker.source.type == SourceType.ANDROID_TRACKER_JSON &&
+                tracker.source.id == "tracker:${note.trackerSha256}" &&
+                tracker.source.artifactSha256 == note.trackerSha256 &&
+                tracker.source.matchAlias == note.trackerMatchId && note.trackerRevision > 0) {
+                "Tracker note snapshot no longer matches the ingested record/source; ingest current bytes again"
+            }
+            note
+        }
         require(trackerId.isNotBlank() && trackerId == trackerId.trim() && trackerId.none { it.isISOControl() }) {
             "A nonblank, unpadded saved tracker identity without control characters is required"
         }
@@ -59,6 +70,7 @@ object FusionCoordinator {
             diagnostics = accepted?.diagnostics.orEmpty() + trackerCoverageDiagnostics + powerCoverageWarnings + equivalenceDiagnostics +
                 "Logical match identity: tracker-record/1; selected evidence and saved-result revisions do not create another game identity.",
             continuations = listOfNotNull(accepted?.continuation),
+            userNote = userNote,
         )
         if (accepted == null) return fused
         // Supplemental hand derivation must not block preservation of the existing canonical evidence.

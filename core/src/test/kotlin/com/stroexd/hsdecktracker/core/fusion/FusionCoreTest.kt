@@ -41,7 +41,7 @@ class FusionCoreTest {
         assertEquals(first.matchId, revision.matchId)
         assertEquals(3, added.sources.size)
         assertTrue(first.matchId.matches(Regex("[0-9a-f]{32}")))
-        assertEquals("offline-r2/8", first.fusionVersion)
+        assertEquals("offline-r2/9", first.fusionVersion)
         assertTrue(first.diagnostics.any { it.startsWith("Logical match identity: tracker-record/1") })
         val otherRecord = tracker.record.copy(id = "different-saved-game")
         val other = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), otherRecord).toByteArray())
@@ -57,8 +57,9 @@ class FusionCoreTest {
             }
         }
         val pending = PairingDecision(PairingStatus.PENDING, candidates = emptyList(), reason = "test")
-        val unicodeId = FusionCoordinator.assemble(tracker.copy(record = tracker.record.copy(id = "game-\uD83D\uDE00")), emptyList(), pending).matchId
-        val literalId = FusionCoordinator.assemble(tracker.copy(record = tracker.record.copy(id = "game-?")), emptyList(), pending).matchId
+        fun reingest(id: String) = EvidenceAdapters.tracker(AppJson.encodeToString(MatchRecord.serializer(), tracker.record.copy(id = id)).toByteArray())
+        val unicodeId = FusionCoordinator.assemble(reingest("game-\uD83D\uDE00"), emptyList(), pending).matchId
+        val literalId = FusionCoordinator.assemble(reingest("game-?"), emptyList(), pending).matchId
         assertFalse(unicodeId == literalId, "Valid Unicode is preserved exactly, not replaced or normalized")
     }
 

@@ -253,6 +253,21 @@ data class FusedMatch(
     /** Screenshot observations only; separate from the canonical Power timeline. */
     val trackerTimeline: TrackerTimelineSummary? = null,
     val handHistory: CoachingHandHistory? = null,
+    /** User-authored annotation, never a gameplay observation or decision-time claim. */
+    val userNote: UserNoteAnnotation? = null,
+)
+
+@Serializable
+enum class UserNoteState { ABSENT, NULL, TEXT }
+
+@Serializable
+data class UserNoteAnnotation(
+    val state: UserNoteState,
+    val text: String? = null,
+    val trackerMatchId: String,
+    val trackerRevision: Int,
+    val trackerSha256: String,
+    val evidence: EvidenceRef,
 )
 
 @Serializable

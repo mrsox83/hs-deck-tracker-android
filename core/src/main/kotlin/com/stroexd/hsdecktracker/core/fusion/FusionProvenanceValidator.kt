@@ -64,6 +64,20 @@ object FusionProvenanceValidator {
                 errors += "trackerTimeline must reference its tracker timeline"
             evidence("trackerTimeline", listOf(summary.evidence))
         }
+        match.userNote?.let { note ->
+            val source = match.sources.singleOrNull { it.id == note.evidence.sourceId }
+            if (source?.type != SourceType.ANDROID_TRACKER_JSON ||
+                source.id != "tracker:${note.trackerSha256}" || source.artifactSha256 != note.trackerSha256 ||
+                !note.trackerSha256.matches(Regex("[0-9a-f]{64}")) ||
+                source.matchAlias != note.trackerMatchId || note.trackerMatchId.isBlank() || note.trackerRevision <= 0 ||
+                match.trackerTimeline?.sourceId != source.id)
+                errors += "userNote tracker source/hash/identity/revision mismatch"
+            if (note.evidence != EvidenceRef(note.evidence.sourceId, jsonPointer = "/notes", rule = "tracker-user-note/1"))
+                errors += "userNote must reference its exact tracker notes location"
+            if ((note.state == UserNoteState.TEXT) != (note.text != null))
+                errors += "userNote state/text mismatch"
+            evidence("userNote", listOf(note.evidence))
+        }
         match.sources.forEachIndexed { index, source ->
             if (source.type == SourceType.DERIVED_FUSION && source.parentSourceIds.isEmpty()) {
                 errors += "sources[$index] derived source has no parents"
