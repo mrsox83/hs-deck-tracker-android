@@ -1,5 +1,11 @@
 # HS-FUSION agent instructions
 
+## Public-content privacy
+
+- Use generic root placeholders and synthetic player/deck labels in public instructions, docs and tests; preserve upstream attribution/license, public URLs, package/card IDs and matching-critical card names.
+- Resolve local placeholders using Git-ignored `.gradle/local-operator/PATHS.md`; never publish that map or private original backups. Placeholder cleanup does not relocate source/upload destinations or alter raw evidence/frozen packages.
+- Isolate public patches from unrelated dirty coordination changes. Show historical exposures/options to the owner before any rewrite; current cleanup does not erase public history/caches/clones.
+
 ## Authority and startup
 
 - Human owner decides scope; the remote/local HS-FUSION chat is integration coordinator.
