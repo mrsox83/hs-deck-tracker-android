@@ -296,7 +296,6 @@ class VisionTest {
         repeat(2) { feed(listOf(enemyTurn)) }
         assertEquals(
             listOf(
-                GameEvent.TurnOrderDetected(friendlyWentFirst = true),
                 GameEvent.TurnChanged(1),
                 GameEvent.FriendlyCardSeen(listOf(105)),
                 GameEvent.TurnChanged(2),
@@ -353,7 +352,6 @@ class VisionTest {
         feed(drawn("Eviscerate"), endTurn())
         assertEquals(
             listOf(
-                GameEvent.TurnOrderDetected(friendlyWentFirst = true),
                 GameEvent.TurnChanged(1),
                 GameEvent.FriendlyCardSeen(listOf(105)),
             ),

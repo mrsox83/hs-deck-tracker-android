@@ -89,7 +89,7 @@ class VisionGameTracker(
         val turn: Boolean?,
         val yourTurnBanner: Boolean,
         val result: MatchResult?,
-        val coin: Boolean,
+        val openingExtraCard: Boolean,
         val choice: Boolean,
         val friendlyClass: HsClass?,
         val opponentClass: HsClass?,
@@ -133,7 +133,9 @@ class VisionGameTracker(
         var ownTurnHoldUntil = 0L
         var turnCounter = 0
         var turnOrderKnown = false
-        var coinSeen = false
+        var extraCardFrames = 0
+        var lastExtraCardAt = 0L
+        var openingSecondConfirmed = false
 
         /** Copies received per card, and how many of them left the hand. */
         val drawn = HashMap<String, Int>()
@@ -214,7 +216,7 @@ class VisionGameTracker(
         var turn: Boolean? = null
         var banner = false
         var result: MatchResult? = null
-        var coin = false
+        var openingExtraCard = false
         var choiceHeader = false
         var friendly: HsClass? = null
         var opponent: HsClass? = null
@@ -251,9 +253,11 @@ class VisionGameTracker(
                     continue
                 }
             }
-            if (normalized in UiKeywords.coin || UiKeywords.matches(normalized, UiKeywords.extraCard)) {
-                // The opponent's coin is shown on the left
-                if (line.centerX >= 0.5f || ScreenRegions.isHand(line)) coin = true
+            if (normalized in UiKeywords.coin || normalized in UiKeywords.extraCard) {
+                // Card names/popups and later generated Coins do not establish starting order.
+                // Only the explicit opening message, in its header region, is evidence.
+                if (normalized in UiKeywords.extraCard && line.centerX in 0.35f..0.9f &&
+                    line.centerY in 0.1f..0.3f) openingExtraCard = true
                 continue
             }
             if (ScreenRegions.isPlayerLabel(line)) {
@@ -289,7 +293,7 @@ class VisionGameTracker(
             turn = if (banner) true else turn,
             yourTurnBanner = banner,
             result = result,
-            coin = coin,
+            openingExtraCard = openingExtraCard,
             choice = choiceHeader || isCardRow(outsideHand),
             friendlyClass = friendly.takeIf { openingLabels },
             opponentClass = opponent.takeIf { openingLabels },
@@ -361,7 +365,13 @@ class VisionGameTracker(
 
     private fun onMulliganFrame(f: FrameInfo, now: Long, events: MutableList<GameEvent>) {
         updateClasses(f, events)
-        if (f.coin) game.coinSeen = true
+        if (!game.mulliganConfirmed && now - game.startedAt in 0..MULLIGAN_TIMEOUT_MILLIS &&
+            f.mulliganSignal && f.openingExtraCard && f.turn == null && !f.yourTurnBanner) {
+            game.extraCardFrames = if (game.extraCardFrames > 0 && now > game.lastExtraCardAt &&
+                now - game.lastExtraCardAt <= 2_000) game.extraCardFrames + 1 else 1
+            game.lastExtraCardAt = now
+            if (game.extraCardFrames >= 2) game.openingSecondConfirmed = true
+        } else game.extraCardFrames = 0
         f.turn?.let { game.turnState = it }
         val counts = mulliganCards(f).groupingBy { it.key }.eachCount()
 
@@ -419,7 +429,7 @@ class VisionGameTracker(
             repeat(extra) { events += GameEvent.FriendlyCardSeen(candidates) }
             game.drawn[key] = count
         }
-        if (game.coinSeen && !game.turnOrderKnown) {
+        if (game.openingSecondConfirmed && !game.turnOrderKnown) {
             game.turnOrderKnown = true
             events += GameEvent.TurnOrderDetected(friendlyWentFirst = false)
         }
@@ -427,10 +437,6 @@ class VisionGameTracker(
 
     private fun onPlayingFrame(f: FrameInfo, now: Long, events: MutableList<GameEvent>) {
         // Hero class labels belong to the opening screen, not early-game card tooltips.
-        if (f.coin && !game.turnOrderKnown) {
-            game.turnOrderKnown = true
-            events += GameEvent.TurnOrderDetected(friendlyWentFirst = false)
-        }
         f.turn?.let { handleTurn(it, f.yourTurnBanner, now, events) }
         if (f.choice) f.cards.forEach { if (!ScreenRegions.isHand(it.line)) game.lastChoice[it.key] = now }
         handleOwnCards(f, now, events)
@@ -457,10 +463,8 @@ class VisionGameTracker(
         game.pendingTurn = null
         if (game.turnCounter == 0) {
             game.turnCounter = 1
-            if (!game.turnOrderKnown) {
-                game.turnOrderKnown = true
-                events += GameEvent.TurnOrderDetected(friendlyWentFirst = own)
-            }
+            // The first observed turn can follow missed turns. Keep starting order UNKNOWN
+            // unless the opening supplied explicit evidence; turn counting is independent.
         } else {
             game.turnCounter++
         }
