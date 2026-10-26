@@ -76,6 +76,120 @@ class VisionTest {
     private fun resultText(text: String) = line(text, 0.515f, 0.65f, h = 0.04f, w = 0.07f)
 
     @Test
+    fun classLabelsDoNotUseCardNumberCleanup() {
+        for (text in listOf("mage +1", "Spell Damage +1", "mage 1", "1 mage", "rogue +2")) {
+            assertNull(UiKeywords.heroClassLabel(text), text)
+        }
+        assertEquals(HsClass.MAGE, UiKeywords.heroClassLabel("MAGE"))
+        assertEquals(HsClass.ROGUE, UiKeywords.heroClassLabel("Schurke"))
+        assertEquals(HsClass.MAGE, UiKeywords.heroClassLabel("МАГ"))
+        assertEquals(HsClass.DEMONHUNTER, UiKeywords.heroClassLabel("ОХОТНИК НА ДЕМОНОВ"))
+    }
+
+    @Test
+    fun gameplayClassTextCannotReplaceRogueDeckOrHistory() {
+        val tracker = VisionGameTracker(index)
+        val controller = TrackerController(clock = { 0L })
+        controller.selectDeckForCurrentGame(rogueDeck, db)
+        fun feed(lines: List<OcrLine>): List<GameEvent> = tracker.onFrame(frame(lines)).also { events ->
+            events.forEach { controller.onGameEvent(it, db) }
+        }
+        feed(versus())
+        feed(listOf(yourTurn()))
+        assertEquals(VisionGameTracker.Phase.PLAYING, tracker.phase)
+        controller.onGameEvent(GameEvent.FriendlyCardSeen(listOf(101)), db)
+        val before = assertNotNull(controller.state.value)
+        val misleading = listOf(
+            OcrLine("mage +1", 0.89285713f, 0.8009259f, 0.91507936f, 0.81574076f),
+            line("Spell Damage +1", 0.75f, 0.71f),
+            line("MAGE", 0.69f, 0.71f),
+            line("SHAMAN", 0.315f, 0.71f),
+        )
+        val events = feed(misleading)
+        assertTrue(events.none { it is GameEvent.ClassDetected })
+        assertEquals(before, controller.state.value)
+        assertEquals("rogue", controller.state.value?.deckId)
+    }
+
+    @Test
+    fun isolatedOrGameplayClassWordsDoNotStartGames() {
+        for (lines in listOf(
+            listOf(line("MAGE", 0.69f, 0.71f)),
+            versus() + endTurn(),
+            listOf(line("MAGE", 0.95f, 0.81f), line("ROGUE", 0.05f, 0.81f)),
+        )) {
+            val tracker = VisionGameTracker(index)
+            assertTrue(tracker.onFrame(frame(lines)).none { it == GameEvent.GameStarted })
+        }
+        val tracker = VisionGameTracker(index)
+        val events = tracker.onFrame(frame(mulliganHeader() + line("MAGE", 0.69f, 0.71f)))
+        assertTrue(events.contains(GameEvent.ClassDetected(true, HsClass.MAGE)))
+        assertTrue(events.none { it is GameEvent.ClassDetected && !it.friendly })
+    }
+
+    @Test
+    fun classNameplateBoundsApplyAfterAspectConversion() {
+        for (x in listOf(0.18f, 0.42f, 0.58f, 0.82f)) {
+            for (y in listOf(0.6f, 0.78f)) {
+                assertTrue(ScreenRegions.isPlayerLabel(OcrLine("MAGE", x, y, x, y)))
+            }
+        }
+        for ((x, y) in listOf(0.179f to 0.7f, 0.421f to 0.7f, 0.579f to 0.7f,
+            0.821f to 0.7f, 0.3f to 0.599f, 0.7f to 0.781f)) {
+            assertTrue(!ScreenRegions.isPlayerLabel(OcrLine("MAGE", x, y, x, y)))
+        }
+        assertTrue(!ScreenRegions.isPlayerLabel(line("MAGE", 0.7f, 0.7f, h = 0.06f)))
+        for (aspect in listOf(16f / 9f, 2.3333333f)) {
+            fun screenX(boardX: Float) = 0.5f + (boardX - 0.5f) * ScreenRegions.REFERENCE_ASPECT / aspect
+            val opening = listOf(
+                line("ОХОТНИК НА ДЕМОНОВ", screenX(0.315f), 0.71f, h = 0.02f, w = 0.2f),
+                line("РАЗБОЙНИК", screenX(0.69f), 0.71f, h = 0.02f),
+            )
+            val events = VisionGameTracker(index).onFrame(frame(opening).copy(aspect = aspect))
+            assertTrue(events.contains(GameEvent.ClassDetected(false, HsClass.DEMONHUNTER)))
+            assertTrue(events.contains(GameEvent.ClassDetected(true, HsClass.ROGUE)))
+        }
+    }
+
+    @Test
+    fun numericCardNamesStillUseCardRecognition() {
+        val tracker = VisionGameTracker(index)
+        tracker.onFrame(frame(versus()))
+        tracker.onFrame(frame(yourTurn()))
+        val events = tracker.onFrame(frame(drawn("Backstab 1"), endTurn()))
+        assertTrue(events.contains(GameEvent.FriendlyCardSeen(listOf(9104, 104))))
+    }
+
+    @Test
+    fun nextGameCanHaveADifferentClassAndMidgameStartStaysUnknown() {
+        val tracker = VisionGameTracker(index, minGameMillis = 0)
+        tracker.onFrame(frame(versus()))
+        tracker.onFrame(frame(yourTurn()))
+        repeat(2) { tracker.onFrame(frame(resultText("Victory"))) }
+        assertEquals(VisionGameTracker.Phase.ENDED, tracker.phase)
+        time += 40 // Beyond the existing 15-second restart cooldown.
+        val events = tracker.onFrame(frame(versus().map {
+            if (it.text == "ROGUE") it.copy(text = "MAGE") else it
+        }))
+        assertTrue(events.contains(GameEvent.GameStarted))
+        assertTrue(events.contains(GameEvent.ClassDetected(true, HsClass.MAGE)))
+
+        val midgame = VisionGameTracker(index)
+        val recovered = (1..8).flatMap { midgame.onFrame(frame(endTurn())) }
+        assertTrue(recovered.contains(GameEvent.GameStarted))
+        assertTrue(recovered.none { it is GameEvent.ClassDetected })
+        assertEquals(VisionGameTracker.Phase.PLAYING, midgame.phase)
+        val controller = TrackerController(clock = { 0L })
+        recovered.forEach { controller.onGameEvent(it, db) }
+        val unknown = assertNotNull(controller.state.value)
+        assertEquals(HsClass.UNKNOWN, unknown.playerClass)
+        val later = midgame.onFrame(frame(versus() + mulliganHeader()))
+        assertTrue(later.none { it is GameEvent.ClassDetected })
+        later.forEach { controller.onGameEvent(it, db) }
+        assertEquals(unknown, controller.state.value)
+    }
+
+    @Test
     fun nameIndexHandlesOcrNoise() {
         assertEquals(listOf(103), index.match("Mathias Shaw.")?.dbfIds)
         assertEquals(listOf(103), index.match("4 Mathias Shavv")?.dbfIds)

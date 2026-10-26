@@ -35,7 +35,8 @@ object ScreenRegions {
 
     fun isBanner(l: OcrLine): Boolean = l.centerX in 0.35f..0.65f && l.centerY in 0.38f..0.62f
 
-    fun isPlayerLabel(l: OcrLine): Boolean = l.centerY >= 0.6f
+    fun isPlayerLabel(l: OcrLine): Boolean = l.centerY in 0.6f..0.78f &&
+        (l.centerX in 0.18f..0.42f || l.centerX in 0.58f..0.82f) && l.height <= 0.05f
 
     fun isHeader(l: OcrLine): Boolean = l.centerY < 0.25f && l.centerX in 0.3f..0.7f
 
@@ -256,7 +257,7 @@ class VisionGameTracker(
                 continue
             }
             if (ScreenRegions.isPlayerLabel(line)) {
-                val cls = UiKeywords.heroClass(normalized)
+                val cls = UiKeywords.heroClassLabel(line.text)
                 if (cls != null) {
                     if (line.centerX < 0.5f) opponent = cls else friendly = cls
                     labels += line
@@ -278,6 +279,10 @@ class VisionGameTracker(
             cards += CardLine(key, match.key, line)
         }
         lastRecognized = cards.map { it.name }
+        // Class words in card text are not opening nameplates. A versus pair or an
+        // explicit mulligan signal supplies context; the turn button rules out gameplay.
+        val openingLabels = turn == null && !banner && result == null &&
+            (mulliganSignal || (friendly != null && opponent != null))
         val outsideHand = cards.filter { !ScreenRegions.isHand(it.line) }
         return FrameInfo(
             mulliganSignal = mulliganSignal,
@@ -286,8 +291,8 @@ class VisionGameTracker(
             result = result,
             coin = coin,
             choice = choiceHeader || isCardRow(outsideHand),
-            friendlyClass = friendly,
-            opponentClass = opponent,
+            friendlyClass = friendly.takeIf { openingLabels },
+            opponentClass = opponent.takeIf { openingLabels },
             cards = cards,
         )
     }
@@ -421,7 +426,7 @@ class VisionGameTracker(
     }
 
     private fun onPlayingFrame(f: FrameInfo, now: Long, events: MutableList<GameEvent>) {
-        if (game.turnCounter <= 2) updateClasses(f, events)
+        // Hero class labels belong to the opening screen, not early-game card tooltips.
         if (f.coin && !game.turnOrderKnown) {
             game.turnOrderKnown = true
             events += GameEvent.TurnOrderDetected(friendlyWentFirst = false)

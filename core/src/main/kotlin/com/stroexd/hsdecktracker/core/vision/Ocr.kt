@@ -402,6 +402,12 @@ object UiKeywords {
         else -> null
     }
 
+    /** Unlike card names, a class label must not lose numeric modifiers such as `mage +1`. */
+    fun heroClassLabel(text: String): HsClass? {
+        if (text.any { it.isDigit() || it == '+' || it == '=' }) return null
+        return heroClass(normalizeForSearch(text))
+    }
+
     /** Class on a name plate, e.g. "DEMON HUNTER"; tolerates female forms and small misreadings. */
     fun heroClass(normalized: String): HsClass? {
         classNames[normalized]?.let { return it }
