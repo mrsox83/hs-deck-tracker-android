@@ -1,5 +1,15 @@
 # HS Deck Tracker for Android
 
+## About this fork
+
+This is my personal, experimental **HS-FUSION** fork of [stroexd’s HS Deck Tracker for Android](https://github.com/stroexd/hs-deck-tracker-android). Thanks to the original author and contributors for the foundation.
+
+My work focuses on combining tracker records with Hearthstone’s `Power.log` offline, preserving evidence and uncertainty, and exporting richer match information for post-game review and coaching. It also includes improvements to recognition, saved-game recovery and preservation of player edits.
+
+Active development is on [`feature/mobile-fusion-offline`](https://github.com/mrsox83/hs-deck-tracker-android/tree/feature/mobile-fusion-offline), not `main`. This remains a work in progress; successful tests don’t guarantee every game or device is handled correctly.
+
+**The installation links below belong to the original upstream app, not this fork’s Fusion builds.** Original documentation and credits are retained, and the project remains [GPLv3](LICENSE) licensed.
+
 [![Android CI](https://github.com/stroexd/hs-deck-tracker-android/actions/workflows/android.yml/badge.svg)](https://github.com/stroexd/hs-deck-tracker-android/actions/workflows/android.yml)
 ![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.1-7F52FF?logo=kotlin&logoColor=white)
