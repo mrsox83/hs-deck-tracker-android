@@ -135,6 +135,18 @@ class CollectionRepository(dir: File, private val clock: () -> Long = System::cu
     }
 }
 
+/** Equal revisions must describe the same saved truth; an older retry is never a new edit. */
+private fun newestMatchRecord(vararg records: MatchRecord?): MatchRecord {
+    val available = records.filterNotNull()
+    require(available.isNotEmpty() && available.map { it.id }.distinct().size == 1) {
+        "Match reconciliation requires one saved identity"
+    }
+    val revision = available.maxOf { it.revision }
+    val newest = available.filter { it.revision == revision }
+    require(newest.distinct().size == 1) { "Conflicting match content at revision $revision" }
+    return newest.first()
+}
+
 class MatchRepository(dir: File) {
     private val store = JsonFileStore(File(dir, "matches.json"), ListSerializer(MatchRecord.serializer()), emptyList())
 
@@ -166,14 +178,23 @@ class MatchRepository(dir: File) {
     }
 
     suspend fun update(record: MatchRecord) {
-        store.update { list -> list.map { if (it.id == record.id) record else it } }
+        store.update { list -> list.map { if (it.id == record.id) newestMatchRecord(record, it) else it } }
     }
 
     suspend fun upsert(record: MatchRecord) {
+        upsertLatest(record)
+    }
+
+    /** Resolve inside the store lock so an intervening UI edit cannot be overwritten by recovery. */
+    internal suspend fun upsertLatest(record: MatchRecord): MatchRecord {
+        var selected = record
         store.update { list ->
-            if (list.any { it.id == record.id }) list.map { if (it.id == record.id) record else it }
-            else list + record
+            val existing = list.firstOrNull { it.id == record.id }
+            selected = newestMatchRecord(record, existing)
+            if (existing != null) list.map { if (it.id == record.id) selected else it }
+            else list + selected
         }
+        return selected
     }
 
     suspend fun replaceAll(matches: List<MatchRecord>) {
@@ -211,22 +232,22 @@ class MatchOutboxRepository(dir: File, private val clock: () -> Long = System::c
 
     fun contains(id: String): Boolean = store.value.any { it.match.id == id }
 
+    internal fun get(id: String): MatchOutboxEntry? = store.value.firstOrNull { it.match.id == id }
+
     suspend fun stage(record: MatchRecord): MatchOutboxEntry {
         var result: MatchOutboxEntry? = null
         store.update { entries ->
             val existing = entries.firstOrNull { it.match.id == record.id }
-            if (existing?.match == record) {
+            val latest = newestMatchRecord(record, existing?.match)
+            if (existing?.match == latest) {
                 result = existing
                 entries
             } else if (existing != null) {
-                require(record.revision > existing.match.revision) {
-                    "Match id ${record.id} changed without a newer revision"
-                }
-                val revised = MatchOutboxEntry(record, MatchOutboxState.STAGED, updatedAt = clock())
+                val revised = MatchOutboxEntry(latest, MatchOutboxState.STAGED, updatedAt = clock())
                 result = revised
                 entries.map { if (it.match.id == record.id) revised else it }
             } else {
-                MatchOutboxEntry(record, MatchOutboxState.STAGED, updatedAt = clock()).also { entry ->
+                MatchOutboxEntry(latest, MatchOutboxState.STAGED, updatedAt = clock()).also { entry ->
                     result = entry
                 }.let(entries::plus)
             }
@@ -267,11 +288,10 @@ class CompletedMatchCommitter(
     private val mutex = Mutex()
 
     suspend fun commit(record: MatchRecord, transferEnabled: Boolean): CompletedMatchCommitResult = mutex.withLock {
-        val staged = outbox.stage(record)
+        val staged = stageLatest(record)
         if (!transferEnabled && (staged.state == MatchOutboxState.LOCALLY_EXPORTED || staged.state == MatchOutboxState.REMOTELY_VERIFIED)) {
             return@withLock CompletedMatchCommitResult(staged, MatchTransferResult.ALREADY_PRESENT)
         }
-        matches.upsert(record)
         outbox.transition(record.id, MatchOutboxState.LOCALLY_COMMITTED).let { committed ->
             if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
         }
@@ -279,10 +299,23 @@ class CompletedMatchCommitter(
 
     suspend fun recover(transferEnabled: Boolean): List<CompletedMatchCommitResult> = mutex.withLock {
         outbox.pending().map { entry ->
-            matches.upsert(entry.match)
-            val committed = outbox.transition(entry.match.id, MatchOutboxState.LOCALLY_COMMITTED)
-            if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
+            val staged = stageLatest(entry.match)
+            if (staged.state == MatchOutboxState.LOCALLY_EXPORTED || staged.state == MatchOutboxState.REMOTELY_VERIFIED) {
+                CompletedMatchCommitResult(staged, MatchTransferResult.ALREADY_PRESENT)
+            } else {
+                val committed = outbox.transition(entry.match.id, MatchOutboxState.LOCALLY_COMMITTED)
+                if (!transferEnabled) CompletedMatchCommitResult(committed) else transfer(committed)
+            }
         }
+    }
+
+    private suspend fun stageLatest(record: MatchRecord): MatchOutboxEntry {
+        // Check conflicts before staging, retain stage-before-history crash recovery, then resolve
+        // history again atomically in case the UI saved a newer revision during that write.
+        val latest = newestMatchRecord(record, matches.get(record.id), outbox.get(record.id)?.match)
+        val staged = outbox.stage(latest)
+        val saved = matches.upsertLatest(staged.match)
+        return outbox.stage(saved)
     }
 
     private suspend fun transfer(entry: MatchOutboxEntry): CompletedMatchCommitResult {
