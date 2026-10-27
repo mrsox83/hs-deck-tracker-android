@@ -19,6 +19,8 @@ import com.stroexd.hsdecktracker.core.vision.OcrFrame
 import com.stroexd.hsdecktracker.core.vision.OcrLine
 import com.stroexd.hsdecktracker.core.vision.PaddleOcr
 import com.stroexd.hsdecktracker.core.vision.CaptureDiagnosticKind
+import com.stroexd.hsdecktracker.core.vision.captureSkipReason
+import com.stroexd.hsdecktracker.core.vision.projectionProcessingSkipReason
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -84,7 +86,8 @@ fun Context.startScreenRecognition(
 /**
  * Takes screenshots at a pace that depends on the game phase and reads them with on-device text recognition:
  * ML Kit for Latin script, PaddleOCR for [cyrillic] clients. Unchanged screens reuse the last result, and nothing is
- * captured while [isActive] is false, the screen is off or the device is upright (Hearthstone only runs in landscape).
+ * captured while [isActive] is false or the screen is off. Projection uses known current source orientation;
+ * other sources and unknown/stale projection geometry retain the physical-display orientation guard.
  */
 class ScreenRecognizer(
     private val context: Context,
@@ -167,15 +170,22 @@ class ScreenRecognizer(
         if (stopped.get()) return
         captureStartedAt = SystemClock.elapsedRealtime()
         val (realWidth, realHeight) = realDisplaySize(context)
-        if (powerManager?.isInteractive == false || realWidth < realHeight || !isActive()) {
-            report(CaptureDiagnosticKind.SKIPPED, mapOf("screenInteractive" to if (powerManager?.isInteractive == false) 0L else 1L,
+        val interactive = powerManager?.isInteractive != false
+        val content = if (sourceCode == 1L) source.currentContentGeometry(captureStartedAt) else null
+        val skipReason = captureSkipReason(interactive, realWidth, realHeight, projection = sourceCode == 1L,
+            content = content, isActive = isActive)
+        if (skipReason != null) {
+            report(CaptureDiagnosticKind.SKIPPED, mapOf("screenInteractive" to if (interactive) 1L else 0L,
                 "portrait" to if (realWidth < realHeight) 1L else 0L,
-                "reasonCode" to when { powerManager?.isInteractive == false -> 1L; realWidth < realHeight -> 2L; else -> 3L }))
+                "reasonCode" to skipReason.toLong(), "sourceGeometryKnown" to if (content == null) 0L else 1L,
+                "orientationWidth" to (content?.width ?: realWidth).toLong(),
+                "orientationHeight" to (content?.height ?: realHeight).toLong()))
             handler.postDelayed(captureTask, INACTIVE_CHECK_MS)
             return
         }
         captureId++
-        report(CaptureDiagnosticKind.REQUEST)
+        report(CaptureDiagnosticKind.REQUEST, mapOf("sourceGeometryKnown" to if (content == null) 0L else 1L,
+            "orientationWidth" to (content?.width ?: realWidth).toLong(), "orientationHeight" to (content?.height ?: realHeight).toLong()))
         source.capture { capture ->
             report(if (capture == null) CaptureDiagnosticKind.EMPTY_CAPTURE else CaptureDiagnosticKind.DELIVERED,
                 mapOf("deliveryMillis" to (SystemClock.elapsedRealtime() - captureStartedAt),
@@ -190,6 +200,17 @@ class ScreenRecognizer(
         val width = capture.width
         val height = capture.height
         val rawMask = maskProvider()
+        val processingSkip = if (sourceCode == 1L) projectionProcessingSkipReason(width, height, realWidth, realHeight, rawMask != null) else null
+        if (processingSkip != null) {
+            // Captured pixels were delivered, but interpreting a mask in another coordinate domain is unproven.
+            // Keep numeric evidence; do not fabricate empty OCR or game observations for this frame.
+            report(CaptureDiagnosticKind.SKIPPED, mapOf("reasonCode" to processingSkip.toLong(), "processingSkipped" to 1L,
+                "contentWidth" to width.toLong(), "contentHeight" to height.toLong(),
+                "reportedWidth" to realWidth.toLong(), "reportedHeight" to realHeight.toLong(),
+                "maskCoordinatesUnknown" to if (processingSkip == 4) 1L else 0L))
+            scheduleNext()
+            return
+        }
         val mask = rawMask?.let { scaleMask(it, width, height, realWidth, realHeight) }
         report(CaptureDiagnosticKind.VIEWPORT, mapOf("realWidth" to realWidth.toLong(), "realHeight" to realHeight.toLong(),
             "contentWidth" to width.toLong(), "contentHeight" to height.toLong(), "bitmapWidth" to bitmap.width.toLong(),

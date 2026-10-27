@@ -11,11 +11,14 @@ import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.os.Build
 import android.os.Handler
+import android.os.SystemClock
 import android.util.DisplayMetrics
 import android.view.Display
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import com.stroexd.hsdecktracker.core.vision.CaptureDiagnosticKind
+import com.stroexd.hsdecktracker.core.vision.CaptureContentGeometry
+import com.stroexd.hsdecktracker.core.vision.ProjectionGeometry
 import kotlin.math.max
 import kotlin.math.min
 
@@ -24,6 +27,7 @@ class Capture(val bitmap: Bitmap, val width: Int, val height: Int, val imageTime
 
 /** Where screenshots come from. All calls and callbacks happen on the recognizer's thread. */
 interface FrameSource {
+    fun currentContentGeometry(nowElapsedMillis: Long): CaptureContentGeometry? = null
     fun setDiagnosticListener(listener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)?) {}
     /** [onStopped] is called when the source ends by itself, e.g. screen sharing was stopped. */
     fun start(handler: Handler, onStopped: () -> Unit)
@@ -51,6 +55,8 @@ fun realDisplaySize(context: Context): Pair<Int, Int> {
  * second; devices where re-attaching doesn't deliver frames fall back to staying attached.
  */
 class MediaProjectionSource(private val context: Context, private val projection: MediaProjection) : FrameSource {
+    private val contentGeometry = ProjectionGeometry()
+    override fun currentContentGeometry(nowElapsedMillis: Long) = contentGeometry.current(nowElapsedMillis)
     private var diagnosticListener: ((CaptureDiagnosticKind, Map<String, Long>) -> Unit)? = null
     private var unrequestedImages = 0L
     private var emptyImages = 0L
@@ -82,9 +88,11 @@ class MediaProjectionSource(private val context: Context, private val projection
 
     override fun start(handler: Handler, onStopped: () -> Unit) {
         this.handler = handler
+        contentGeometry.start()
         projection.registerCallback(
             object : MediaProjection.Callback() {
                 override fun onStop() {
+                    contentGeometry.stop()
                     report(CaptureDiagnosticKind.SOURCE_STOP)
                     onStopped()
                 }
@@ -95,7 +103,11 @@ class MediaProjectionSource(private val context: Context, private val projection
 
                 override fun onCapturedContentResize(width: Int, height: Int) {
                     report(CaptureDiagnosticKind.RESIZE, mapOf("contentWidth" to width.toLong(), "contentHeight" to height.toLong()))
-                    if (Build.VERSION.SDK_INT >= 34) resize(width, height)
+                    if (Build.VERSION.SDK_INT >= 34) {
+                        contentGeometry.resizing()
+                        resize(width, height)
+                        contentGeometry.resized(width, height, reader?.width ?: 0, reader?.height ?: 0, SystemClock.elapsedRealtime())
+                    }
                 }
             },
             handler,
@@ -166,6 +178,7 @@ class MediaProjectionSource(private val context: Context, private val projection
     }
 
     override fun stop() {
+        contentGeometry.stop()
         reportImageCounters()
         handler.removeCallbacks(timeout)
         pending = null
@@ -219,6 +232,7 @@ class MediaProjectionSource(private val context: Context, private val projection
         } finally {
             image.close()
         }
+        if (capture != null) contentGeometry.delivered(capture.width, capture.height, SystemClock.elapsedRealtime(), capture.imageTimestampNanos ?: -1L)
         callback(capture)
     }
 

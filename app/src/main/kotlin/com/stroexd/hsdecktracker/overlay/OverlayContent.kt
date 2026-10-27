@@ -60,7 +60,7 @@ import com.stroexd.hsdecktracker.MainActivity
 import com.stroexd.hsdecktracker.R
 import com.stroexd.hsdecktracker.appContainer
 import com.stroexd.hsdecktracker.core.collection.ReceivedStatus
-import com.stroexd.hsdecktracker.core.data.VisualEvidenceStatus
+import com.stroexd.hsdecktracker.core.data.BookmarkFeedback
 import com.stroexd.hsdecktracker.core.util.formatNumber
 import com.stroexd.hsdecktracker.core.vision.VisionGameTracker
 import com.stroexd.hsdecktracker.ui.label
@@ -83,6 +83,18 @@ internal fun OverlayContent(
 ) {
     val context = LocalContext.current
     val container = remember { context.appContainer }
+    LaunchedEffect(container) {
+        container.bookmarkFeedback.collect { feedback ->
+            context.toast(context.getString(when (feedback) {
+                BookmarkFeedback.TIMESTAMP_SAVED -> R.string.bookmark_saved_timestamp
+                BookmarkFeedback.IMAGE_PENDING -> R.string.bookmark_image_pending
+                BookmarkFeedback.IMAGE_ATTACHED -> R.string.bookmark_image_attached
+                BookmarkFeedback.IMAGE_FAILED -> R.string.bookmark_image_failed
+                BookmarkFeedback.STORE_FULL -> R.string.bookmark_store_full
+                BookmarkFeedback.SAVE_FAILED -> R.string.bookmark_save_failed
+            }))
+        }
+    }
     val state by container.tracker.state.collectAsStateWithLifecycle()
     val cardState by container.cards.state.collectAsStateWithLifecycle()
     val settings by container.settings.settings.collectAsStateWithLifecycle()
@@ -174,13 +186,7 @@ internal fun OverlayContent(
                             leadingIcon = { Icon(Icons.Filled.BookmarkAdd, contentDescription = null) },
                             onClick = {
                                 actionsExpanded = false
-                                val status = container.recordVisualBookmark()
-                                context.toast(
-                                    context.getString(
-                                        if (status == VisualEvidenceStatus.KEYFRAME_PENDING) R.string.bookmark_saved_with_frame
-                                        else R.string.bookmark_saved_timestamp,
-                                    ),
-                                )
+                                container.recordVisualBookmark()
                             },
                         )
                         DropdownMenuItem(

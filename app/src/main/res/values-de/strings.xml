@@ -342,6 +342,7 @@
     </plurals>
     <string name="auto_short">auto</string>
     <string name="has_timeline">Verlauf vorhanden</string>
+    <string name="has_note">Notiz vorhanden</string>
     <plurals name="matches_exported">
         <item quantity="one">%1$d Partie exportiert</item>
         <item quantity="other">%1$d Partien exportiert</item>
@@ -584,4 +585,9 @@
     <string name="choose_match_export_folder">Exportordner für Spiele wählen</string>
     <string name="match_export_folder_help">Downloads/HSDeckTracker/Matches wählen (zuerst erstellen). Neue abgeschlossene Spiele werden als JSON mit vollständigem Verlauf gespeichert.</string>
     <string name="match_export_failed">Spiel gespeichert, aber JSON-Export fehlgeschlagen. Exportordner in den Einstellungen prüfen.</string>
+    <string name="bookmark_image_pending">Zeitpunkt gespeichert; Bild ausstehend</string>
+    <string name="bookmark_image_attached">Lesezeichenbild angehaengt</string>
+    <string name="bookmark_image_failed">Zeitpunkt gespeichert; Bild konnte nicht angehaengt werden</string>
+    <string name="bookmark_store_full">Zeitpunkt gespeichert; Bildspeicher voll. Kein Bild angehaengt.</string>
+    <string name="bookmark_save_failed">Lesezeichen konnte nicht gespeichert werden</string>
 </resources>

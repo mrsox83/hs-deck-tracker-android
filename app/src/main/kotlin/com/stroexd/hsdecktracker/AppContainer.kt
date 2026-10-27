@@ -27,6 +27,8 @@ import com.stroexd.hsdecktracker.core.data.VisualCaptureMode
 import com.stroexd.hsdecktracker.core.data.VisualEvidenceEntry
 import com.stroexd.hsdecktracker.core.data.VisualEvidenceRepository
 import com.stroexd.hsdecktracker.core.data.VisualEvidenceStatus
+import com.stroexd.hsdecktracker.core.data.BookmarkFeedback
+import com.stroexd.hsdecktracker.core.data.BookmarkWorkflow
 import com.stroexd.hsdecktracker.core.deck.Deck
 import com.stroexd.hsdecktracker.core.meta.DeckPrediction
 import com.stroexd.hsdecktracker.core.meta.FormatDetection
@@ -60,6 +62,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -481,6 +485,7 @@ class AppContainer(context: Context) {
 
     @Synchronized
     fun onRecognitionStarted(captureMethod: String): Long {
+        visualEvidenceRecorder.failPending("Visual capture restarted before the bookmark frame arrived")
         val session = recognitionSessions.start()
         currentCaptureMethod = captureMethod
         visionTracker = null
@@ -576,11 +581,16 @@ class AppContainer(context: Context) {
     }
 
     /** A timestamp always persists; when capture is active, the next frame is attached without any rolling buffer. */
-    fun recordVisualBookmark(): VisualEvidenceStatus {
+    private val _bookmarkFeedback = MutableSharedFlow<BookmarkFeedback>(extraBufferCapacity = 8)
+    val bookmarkFeedback = _bookmarkFeedback.asSharedFlow()
+
+    fun recordVisualBookmark() {
         val observedAt = System.currentTimeMillis()
         val id = "bookmark-$observedAt-${UUID.randomUUID()}"
         val mode = VisualCaptureMode.AUTOMATIC_ROUTE
-        val captureActive = recognition.value.active
+        val (captureActive, session, captureMethod) = synchronized(this) {
+            Triple(recognition.value.active, recognitionSessions.snapshot(), currentCaptureMethod)
+        }
         val status = if (captureActive) VisualEvidenceStatus.KEYFRAME_PENDING else VisualEvidenceStatus.TIMESTAMP_ONLY
         val entry = VisualEvidenceEntry(
             id = id,
@@ -589,18 +599,18 @@ class AppContainer(context: Context) {
             reason = "manual_bookmark",
             requestedCaptureMode = mode,
             status = status,
-            captureMethod = if (captureActive) currentCaptureMethod else null,
+            captureMethod = if (captureActive) captureMethod else null,
         )
         appScope.launch {
-            visualEvidence.add(entry)
-            if (captureActive) {
-                visualEvidenceRecorder.requestManual(id) { result ->
-                    result.onSuccess { keyframe -> appScope.launch { visualEvidence.attachKeyframe(id, keyframe) } }
-                        .onFailure { error -> appScope.launch { visualEvidence.markFailed(id, error.message ?: "Keyframe failed") } }
+            val enqueue: (((Result<com.stroexd.hsdecktracker.core.data.VisualKeyframe>) -> Unit) -> Boolean)? =
+                if (!captureActive) null else { callback ->
+                    synchronized(this@AppContainer) {
+                        if (!recognition.value.active || !recognitionSessions.isCurrent(session)) false
+                        else { visualEvidenceRecorder.requestManual(id, callback); true }
+                    }
                 }
-            }
+            BookmarkWorkflow(visualEvidence, appScope, _bookmarkFeedback::emit).submit(entry, enqueue)
         }
-        return status
     }
 
     /** Called from the existing recognition worker; only named trigger frames are written. */

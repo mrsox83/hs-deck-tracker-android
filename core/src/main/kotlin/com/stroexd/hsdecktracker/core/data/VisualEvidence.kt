@@ -8,6 +8,18 @@ import java.io.File
 @Serializable
 enum class VisualEvidenceStatus { TIMESTAMP_ONLY, KEYFRAME_PENDING, KEYFRAME_SAVED, KEYFRAME_FAILED }
 
+/** UI outcome categories only; no serialized evidence/schema change or raw exception text displayed. */
+enum class BookmarkFeedback { TIMESTAMP_SAVED, IMAGE_PENDING, IMAGE_ATTACHED, IMAGE_FAILED, STORE_FULL, SAVE_FAILED }
+
+fun VisualEvidenceEntry.bookmarkFeedback(): BookmarkFeedback = when (status) {
+    VisualEvidenceStatus.TIMESTAMP_ONLY -> BookmarkFeedback.TIMESTAMP_SAVED
+    VisualEvidenceStatus.KEYFRAME_PENDING -> BookmarkFeedback.IMAGE_PENDING
+    VisualEvidenceStatus.KEYFRAME_SAVED -> BookmarkFeedback.IMAGE_ATTACHED
+    VisualEvidenceStatus.KEYFRAME_FAILED -> if (error == "Visual evidence budget reached" || error == "Visual evidence byte budget reached") {
+        BookmarkFeedback.STORE_FULL
+    } else BookmarkFeedback.IMAGE_FAILED
+}
+
 @Serializable
 data class VisualKeyframe(
     val relativePath: String,
@@ -36,7 +48,7 @@ data class VisualEvidenceEntry(
     val captureMethod: String? = null,
 )
 
-class VisualEvidenceRepository(dir: File) {
+class VisualEvidenceRepository(dir: File) : BookmarkStore {
     private val store = JsonFileStore(
         File(dir, "visual-evidence.json"),
         ListSerializer(VisualEvidenceEntry.serializer()),
@@ -45,14 +57,14 @@ class VisualEvidenceRepository(dir: File) {
 
     val entries: StateFlow<List<VisualEvidenceEntry>> = store.state
 
-    suspend fun add(entry: VisualEvidenceEntry) {
+    override suspend fun add(entry: VisualEvidenceEntry) {
         store.update { current ->
             require(current.none { it.id == entry.id }) { "Visual evidence id ${entry.id} already exists" }
             current + entry
         }
     }
 
-    suspend fun attachKeyframe(id: String, keyframe: VisualKeyframe) {
+    override suspend fun attachKeyframe(id: String, keyframe: VisualKeyframe) {
         var found = false
         store.update { current -> current.map { entry ->
             if (entry.id != id) entry else entry.copy(
@@ -64,7 +76,7 @@ class VisualEvidenceRepository(dir: File) {
         require(found) { "Unknown visual evidence id $id" }
     }
 
-    suspend fun markFailed(id: String, error: String) {
+    override suspend fun markFailed(id: String, error: String) {
         var found = false
         store.update { current -> current.map { entry ->
             if (entry.id != id) entry else entry.copy(status = VisualEvidenceStatus.KEYFRAME_FAILED, error = error)

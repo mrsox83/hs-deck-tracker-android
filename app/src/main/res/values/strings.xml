@@ -343,6 +343,7 @@
     </plurals>
     <string name="auto_short">auto</string>
     <string name="has_timeline">Timeline available</string>
+    <string name="has_note">Has note</string>
     <plurals name="matches_exported">
         <item quantity="one">%1$d game exported</item>
         <item quantity="other">%1$d games exported</item>
@@ -615,4 +616,9 @@
     <string name="player_hand_saved">Report saved to the location you chose. Cloud upload is not confirmed.</string>
     <string name="player_hand_failed">Save did not finish. The destination may contain an incomplete file. Your original game data is unchanged.</string>
     <string name="player_hand_missing_payload">The prepared report is no longer available. Prepare it again. No report data was written; the picker may have created an empty destination.</string>
+    <string name="bookmark_image_pending">Timestamp saved; image pending</string>
+    <string name="bookmark_image_attached">Bookmark image attached</string>
+    <string name="bookmark_image_failed">Timestamp saved; image could not be attached</string>
+    <string name="bookmark_store_full">Timestamp saved; image store is full. No image attached.</string>
+    <string name="bookmark_save_failed">Bookmark could not be saved</string>
 </resources>
