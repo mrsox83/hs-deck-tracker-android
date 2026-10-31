@@ -19,6 +19,7 @@ import androidx.annotation.RequiresApi
 import com.stroexd.hsdecktracker.core.vision.CaptureDiagnosticKind
 import com.stroexd.hsdecktracker.core.vision.CaptureContentGeometry
 import com.stroexd.hsdecktracker.core.vision.ProjectionGeometry
+import com.stroexd.hsdecktracker.core.vision.PendingCaptureRequest
 import kotlin.math.max
 import kotlin.math.min
 
@@ -77,14 +78,16 @@ class MediaProjectionSource(private val context: Context, private val projection
     private lateinit var handler: Handler
     private var reader: ImageReader? = null
     private var virtualDisplay: VirtualDisplay? = null
-    private var pending: ((Capture?) -> Unit)? = null
     private var detachBetweenFrames = true
     private var reattachWorks = false
     private var reattached = false
     private var timeouts = 0
     private var bitmap: Bitmap? = null
     private var densityDpi = 0
-    private val timeout = Runnable { onTimeout() }
+    private val requests = PendingCaptureRequest<Capture>(FRAME_TIMEOUT_MS,
+        post = { task, delay -> handler.postDelayed(task, delay) },
+        remove = { task -> handler.removeCallbacks(task) },
+        onTimeout = ::onTimeout)
 
     override fun start(handler: Handler, onStopped: () -> Unit) {
         this.handler = handler
@@ -105,8 +108,9 @@ class MediaProjectionSource(private val context: Context, private val projection
                     report(CaptureDiagnosticKind.RESIZE, mapOf("contentWidth" to width.toLong(), "contentHeight" to height.toLong()))
                     if (Build.VERSION.SDK_INT >= 34) {
                         contentGeometry.resizing()
-                        resize(width, height)
-                        contentGeometry.resized(width, height, reader?.width ?: 0, reader?.height ?: 0, SystemClock.elapsedRealtime())
+                        if (resize(width, height)) {
+                            contentGeometry.resized(width, height, reader?.width ?: 0, reader?.height ?: 0, SystemClock.elapsedRealtime())
+                        }
                     }
                 }
             },
@@ -136,26 +140,33 @@ class MediaProjectionSource(private val context: Context, private val projection
             reader = imageReader
         }
 
-    private fun resize(contentWidth: Int, contentHeight: Int) {
-        if (contentWidth <= 0 || contentHeight <= 0) return
+    private fun resize(contentWidth: Int, contentHeight: Int): Boolean {
+        if (contentWidth <= 0 || contentHeight <= 0) return false
         val (width, height) = scaledSize(contentWidth, contentHeight)
-        val old = reader ?: return
-        if (old.width == width && old.height == height) return
-        handler.removeCallbacks(timeout)
-        pending?.also { callback ->
-            pending = null
-            callback(null)
+        val old = reader ?: return false
+        if (old.width == width && old.height == height) return true
+        val callback = requests.take()
+        return try {
+            val next = newReader(width, height)
+            report(CaptureDiagnosticKind.VIEWPORT, mapOf("oldWidth" to old.width.toLong(), "oldHeight" to old.height.toLong(),
+                "readerWidth" to width.toLong(), "readerHeight" to height.toLong(), "detachBetweenFrames" to if (detachBetweenFrames) 1L else 0L))
+            virtualDisplay?.apply {
+                surface = null
+                resize(width, height, densityDpi)
+                if (!detachBetweenFrames) surface = next.surface
+            }
+            true
+        } catch (_: Exception) {
+            report(CaptureDiagnosticKind.VIEWPORT, mapOf("resizeFailed" to 1L))
+            runCatching { virtualDisplay?.surface = null }
+            runCatching { reader?.close() }
+            reader = null
+            false
+        } finally {
+            runCatching { old.close() }
+            bitmap = null
+            callback?.invoke(null)
         }
-        val next = newReader(width, height)
-        report(CaptureDiagnosticKind.VIEWPORT, mapOf("oldWidth" to old.width.toLong(), "oldHeight" to old.height.toLong(),
-            "readerWidth" to width.toLong(), "readerHeight" to height.toLong(), "detachBetweenFrames" to if (detachBetweenFrames) 1L else 0L))
-        virtualDisplay?.apply {
-            surface = null
-            resize(width, height, densityDpi)
-            if (!detachBetweenFrames) surface = next.surface
-        }
-        runCatching { old.close() }
-        bitmap = null
     }
 
     private fun scaledSize(contentWidth: Int, contentHeight: Int): Pair<Int, Int> {
@@ -168,69 +179,75 @@ class MediaProjectionSource(private val context: Context, private val projection
     override fun capture(onCapture: (Capture?) -> Unit) {
         reportImageCounters()
         val imageReader = reader ?: return onCapture(null)
-        pending = onCapture
-        if (detachBetweenFrames) {
-            runCatching { imageReader.acquireLatestImage()?.close() }
-            virtualDisplay?.surface = imageReader.surface
-            reattached = true
+        if (!requests.begin(onCapture)) return
+        try {
+            if (detachBetweenFrames) {
+                runCatching { imageReader.acquireLatestImage()?.close() }
+                virtualDisplay?.surface = imageReader.surface
+                reattached = true
+            }
+        } catch (_: Exception) {
+            requests.take()?.invoke(null)
         }
-        handler.postDelayed(timeout, FRAME_TIMEOUT_MS)
     }
 
     override fun stop() {
         contentGeometry.stop()
         reportImageCounters()
-        handler.removeCallbacks(timeout)
-        pending = null
+        val callback = requests.take()
         runCatching { virtualDisplay?.release() }
         runCatching { reader?.close() }
         virtualDisplay = null
         reader = null
         bitmap = null
         runCatching { projection.stop() }
+        callback?.invoke(null)
     }
 
-    private fun onTimeout() {
+    private fun onTimeout(): Boolean {
         reportImageCounters()
-        val callback = pending ?: return
         timeouts++
         report(CaptureDiagnosticKind.TIMEOUT, mapOf("count" to timeouts.toLong(), "reattachWorks" to if (reattachWorks) 1L else 0L))
-        if (!reattachWorks && timeouts >= MAX_TIMEOUTS) {
+        if (detachBetweenFrames && !reattachWorks && timeouts >= MAX_TIMEOUTS) {
             report(CaptureDiagnosticKind.ATTACH_FALLBACK)
+            val display = virtualDisplay ?: return false
+            val surface = reader?.surface ?: return false
+            display.surface = surface
+            // A failed platform attachment must not disable all future attachment attempts.
             detachBetweenFrames = false
-            virtualDisplay?.surface = reader?.surface
-            return
+            // Keep this request alive for one bounded grace interval, never an unarmed wait.
+            return true
         }
-        pending = null
-        virtualDisplay?.surface = null
-        callback(null)
+        // Continuous fallback must remain attached for subsequent capture requests too.
+        if (detachBetweenFrames) virtualDisplay?.surface = null
+        return false
     }
 
     private fun onImageAvailable(imageReader: ImageReader) {
+        // A queued notification from a replaced/closed reader cannot satisfy a new viewport request.
+        if (imageReader !== reader) return
         val image = try {
             imageReader.acquireLatestImage()
         } catch (e: IllegalStateException) {
             acquireFailures++
             null
         } ?: run { emptyImages++; return }
-        val callback = pending
+        val callback = requests.take()
         if (callback == null) {
             unrequestedImages++
-            image.close()
+            runCatching { image.close() }
             return
         }
-        pending = null
-        handler.removeCallbacks(timeout)
         timeouts = 0
         if (reattached) reattachWorks = true
-        if (detachBetweenFrames) virtualDisplay?.surface = null
         val capture = try {
+            if (detachBetweenFrames) virtualDisplay?.surface = null
             Capture(copyToBitmap(image), image.width, image.height, image.timestamp)
         } catch (e: Exception) {
             report(CaptureDiagnosticKind.COPY_FAILED)
             null
         } finally {
-            image.close()
+            runCatching { image.close() }
         }
         if (capture != null) contentGeometry.delivered(capture.width, capture.height, SystemClock.elapsedRealtime(), capture.imageTimestampNanos ?: -1L)
         callback(capture)
